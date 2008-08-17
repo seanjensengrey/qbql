@@ -215,6 +215,13 @@ public class CYK {
 	}*/
 
 	/**
+	 * If we derived some pretty "complex" grammar symbol (such as statement, or axiom),
+	 * then there is no need to look inside the interval when applying the main loop of the CYK method.
+	 */
+	public int[] atomicSymbols() {
+		return new int[0];
+	}
+	/**
 	 * The main evaluation loop of the CYK method (see doc)
 	 * P - main matrix which diagonal is filled in by the initArray() method 
 	 * len - a redundant size of the matrix
@@ -232,8 +239,6 @@ public class CYK {
 		for( int y = 1; y < to; y++ ) {
 			for( int x = y-2; x >= from; x-- ) {
 
-				// WARNING! the code below is duplicated in the incremental rectangleClosure 
-				// and lightClosure methods
 				if( skipRanges != null ) {
 					Integer nextX = skipRanges.get(x);
 					if( nextX != null ) {
@@ -282,52 +287,20 @@ public class CYK {
 					for( int e : tmp )
 						tmp1[i++] = e;
 					matrix.put(Util.pair(x,y),tmp1);
-					/*if( skipRanges != null
+					int[] atomicSymbols = atomicSymbols();
+					if( skipRanges != null && atomicSymbols().length > 0 
 							&& y-1 != x+1 // actually even though y-1 == x+1 there would still be x skipped
 							&& !(x <= middle && middle < y)
 					)
+			checkIfAtomic:
 						for( int ss : tmp1 ) {
 							int s = Util.X(ss);
-							if( s==skipRangeSymbol  || s==stmt 
-									|| s==skipRangeSymbol3 || s==skipRangeSymbol4 
-									|| s==query_term && x>1 && (containsSymbol(matrix.get(Util.pair(x-1, x)),set_operator)
-											|| containsSymbol(matrix.get(Util.pair(x-2, x-1)),set_operator)&&containsSymbol(matrix.get(Util.pair(x-1, x)),allSymbol) 
-									)
-									&& y<to-1 && containsSymbol(matrix.get(Util.pair(y, y+1)),set_operator)
-									|| s==termdotdotbinary_add_op__termdotdot && x>1 && (containsSymbol(matrix.get(Util.pair(x-1, x)),binary_add_op)
-											|| containsSymbol(matrix.get(Util.pair(x-2, x-1)),verticalStrokeSymbol)&&containsSymbol(matrix.get(Util.pair(x-1, x)),verticalStrokeSymbol) 
-									)
-									&& y<to-2 && (containsSymbol(matrix.get(Util.pair(y, y+1)),binary_add_op)
-											|| containsSymbol(matrix.get(Util.pair(y, y+1)),verticalStrokeSymbol)&&containsSymbol(matrix.get(Util.pair(y+1, y+2)),verticalStrokeSymbol) 
-									)
-									|| s==expr && x>0 && containsSymbol(matrix.get(Util.pair(x-1, x)),orSymbol) 	                
-									&& containsSymbol(matrix.get(Util.pair(y, y+1)),orSymbol)
-									|| s==procedure_call && !containsKwd(matrix.get(Util.pair(x, x+1)))
-									|| s==dotdotAND__reldotdot && x>0 && containsSymbol(matrix.get(Util.pair(x-1, x)),andSymbol) 
-									&& containsSymbol(matrix.get(Util.pair(y, y+1)),andSymbol)
-							) {
-								skipRanges.put(y-1,x+1);
-								break;
-							}
-
-							// attempt to find a smaller seq_of_stmts interval [subX,subY)
-							if( s==dotdot_dotprm_specdotdot && y > x+6 
-									&& y<to-1 && containsSymbol(matrix.get(Util.pair(y, y+1)),commaSymbol)
-									|| s==dotdotdotsim_expr_dotiddotdotdot && y > x+6
-									|| s==dotdotdotcmpon_ascdotdot && y > x+6
-									|| s==dotdot_basic_decl_item_dotdot && y > x+6
-									|| s==dotdotstmtdotdot && y > x+6
-							) {
-								int iX = splitInterval(matrix, x, y, s, true);
-								if( iX == -1 )
-									continue;
-								int iY = splitInterval(matrix, iX, y, s, false);
-								if( iY == -1 || iY <= iX )
-									continue;
-								skipRanges.put(iY-1,iX+1);
-								break;
-							}
-						}*/
+							for( int skipRangeSymbol : atomicSymbols )
+								if( s==skipRangeSymbol ) {
+									skipRanges.put(y-1,x+1);
+									break checkIfAtomic;
+								}
+						}
 
 				} 
 			} 
@@ -361,106 +334,6 @@ public class CYK {
 		return -1;	
 	}
 
-
-	/**
-	 * Incremental parse
-	 * @param pos -- token inserted at the position "pos"
-	 */
-	/*public void parseInsert( SortedMap<Integer,Set<Integer>> P, int newLen, int pos, Set<Integer> newStuff ) {
-			// move the matrix entries P[i,j) into P[i+1,j+1)
-			for( int y = newLen; y > pos; y-- ) 
-				for( int x = y-1; x >= 0; x-- ) {
-					if( x <= pos )
-						P.remove(Util.pair(x,y));
-					else {
-						Set<Integer> value = P.get(Util.pair(x-1,y-1));
-						if( value != null )
-							P.put(Util.pair(x,y),value);
-						else
-							P.remove(Util.pair(x,y));
-					}
-
-				}
-
-			P.put(Util.pair(pos,pos+1),newStuff);
-			System.out.println("-------------"); // (authorized)
-
-			// every P[x,y) such that x<=pos<y is recalculated
-			recalculateRectangle(P, newLen, pos); 				
-		}*/
-
-	/**
-	 * @param P
-	 * @param newLen
-	 * @param pos
-	 */
-	public void recalculateRectangle(
-			Matrix P,
-			Map<Integer,Integer> skipRanges   // optimization
-			, int len, int posX, int posY   // if a single point, then posY = posX+1
-	) {
-		if( skipRanges != null ) {
-			Set<Integer> keys = skipRanges.keySet();
-			Integer[] dummy = new Integer[keys.size()];
-			for( Integer key : keys.toArray(dummy) )
-				if( posY < key ) {
-					Integer value = skipRanges.get(key); 
-					skipRanges.remove(key);
-					skipRanges.put(key-posY+posX, value-posY+posX);
-				}
-		}
-		for( int y = posY; y < len; y++ )
-			for( int x = posX; x >= 0; x-- ) {
-				if( y == x+1 )
-					continue;
-				P.remove(Util.pair(x,y));
-				// don't have to remove backPtr?
-				if( skipRanges != null ) {
-					Integer nextX = skipRanges.get(x);
-					if( nextX != null ) {
-						x = nextX;
-						continue;
-					}
-				}
-				int start = Util.pair(x,y);
-				int end = Util.pair(0,y+1);
-				Set<Integer> tmp = new TreeSet<Integer>();
-				SortedMap<Integer,int[]> range = P.subMap(start, end);
-				for( int key : range.keySet() ) {
-					int mid = Util.X(key);
-					int[] prefixes = P.get(Util.pair(x,mid));
-					if( prefixes==null )
-						continue;
-					int[] suffixes = P.get(Util.pair(mid,y));
-					if( suffixes==null )
-						continue;
-
-					for( int II : prefixes )    // Not indexed Nested Loops
-						for( int JJ : suffixes ) {
-							int I = Util.X(II);
-							int J = Util.X(JJ);
-							Proj p = doubleRhsRules[I];
-							if( p==null )
-								continue;
-							Set<Integer> A = p.values[J];
-							if( A==null )
-								continue;
-							List<Integer> B = new LinkedList<Integer>();
-							for( int a : A )
-								B.add(Util.pair(a, mid));
-							tmp.addAll(B); 
-						}											
-
-				}
-				if( tmp.size()>0 ) {
-					int[] tmp1 = new int[tmp.size()];
-					int i = 0;
-					for( int e : tmp )
-						tmp1[i++] = e;
-					P.put(Util.pair(x,y),tmp1);
-				} 
-			}
-	}
 
 
 	public void print( Matrix P ) {
