@@ -1,0 +1,209 @@
+package qbql.lattice;
+
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import qbql.parser.RuleTuple;
+
+public class Relation {
+	Map<String,Integer> header = new HashMap<String,Integer>();
+	String[] colNames;
+	
+	Set<Tuple> content = new HashSet<Tuple>(); // TreeSet<Tuple>
+	
+	public Relation( String[] columns ) {
+		colNames = columns;
+		for( int i = 0; i < columns.length; i++ ) {
+			header.put(colNames[i],i);
+		}		
+	}
+	
+	public void addTuple( Map<String,String> content ) {
+		String[] newTuple = new String[colNames.length];
+		Set<String> columns = content.keySet();
+		for( String colName : columns )
+			newTuple[header.get(colName)] = content.get(colName);
+		this.content.add(new Tuple(newTuple));
+	}
+	
+	public String toString() {
+		StringBuffer ret = new StringBuffer("{");
+		for( Tuple tuple : content ) {
+			ret.append("<");
+			for( int i = 0; i < tuple.data.length; i++ )
+				ret.append(colNames[i]+"="+tuple.data[i]+",");
+			ret.append(">,");
+		}
+		ret.append("}");
+		return ret.toString();
+	}
+	
+	public static Relation join( Relation x, Relation y ) {
+		Set<String> header = new HashSet<String>();
+		header.addAll(x.header.keySet());
+		header.addAll(y.header.keySet());		
+		Relation ret = new Relation(header.toArray(new String[0]));
+		for( Tuple tupleX: x.content )
+			for( Tuple tupleY: y.content ) {				
+				String[] retTuple = new String[header.size()];
+				for( String attr : ret.colNames ) {
+					Integer xAttr = x.header.get(attr);
+					Integer yAttr = y.header.get(attr);
+					if( xAttr == null )
+						retTuple[ret.header.get(attr)] = tupleY.data[y.header.get(attr)];
+					else if( yAttr == null )
+						retTuple[ret.header.get(attr)] = tupleX.data[x.header.get(attr)];
+					else {
+						if( !tupleY.data[y.header.get(attr)].equals(tupleX.data[x.header.get(attr)]) ) {
+							retTuple = null;
+							break;
+						} else
+							retTuple[ret.header.get(attr)] = tupleX.data[x.header.get(attr)];
+					}
+				}
+				if( retTuple != null )
+					ret.content.add(new Tuple(retTuple));
+			}
+		return ret;
+	}
+
+	public static Relation innerUnion( Relation x, Relation y ) {
+		Set<String> header = new HashSet<String>();
+		header.addAll(x.header.keySet());
+		header.retainAll(y.header.keySet());		
+		Relation ret = new Relation(header.toArray(new String[0]));
+		for( Tuple tupleX: x.content ){
+			String[] retTuple = new String[header.size()];
+			for( String attr : ret.colNames ) {
+				retTuple[ret.header.get(attr)] = tupleX.data[x.header.get(attr)];
+			}
+			ret.content.add(new Tuple(retTuple));
+		}
+		for( Tuple tupleY: y.content ){
+			String[] retTuple = new String[header.size()];
+			for( String attr : ret.colNames ) {
+				retTuple[ret.header.get(attr)] = tupleY.data[y.header.get(attr)];
+			}
+			ret.content.add(new Tuple(retTuple));
+		}
+		return ret;
+	}
+	
+	public static Relation innerJoin( Relation x, Relation y ) {
+		Set<String> header = new HashSet<String>();
+		header.addAll(x.header.keySet());
+		header.retainAll(y.header.keySet());		
+		Relation ret = new Relation(header.toArray(new String[0]));
+		for( Tuple tupleX: x.content ){
+			String[] retTuple = new String[header.size()];
+			for( String attr : ret.colNames ) {
+				retTuple[ret.header.get(attr)] = tupleX.data[x.header.get(attr)];
+			}
+			ret.content.add(new Tuple(retTuple));
+		}
+		Set<Tuple> content = new HashSet<Tuple>(); // TreeSet<Tuple>
+		for( Tuple tupleY: y.content ){
+			String[] retTuple = new String[header.size()];
+			for( String attr : ret.colNames ) {
+				retTuple[ret.header.get(attr)] = tupleY.data[y.header.get(attr)];
+			}
+			content.add(new Tuple(retTuple));
+		}
+		ret.content.retainAll(content);
+		return ret;
+	}
+	
+	public boolean equals( Object o ) {
+		Relation src = (Relation) o;
+		if( colNames.length != src.colNames.length )
+			return false;
+		if( content.size() != src.content.size() )
+			return false;
+		String[] hdr = header.keySet().toArray(new String[0]);
+		String[] srcHdr = src.header.keySet().toArray(new String[0]);
+		for( int i = 0; i < hdr.length; i++ )
+			if( !hdr[i].equals(srcHdr[i]) )
+				return false;
+		LinkedList<Tuple> list = new LinkedList<Tuple>();
+		for( Tuple t : content )
+			list.add(t);
+		while( list.size() > 0 &&  matchAndDelete(list, src) )
+			;
+		return list.size()==0;
+	}
+	private boolean matchAndDelete( LinkedList<Tuple> list, Relation y ) {
+		Tuple tx = list.getFirst();
+		for( Tuple ty : y.content ) {
+			if( tx.equals(ty,this,y) ) {
+				list.removeFirst();
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public int hashCode() {
+		StringBuffer ret = new StringBuffer();
+		ret.append(colNames.length);
+		ret.append(content.size());
+		if( colNames.length > 0 && content.size() > 0 ) {
+			for( Tuple t : content ) {
+				ret.append(t.data[0]);
+				break;
+			}
+		}
+		return ret.toString().hashCode();
+	}
+
+	/////////////////////////PARSER//////////////////////////
+	private static final String fname = "bilattice.serializedBNF";
+	private static final String path = "/qbql/lattice/";
+	public static void memorizeRules() throws Exception {
+		Set<RuleTuple> rules = extractRules();				    
+		FileOutputStream fos = new FileOutputStream("c:/qbql"+path+fname);
+		ObjectOutputStream out = new ObjectOutputStream(fos);
+		out.writeObject(rules);
+		out.close();
+	}
+	public static Set<RuleTuple> getRules() throws Exception {
+        URL u = Relation.class.getResource( path+fname );
+        InputStream is = u.openStream();
+		ObjectInputStream in = new ObjectInputStream(is);
+		Set<RuleTuple> rules = (Set<RuleTuple>) in.readObject();
+		in.close();
+		return rules;
+	}
+	private static Set<RuleTuple> extractRules() {
+		Set<RuleTuple> ret = new TreeSet<RuleTuple>();
+		ret.add(new RuleTuple("expr", new String[] {"identifier"}));
+		ret.add(new RuleTuple("expr", new String[] {"'('","expr","')'"}));
+		ret.add(new RuleTuple("join", new String[] {"expr","'^'","expr"}));
+		ret.add(new RuleTuple("innerJoin", new String[] {"expr","'*'","expr"}));
+		ret.add(new RuleTuple("innerUnion", new String[] {"expr","'v'","expr"}));
+		ret.add(new RuleTuple("outerUnion", new String[] {"expr","'+'","expr"}));
+		ret.add(new RuleTuple("complement", new String[] {"expr","'''"}));
+		ret.add(new RuleTuple("expr", new String[] {"join"}));
+		ret.add(new RuleTuple("expr", new String[] {"innerJoin"}));
+		ret.add(new RuleTuple("expr", new String[] {"innerUnion"}));
+		ret.add(new RuleTuple("expr", new String[] {"outerUnion"}));
+		ret.add(new RuleTuple("expr", new String[] {"complement"}));
+		ret.add(new RuleTuple("equation", new String[] {"expr","'='","expr"}));
+		ret.add(new RuleTuple("assertion", new String[] {"equation","'.'"}));
+		return ret;
+	}
+
+	
+	public static void main( String[] args ) throws Exception {
+		memorizeRules();
+	}
+
+}
