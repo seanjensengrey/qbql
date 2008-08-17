@@ -169,7 +169,7 @@ public class Relation {
 	private static final String path = "/qbql/lattice/";
 	public static void memorizeRules() throws Exception {
 		Set<RuleTuple> rules = extractRules();				    
-		FileOutputStream fos = new FileOutputStream("c:/qbql"+path+fname);
+		FileOutputStream fos = new FileOutputStream("c:/qbql_trunk"+path+fname);
 		ObjectOutputStream out = new ObjectOutputStream(fos);
 		out.writeObject(rules);
 		out.close();
@@ -198,6 +198,7 @@ public class Relation {
 		ret.add(new RuleTuple("expr", new String[] {"complement"}));
 		ret.add(new RuleTuple("equation", new String[] {"expr","'='","expr"}));
 		ret.add(new RuleTuple("assertion", new String[] {"equation","'.'"}));
+		ret.add(new RuleTuple("axiomSystem", new String[] {"assertion","axiomSystem"}));
 		return ret;
 	}
 

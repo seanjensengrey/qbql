@@ -200,17 +200,15 @@ public class Model {
 		return null;
 	}
 	
-	public boolean assertion( String input ) {
-		List<LexerToken> src =  LexerToken.parse(input);
-		Matrix matrix = cyk.initArray1(src);
-		int size = matrix.size();
-		TreeMap<Integer,Integer> skipRanges = null;//new TreeMap<Integer,Integer>();
-		cyk.closure(matrix, 0, size+1, skipRanges, -1);
-		ParseNode root = cyk.forest(size, matrix);
-		
-		return assertion(root, src);
-	}
 	public boolean assertion( ParseNode root, List<LexerToken> src ) {
+		if( !root.contains(assertion) ) 
+			throw new RuntimeException("Syntax Error in "+root.content(src));
+		for( ParseNode child : root.children() ) {
+			return equation(child,src);
+		}
+		return false;
+	}
+	public boolean equation( ParseNode root, List<LexerToken> src ) {
 		Relation left = null;
 		Relation right = null;
 		for( ParseNode child : root.children() ) {
@@ -223,6 +221,34 @@ public class Model {
 		}
 		return left.equals(right);
 	}
+	public boolean axiomSystem( ParseNode root, List<LexerToken> src ) {
+		for( ParseNode child : root.children() ) {
+				
+			String[] relVars = lattice.keySet().toArray(new String[0]);
+			for( String xName : relVars )
+				for( String yName : relVars )
+					for( String zName : relVars ) {
+						Relation x = lattice.get(xName);
+						Relation y = lattice.get(yName);
+						Relation z = lattice.get(zName);
+						
+						lattice.put("x", x);
+						lattice.put("y", y);
+						lattice.put("z", z);
+						if( !assertion(child,src) ) {
+							System.out.println("x = "+x);
+							System.out.println("y = "+y);
+							System.out.println("z = "+z);
+							System.out.println(child.content(src));
+							return false;
+						}
+						lattice.remove("x");
+						lattice.remove("y");
+						lattice.remove("z");
+					}
+		}
+		return true;
+	}
 	
 	static CYK cyk;
 	static int join;
@@ -233,9 +259,16 @@ public class Model {
 	static int eq;
 	static int expr;
 	static int openParen;
+	static int equation;
+	static int assertion;
+	static int axiomSystem;
 	static {
 		try {
-			cyk = new CYK(Relation.getRules());
+			cyk = new CYK(Relation.getRules()) {
+				public int[] atomicSymbols() {
+					return new int[] {assertion};
+				}
+			};
 			join = cyk.symbolIndexes.get("'^'");
 			innerJoin = cyk.symbolIndexes.get("'*'");
 			innerUnion = cyk.symbolIndexes.get("'v'");
@@ -244,6 +277,9 @@ public class Model {
 			eq = cyk.symbolIndexes.get("'='");
 			expr = cyk.symbolIndexes.get("expr");
 			openParen = cyk.symbolIndexes.get("'('");
+			equation = cyk.symbolIndexes.get("equation");
+			assertion = cyk.symbolIndexes.get("assertion");
+			axiomSystem = cyk.symbolIndexes.get("axiomSystem");
 		} catch( Exception e ) {
 			e.printStackTrace();
 		}
@@ -263,55 +299,26 @@ public class Model {
 		System.out.println("----------------------------");		
 		*/
 		Model model = new Model();
-		
+		/*
 		System.out.println("E ="+model.eval("E"));
 		System.out.println("E' ="+model.eval("E'"));
 		System.out.println("E' ^ E ="+model.eval("E' ^ E"));
+		*/
 		//if( true )
 			//return;
 		
 		String axioms = Util.readFile(Model.class,"/qbql/lattice/bilattice.axioms");
-		StringTokenizer st = new StringTokenizer(axioms, "."); 
-		while (st.hasMoreTokens()) {
-			String axiom = st.nextToken();
-			if( axiom.indexOf('!')>0 || axiom.indexOf('u')>0 )
-				continue;
-			if( axiom.trim().startsWith("[") )
-				continue;
-			//axiom = axiom.substring(axiom.indexOf(' '));
-			List<LexerToken> src =  LexerToken.parse(axiom);
-			if( src.size() < 3 )
-				continue;
-			System.out.println(axiom);			
-			Matrix matrix = cyk.initArray1(src);
-			int size = matrix.size();
-			TreeMap<Integer,Integer> skipRanges = null;//new TreeMap<Integer,Integer>();
-			cyk.closure(matrix, 0, size+1, skipRanges, -1);
-			ParseNode root = cyk.forest(size, matrix);
-
-			String[] relVars = model.lattice.keySet().toArray(new String[0]);
-			for( String xName : relVars )
-				for( String yName : relVars )
-					for( String zName : relVars ) {
-						Relation x = model.lattice.get(xName);
-						Relation y = model.lattice.get(yName);
-						Relation z = model.lattice.get(zName);
+		
+		List<LexerToken> src =  LexerToken.parse(axioms);
+		Matrix matrix = cyk.initArray1(src);
+		int size = matrix.size();
+		TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
+		cyk.closure(matrix, 0, size+1, skipRanges, -1);
+		ParseNode root = cyk.forest(size, matrix);
 						
-						model.lattice.put("x", x);
-						model.lattice.put("y", y);
-						model.lattice.put("z", z);
-						if( !model.assertion(root,src) ) {
-							System.out.println("x = "+x);
-							System.out.println("y = "+y);
-							System.out.println("z = "+z);
-							//System.out.println(axiom);
-							return;
-						}
-						model.lattice.remove("x");
-						model.lattice.remove("y");
-						model.lattice.remove("z");
-					}
-		}
-
+		if( !model.axiomSystem(root,src) )
+			System.out.println("*** Inconsistent Axiom System ***");
+		else
+			System.out.println("Axiom System is OK");
 	}
 }
