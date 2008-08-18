@@ -5,7 +5,7 @@
 
 QBQL is written in java. Therefore, until QBQL gets more sophisticated interface, the most straightforward way to get it running is to install Eclipse, Subversion plugin, and then check out the source from google code svn. All these steps are standard and are documented elsewhere.
 
-== The database and axioms ==
+== The database ==
 
 To create a _database_ you need to describe it in a text file. The syntax is:
 
@@ -13,10 +13,41 @@ To create a _database_ you need to describe it in a text file. The syntax is:
 
 For example
 
-{{{A = {<x=1>};		
+`A = {<x=1>};`		
 
-B = {<x=1>,<x=2>};}}}
+`B = {<x=1>,<x=2>};`
 
 defines two relations named A and B from figure 1 from the [http://arxiv.org/abs/0807.3795 foundation paper]. Here is familiar oracle DEPT table:
 
 {{{DEPT = {<deptno=10,dname=ACCOUNTING>,<deptno=20,dname=RESEARCH>};}}}
+
+The name of the database definition text file is hard coded in the `Database.java` in the first line of the constructor `Database()`.
+
+== The axioms ==
+ 
+You define _axioms_ as equations 
+
+expr = expr.
+expr = expr.
+... 
+
+in a text file as well. The syntax is that of Prover9: expressions are relational variables, or terms built with operations of join ^, inner union v, outer union +, inner join *, and negation ' applied to relations. The R00, R01, R10 and R11 are predefined relation constants. 
+
+For example
+
+`x ^ y = y ^ x.`  
+`(x ^ y) ^ z = x ^ (y ^ z).`   
+ 
+are axioms of commutativity and associativity for the join operation.
+
+Watch for a pitfalls. Since the `v` symbol is reserved for the outer union, it can't be used in any names of the variables. Also we use unified grammar for axioms and the database. This allows using relational operations when defining new relations from the existing ones. However the `v` symbol in the relations names is not allowed in the database file as well!  
+
+The name of the axiom definition text file is hard coded in the `Database.java` in the first line of the `main()` method.
+
+== Run the program ==
+
+Now you are set. Just run the Database.main() and watch the console output. If the database satisfies the axiom system then the expected output is
+
+`Axiom System is OK`
+
+otherwise it would print out the offending axiom and the values of the variables.
