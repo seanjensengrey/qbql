@@ -3,7 +3,7 @@
 ----
 == The programming environment ==
 
-QBQL is written in java. Therefore, until QBQL gets more sophisticated interface, the most straightforward way to get it running is to install Eclipse, Subversion plugin, and then check out the source from google code svn. All these steps are standard and are documented elsewhere.
+QBQL is written in java. Therefore, until QBQL elevates to more sophisticated interface, the only way to get it running is to install _Eclipse_, _Subversion_ plugin, and then check out the source from _google_ _code_ svn. All these steps are standard and are documented elsewhere.
 
 == The database ==
 
@@ -11,13 +11,13 @@ To create a _database_ you need to describe it in a text file. The syntax is:
 
 {{{relation_var = {<attribute1=value1,attribute2=value2,...>,<attribute1=value3,attribute2=value4,...>,...};}}}
 
-For example
+For example, the fragment
 
 `A = {<x=1>};`		
 
 `B = {<x=1>,<x=2>};`
 
-defines two relations named A and B from figure 1 from the [http://arxiv.org/abs/0807.3795 foundation paper]. Here is familiar oracle DEPT table:
+defines two relations named A and B from figure 1 from the [http://arxiv.org/abs/0807.3795 foundation paper]. Here is familiar oracle `DEPT` table:
 
 {{{DEPT = {<deptno=10,dname=ACCOUNTING>,<deptno=20,dname=RESEARCH>};}}}
 
@@ -31,7 +31,7 @@ expr = expr.
 expr = expr.
 ... 
 
-in a text file as well. The syntax is that of Prover9: expressions are relational variables, or terms built with operations of join ^, inner union v, outer union +, inner join *, and negation ' applied to relations. The R00, R01, R10 and R11 are predefined relation constants. 
+in a text file as well. The syntax is that of _Prover9_: expressions are relational variables, or terms built with operations of join ^, inner union v, outer union +, inner join *, and negation ' applied to relations. The R00, R01, R10 and R11 are predefined relation constants. 
 
 For example
 
