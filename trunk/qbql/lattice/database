@@ -1,0 +1,23 @@
+A = {<x=1>};		
+
+B = {<x=1>,<x=2>};
+		
+C = {<y=a>};
+		
+D = {<y=a>,<y=b>};
+
+AjC = A ^ C;
+
+AjD = A ^ D;
+
+BjC = B ^ C;
+
+`x` = A ^ R00;
+
+`y` = C ^ R00;
+
+AjDuBjC = (A ^ D) v (B ^ C);
+
+E = {<x=0,z=t>,<x=1,z=t>};
+
+F = {<y=c,z=t>,<y=a,z=t>,<y=a,z=u>};

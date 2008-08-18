@@ -176,10 +176,7 @@ public class CYK {
 				int symbol = symbolIndexes.get("identifier");
 				dependents.addAll(singleRhsRules[symbol]);
 			}
-		} else if( token.type == Token.DQUOTED_STRING ) {
-			int symbol = symbolIndexes.get("identifier");
-			dependents.addAll(singleRhsRules[symbol]);
-		} else if( token.type == Token.QUOTED_STRING ) {
+		} else if( token.type == Token.DQUOTED_STRING || token.type == Token.QUOTED_STRING ) {
 			int symbol = symbolIndexes.get("string_literal");
 			dependents.addAll(singleRhsRules[symbol]);
 		} else if( token.type == Token.DIGITS ) {
