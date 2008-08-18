@@ -1,22 +1,22 @@
 #summary On this page we describe how to create a small database and run a system of axioms against it.
 
-= The programming environment =
+----
+== The programming environment ==
 
 QBQL is written in java. Therefore, until QBQL gets more sophisticated interface, the most straightforward way to get it running is to install Eclipse, Subversion plugin, and then check out the source from google code svn. All these steps are standard and are documented elsewhere.
 
-= The database and axioms =
+== The database and axioms ==
 
 To create a _database_ you need to describe it in a text file. The syntax is:
 
-`relation_var = {<attribute1=value1,attribute2=value2,...>,<attribute1=value3,attribute2=value4,...>,...};`
+{{{relation_var = {<attribute1=value1,attribute2=value2,...>,<attribute1=value3,attribute2=value4,...>,...};}}}
 
 For example
 
-`A = {<x=1>};`		
+{{{A = {<x=1>};		
 
-`B = {<x=1>,<x=2>};`
+B = {<x=1>,<x=2>};}}}
 
 defines two relations named A and B from figure 1 from the [http://arxiv.org/abs/0807.3795 foundation paper]. Here is familiar oracle DEPT table:
 
-`DEPT = {<deptno=10,dname=ACCOUNTING>,<deptno=20,dname=RESEARCH>};`
-
+{{{DEPT = {<deptno=10,dname=ACCOUNTING>,<deptno=20,dname=RESEARCH>};}}}
