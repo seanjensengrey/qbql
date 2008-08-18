@@ -17,7 +17,7 @@ For example, the fragment
 
 `B = {<x=1>,<x=2>};`
 
-defines two relations named `A` and `B` from figure 1 from the [http://arxiv.org/abs/0807.3795 foundation paper]. Here is familiar oracle `DEPT` table:
+defines two relations named `A` and `B` from figure 1 of the [http://arxiv.org/abs/0807.3795 foundation paper]. Here is familiar oracle `DEPT` table:
 
 {{{DEPT = {<deptno=10,dname=ACCOUNTING>,<deptno=20,dname=RESEARCH>};}}}
 
@@ -29,7 +29,7 @@ You define _axioms_ as equations
 
 `expr = expr.`
 `expr = expr.`
-`...`
+{{{...}}}
 
 in a text file as well. The syntax is that of _Prover9_: expressions are relational variables, or terms built with operations of join `^`, inner union `v`, outer union `+`, inner join `*`, and negation `'` applied to relations. The `R00`, `R01`, `R10` and `R11` are predefined relation constants. 
 
@@ -37,7 +37,7 @@ For example
 
 `x ^ y = y ^ x.` 
  
-`(x ^ y) ^ z = x ^ (y ^ z).`   
+{{{(x ^ y) ^ z = x ^ (y ^ z).}}}   
  
 are axioms of commutativity and associativity for the join operation.
 
