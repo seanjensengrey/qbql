@@ -17,7 +17,7 @@ For example, the fragment
 
 `B = {<x=1>,<x=2>};`
 
-defines two relations named A and B from figure 1 from the [http://arxiv.org/abs/0807.3795 foundation paper]. Here is familiar oracle `DEPT` table:
+defines two relations named `A` and `B` from figure 1 from the [http://arxiv.org/abs/0807.3795 foundation paper]. Here is familiar oracle `DEPT` table:
 
 {{{DEPT = {<deptno=10,dname=ACCOUNTING>,<deptno=20,dname=RESEARCH>};}}}
 
@@ -35,7 +35,8 @@ in a text file as well. The syntax is that of _Prover9_: expressions are relatio
 
 For example
 
-`x ^ y = y ^ x.`  
+`x ^ y = y ^ x.` 
+ 
 `(x ^ y) ^ z = x ^ (y ^ z).`   
  
 are axioms of commutativity and associativity for the join operation.
