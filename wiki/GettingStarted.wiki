@@ -9,7 +9,7 @@ QBQL is written in java. Therefore, until QBQL elevates to more sophisticated in
 
 To create a _database_ you need to describe it in a text file. The syntax is:
 
-{{{relation_var = {<attribute1=value1,attribute2=value2,...>,<attribute1=value3,attribute2=value4,...>,...};}}}
+{{{relation_var = {<attribute,,1,,=value1,, , attribute,,2,,=value,,2,, ,...>,<attribute,,1,,=value,,3,, , attribute,,2,,=value,,4,, , ...>, ...};}}}
 
 For example, the fragment
 
@@ -28,8 +28,10 @@ The name of the database definition text file is hard coded in the `Database.jav
 You define _axioms_ as equations 
 
 `expr = expr.`
+
 `expr = expr.`
-{{{...}}}
+
+`...`
 
 in a text file as well. The syntax is that of _Prover9_: expressions are relational variables, or terms built with operations of join `^`, inner union `v`, outer union `+`, inner join `*`, and negation `'` applied to relations. The `R00`, `R01`, `R10` and `R11` are predefined relation constants. 
 
@@ -37,7 +39,7 @@ For example
 
 `x ^ y = y ^ x.` 
  
-{{{(x ^ y) ^ z = x ^ (y ^ z).}}}   
+`(x ^ y) ^ z = x ^ (y ^ z).`   
  
 are axioms of commutativity and associativity for the join operation.
 
