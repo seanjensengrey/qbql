@@ -27,9 +27,9 @@ The name of the database definition text file is hard coded in the `Database.jav
  
 You define _axioms_ as equations 
 
-{{{expr = expr.
-expr = expr.
-...}}} 
+`expr = expr.`
+`expr = expr.`
+`...`
 
 in a text file as well. The syntax is that of _Prover9_: expressions are relational variables, or terms built with operations of join `^`, inner union `v`, outer union `+`, inner join `*`, and negation `'` applied to relations. The `R00`, `R01`, `R10` and `R11` are predefined relation constants. 
 
