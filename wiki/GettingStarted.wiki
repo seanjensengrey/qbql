@@ -39,12 +39,13 @@ For example,
 
 `x ^ y = y ^ x.` 
  
+
 `(x ^ y) ^ z = x ^ (y ^ z).`   
  
 
 are axioms of commutativity and associativity for the join operation.
 
-Watch for a pitfalls. Since the `v` symbol is reserved for the outer union, it can't be used in any names of the variables. Also we use unified grammar for axioms and the database. This allows using relational operations when defining new relations from the existing ones. However the `v` symbol in the relations names is not allowed in the database file as well!  
+Watch for *pitfalls*. Since the `v` symbol is reserved for the outer union, it can't be used in any names of the variables. Also we use unified grammar for axioms and the database. This allows using relational operations when defining new relations from the existing ones. However the `v` symbol in the relations names is not allowed in the database file as well!  
 
 The name of the axiom definition text file is hard coded in the `Database.java` in the first line of the `main()` method.
 
