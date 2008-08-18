@@ -184,6 +184,7 @@ public class Relation {
 	}
 	private static Set<RuleTuple> extractRules() {
 		Set<RuleTuple> ret = new TreeSet<RuleTuple>();
+		// LATTICE part
 		ret.add(new RuleTuple("expr", new String[] {"identifier"}));
 		ret.add(new RuleTuple("expr", new String[] {"'('","expr","')'"}));
 		ret.add(new RuleTuple("join", new String[] {"expr","'^'","expr"}));
@@ -198,7 +199,23 @@ public class Relation {
 		ret.add(new RuleTuple("expr", new String[] {"complement"}));
 		ret.add(new RuleTuple("equation", new String[] {"expr","'='","expr"}));
 		ret.add(new RuleTuple("assertion", new String[] {"equation","'.'"}));
-		ret.add(new RuleTuple("axiomSystem", new String[] {"assertion","axiomSystem"}));
+		ret.add(new RuleTuple("axioms", new String[] {"assertion"}));
+		ret.add(new RuleTuple("axioms", new String[] {"assertion","axioms"}));
+
+		// Set Theoretic part
+		ret.add(new RuleTuple("attribute", new String[] {"identifier"}));
+		ret.add(new RuleTuple("value", new String[] {"attribute","'='","digits"}));
+		ret.add(new RuleTuple("value", new String[] {"attribute","'='","identifier"}));
+		ret.add(new RuleTuple("values", new String[] {"value"}));
+		ret.add(new RuleTuple("values", new String[] {"values","','","value"}));
+		ret.add(new RuleTuple("tuple", new String[] {"'<'","values","'>'"}));
+		ret.add(new RuleTuple("tuples", new String[] {"tuple"}));
+		ret.add(new RuleTuple("tuples", new String[] {"tuples","','","tuple"}));
+		ret.add(new RuleTuple("relation", new String[] {"'{'","tuples","'}'"}));
+		ret.add(new RuleTuple("relVar", new String[] {"identifier","'='","relation","';'"}));
+		ret.add(new RuleTuple("relVar", new String[] {"identifier","'='","expr","';'"})); // if defined in terms of lattice operations
+		ret.add(new RuleTuple("database", new String[] {"relVar"}));
+		ret.add(new RuleTuple("database", new String[] {"relVar","database"}));
 		return ret;
 	}
 
