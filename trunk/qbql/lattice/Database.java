@@ -29,8 +29,10 @@ public class Database {
 		LexerToken.isPercentLineComment = true;
 	}
 	
+	final static String databaseFile = "Wittgenstein.db"; 
+	final static String assertionsFile = "Wittgenstein.assertions"; 
 	public Database() throws Exception {				
-		String database = Util.readFile(Database.class,"/qbql/lattice/database");
+		String database = Util.readFile(Database.class,"/qbql/lattice/"+databaseFile);
 		
 		List<LexerToken> src =  LexerToken.parse(database);
 		Matrix matrix = cyk.initArray1(src);
@@ -50,7 +52,10 @@ public class Database {
 		lattice.put("R11",R11);
 		
 		// relations that requre complement can be built only after R10 and R11 are defined
-		lattice.put("((A ^ D) v (B ^ C))'",complement(lattice.get("AjDuBjC")));
+		try {
+			lattice.put("((A ^ D) v (B ^ C))'",complement(lattice.get("AjDuBjC")));
+		} catch( Exception e ) { // NPE if databaseFile is not Figure1.db
+		}
 
 	}
 	
@@ -157,7 +162,7 @@ public class Database {
 		Set<String> variables = new HashSet<String>();
 		for( ParseNode descendant : root.descendants() ) {
 			String id = descendant.content(src);
-			if( descendant.from+1 == descendant.to && descendant.contains(expr) && !id.startsWith("R") ) 
+			if( descendant.from+1 == descendant.to && descendant.contains(expr) && Character.isLowerCase(id.substring(0,1).toCharArray()[0]) ) 
 				variables.add(id);
 		}
 		
@@ -180,9 +185,11 @@ public class Database {
 					right = eval(child,src);
 			}
 			if( !left.equals(right) ) {
+				System.out.println(root.content(src));
 				for( String variable : variables )
 					System.out.println(variable+" = "+lattice.get(variable));
-				System.out.println(root.content(src));
+				System.out.println("left = "+left);
+				System.out.println("right = "+right);
 				return false;
 			}
 		} while( next(indexes,relVars.length) );
@@ -356,7 +363,7 @@ public class Database {
 	}
 
 	public static void main( String[] args ) throws Exception {
-		String axioms = Util.readFile(Database.class,"/qbql/lattice/axioms");
+		String axioms = Util.readFile(Database.class,"/qbql/lattice/"+assertionsFile);
 		
 		List<LexerToken> src =  LexerToken.parse(axioms);
 		Matrix matrix = cyk.initArray1(src);
@@ -367,8 +374,8 @@ public class Database {
 						
 		Database model = new Database();
 		if( !model.axioms(root,src) )
-			System.out.println("*** Inconsistent Axiom System ***");
+			System.out.println("*** False Assertion ***");
 		else
-			System.out.println("Axiom System is OK");
+			System.out.println("All Assertions are OK");
 	}
 }

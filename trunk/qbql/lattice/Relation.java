@@ -165,7 +165,7 @@ public class Relation {
 	}
 
 	/////////////////////////PARSER//////////////////////////
-	private static final String fname = "bilattice.serializedBNF";
+	private static final String fname = "grammar.serializedBNF";
 	private static final String path = "/qbql/lattice/";
 	public static void memorizeRules() throws Exception {
 		Set<RuleTuple> rules = extractRules();				    
