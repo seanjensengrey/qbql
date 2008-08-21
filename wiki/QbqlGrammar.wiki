@@ -1,3 +1,7 @@
+#summary BNF grammar for QBQL
+
+----
+
 = QBQL Grammar =
 
 {{{
