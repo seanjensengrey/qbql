@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import qbql.util.Util;
+
 /**
  * class RuleTuple, example:
  * 
@@ -73,6 +75,23 @@ public class RuleTuple implements Comparable, Serializable {
 			b.append(head+":");
 		for(String t: rhs) 
 			b.append(" "+t);
+		return b.toString();
+	}
+	
+	public String toHTML() {
+		return toHTML(null);
+	}
+	public String toHTML( RuleTuple predecessor ) {
+		StringBuffer b = new StringBuffer();
+		if( predecessor == null || !predecessor.head.equals(head) )
+			b.append(head+":"+Util.identln(12-head.length()-2," "));
+		else
+			b.append(Util.identln(10, "| "));
+		for( String t: rhs )
+			if( t.startsWith("'") )
+				b.append(" \""+t.substring(1,t.length()-1)+"\"");
+			else
+				b.append(" "+t);
 		return b.toString();
 	}
 	
