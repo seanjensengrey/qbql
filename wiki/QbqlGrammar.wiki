@@ -5,12 +5,14 @@
 = QBQL Grammar =
 
 {{{
-assertion:   equation "."
+assertion:   constraint "."
+          |  equation "."
 assertions:  assertion
           |  assertions assertion
 assignment:  identifier "=" expr ";"
 attribute:   identifier
 complement:  expr "'"
+constraint:  expr "<" expr
 database:    assignment
           |  database assignment
 equation:    expr "=" expr
