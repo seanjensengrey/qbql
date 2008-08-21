@@ -171,11 +171,11 @@ public class Database {
 	public boolean assertion( ParseNode root, List<LexerToken> src ) throws Exception {
 //System.out.println(root.content(src));
 		for( ParseNode child : root.children() ) {
-			return equation(child,src);
+			return equationOrConstraint(child,src);
 		}
 		throw new Exception("Missed equation in the assertion");
 	}
-	public boolean equation( ParseNode root, List<LexerToken> src ) throws Exception {
+	public boolean equationOrConstraint( ParseNode root, List<LexerToken> src ) throws Exception {
 		String[] relVars = lattice.keySet().toArray(new String[0]);
 		
 		Set<String> variables = new HashSet<String>();
@@ -185,6 +185,7 @@ public class Database {
 				variables.add(id);
 		}
 		
+		boolean isEquation = false;
 		int[] indexes = new int[variables.size()];
 		for(int i = 0; i < indexes.length; i++)
 			indexes[i] = 0;
@@ -199,11 +200,15 @@ public class Database {
 				if( left == null )
 					left = eval(child,src);
 				else if( child.contains(eq) )
-					;
+					isEquation = true;
+				else if( child.contains(inequality) )
+					isEquation = false;
 				else 				
 					right = eval(child,src);
 			}
-			if( !left.equals(right) ) {
+			if( isEquation && !left.equals(right)
+			  || !isEquation && !Relation.le(right,left)
+			) {
 				System.out.println(root.content(src));
 				for( String variable : variables )
 					System.out.println(variable+" = "+lattice.get(variable));
@@ -339,6 +344,7 @@ public class Database {
 	static int expr;
 	static int openParen;
 	static int equation;
+	static int inequality;
 	static int assertion;
 	static int identifier;
 	
@@ -366,6 +372,7 @@ public class Database {
 			expr = cyk.symbolIndexes.get("expr");
 			openParen = cyk.symbolIndexes.get("'('");
 			equation = cyk.symbolIndexes.get("equation");
+			inequality = cyk.symbolIndexes.get("'<'");
 			assertion = cyk.symbolIndexes.get("assertion");
 			identifier = cyk.symbolIndexes.get("identifier");
 			

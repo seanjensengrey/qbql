@@ -123,6 +123,14 @@ public class Relation {
 		return ret;
 	}
 	
+	/**
+	 * @param x
+	 * @param y
+	 * @return x < y (i.e. x ^ y = y)
+	 */
+	public static boolean le( Relation x, Relation y ) {
+		return y.equals(join(x,y));
+	}
 	public boolean equals( Object o ) {
 		Relation src = (Relation) o;
 		if( colNames.length != src.colNames.length )
@@ -198,7 +206,9 @@ public class Relation {
 		ret.add(new RuleTuple("expr", new String[] {"outerUnion"}));
 		ret.add(new RuleTuple("expr", new String[] {"complement"}));
 		ret.add(new RuleTuple("equation", new String[] {"expr","'='","expr"}));
+		ret.add(new RuleTuple("inequality", new String[] {"expr","'<'","expr"}));
 		ret.add(new RuleTuple("assertion", new String[] {"equation","'.'"}));
+		ret.add(new RuleTuple("assertion", new String[] {"inequality","'.'"}));
 		ret.add(new RuleTuple("assertions", new String[] {"assertion"}));
 		ret.add(new RuleTuple("assertions", new String[] {"assertions","assertion"}));
 
