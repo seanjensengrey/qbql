@@ -1,4 +1,4 @@
-#summary On this page we describe how to create a small database and run a system of axioms against it.
+#summary On this page we describe how to create a small database and check assertions against it.
 
 ----
 == The programming environment ==
@@ -21,11 +21,13 @@ defines two relations named `A` and `B` from figure 1 of the [http://arxiv.org/a
 
 {{{DEPT = {<deptno=10,dname=ACCOUNTING>,<deptno=20,dname=RESEARCH>};}}}
 
-The name of the database definition text file is hard coded in the `Database.java` in the first line of the constructor `Database()`.
+There is no special syntax for empty relation. Create non empty relation with a dummy tuple and join it with R00.
+
+The name of the database definition text file is hard coded in the `Database.java` in the first line of the constructor `Database()`. Try Wittgenstein.db for a database of geometric shapes borrowed from "Language, Proof, and Logic" textbook.
 
 == The axioms ==
  
-You define _axioms_ as equations 
+You define _assertions_ as equations 
 
 `expr = expr.`
 
@@ -35,22 +37,26 @@ You define _axioms_ as equations
 
 in a text file as well. The syntax is that of _Prover9_: expressions are relational variables, or terms built with operations of join `^`, inner union `v`, outer union `+`, inner join `*`, and negation `'` applied to relations. The `R00`, `R01`, `R10` and `R11` are predefined relation constants. 
 
-For example,
+For example, the Wittgenstein.assertions file 
 
-`x ^ y = y ^ x.` 
- 
+`(Blocks ^ D) v Size = Large.`
 
-`(x ^ y) ^ z = x ^ (y ^ z).`   
- 
+`(Blocks ^ A) v Size = Small.`
 
-are axioms of commutativity and associativity for the join operation.
+`(((A ^ Left) v Comparison) ^ (D ^ Right)) v R00 = R01.` 
+   
+claims the following propositions
 
-The name of the axiom definition text file is hard coded in the `Database.java` in the first line of the `main()` method.
+"D is a Large Block"
+"A is a Small Block"
+"A is smaller than D"
+
+The name of the assertions text file is hard coded in the beginning of `Database.java`.
 
 == Run the program ==
 
-Now you are set. Just run the Database.main() and watch the console output. If the database satisfies the axiom system then the expected output is
+Now you are set. Just run the Database.main() and watch the console output. If the database satisfies all the assertions then the expected output is
 
-`Axiom System is OK`
+`All Assertions are OK`
 
-otherwise it would print out the offending axiom and the values of the variables.
+otherwise it would print out the offending assertion and the values of the variables.
