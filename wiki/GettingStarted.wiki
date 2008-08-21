@@ -44,6 +44,7 @@ For example, the Wittgenstein.assertions file
 `(Blocks ^ A) v Size = Small.`
 
 `(((A ^ Left) v Comparison) ^ (D ^ Right)) v R00 = R01.` 
+
    
 claims the following propositions
 
