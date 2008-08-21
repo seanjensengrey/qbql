@@ -1,11 +1,11 @@
 #summary On this page we describe how to create a small database and check assertions against it.
 
 ----
-== The programming environment ==
+== Programming Environment ==
 
 QBQL is written in java. Therefore, until QBQL elevates to more sophisticated interface, the only way to get it running is to install _Eclipse_, _Subversion_ plugin, and then check out the source from _google_ _code_ svn. All these steps are standard and are documented elsewhere.
 
-== The database ==
+== Database ==
 
 To create a _database_ you need to describe it in a text file. The syntax for QbqlGrammar is:
 
@@ -23,9 +23,11 @@ defines two relations named `A` and `B` from figure 1 of the [http://arxiv.org/a
 
 There is no special syntax for empty relation. Create non empty relation with a dummy tuple and join it with R00.
 
-The name of the database definition text file is hard coded in the `Database.java` in the first line of the constructor `Database()`. Try Wittgenstein.db for a database of geometric shapes borrowed from "Language, Proof, and Logic" textbook.
+Watch for *pitfalls*. Predefined relation constants `R00`, `R01` are not database dependent and, therefore are calculated before database creation. `R10` and `R11`, however  are not defined until the very last relation is added to the database. In other words, you can use can be use `R00`, `R01` in relational expression within database definition file, but not `R10` and `R11`. Likewise, outer union and complement leverage the `R11` definition and, therefore, can't be used in the database definition file.  
 
-== The axioms ==
+The name of the database definition text file is hard coded in the beginning of `Database.java` file. Try Wittgenstein.db for a database of geometric shapes borrowed from "Language, Proof, and Logic" textbook.
+
+== Assertions ==
  
 You define _assertions_ as equations 
 
@@ -35,7 +37,7 @@ You define _assertions_ as equations
 
 `...`
 
-in a text file as well. The syntax is that of _Prover9_: expressions are relational variables, or terms built with operations of join `^`, inner union `v`, outer union `+`, inner join `*`, and negation `'` applied to relations. The `R00`, `R01`, `R10` and `R11` are predefined relation constants. 
+in a text file as well. Each expression is either a relational variable, or terms built with operations of join `^`, inner union `v`, outer union `+`, inner join `*`, and negation `'` applied to relations. See QbqlGrammar for the details.
 
 For example, the Wittgenstein.assertions file 
 
