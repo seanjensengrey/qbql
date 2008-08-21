@@ -9,16 +9,19 @@ Pets = {
 };
 
 Time = {
-  <timestamp=200>,
-  <timestamp=300>
-};
+  <time=dummy>
+} ^ R00 ;
 
 Fed = {
-  <name=max,nickname=folly,timestamp=200>
+  <name=max,nickname=folly,time=200>
 };
 
 Max = {
   <name=max>
+};
+
+Claire = {
+  <name=claire>
 };
 
 Folly = {
@@ -26,5 +29,20 @@ Folly = {
 };
 
 TwoOclock = {
-  <timestamp=200>
+  <time=200>
+};
+
+Where = {
+  <name=max,location=home,time=200>,
+  <name=claire,location=library,time=200>,
+  <name=max,location=library,time=300>,
+  <name=claire,location=home,time=300>
+};
+
+Home = {
+  <location=home>
+};
+
+Library = {
+  <location=library>
 };
