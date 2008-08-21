@@ -6,10 +6,10 @@
 
 {{{
 assertion:   equation "."
+assertions:  assertion
+          |  assertions assertion
 assignment:  identifier "=" expr ";"
 attribute:   identifier
-axioms:      assertion
-          |  axioms assertion
 complement:  expr "'"
 database:    assignment
           |  database assignment
