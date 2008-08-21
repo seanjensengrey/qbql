@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import qbql.parser.RuleTuple;
+import qbql.parser.CYK.ChomskiTuple;
 
 public class Relation {
 	Map<String,Integer> header = new HashMap<String,Integer>();
@@ -218,10 +219,19 @@ public class Relation {
 		ret.add(new RuleTuple("database", new String[] {"database","assignment"}));
 		return ret;
 	}
+	
+	public static void printRules( Set<RuleTuple> rules ) {
+		RuleTuple predecessor = null;
+		for( RuleTuple rule : rules ) {
+			System.out.println(rule.toHTML(predecessor)); 
+			predecessor = rule;
+		}
+	}
 
 	
 	public static void main( String[] args ) throws Exception {
-		memorizeRules();
+		//memorizeRules();
+		printRules(extractRules());
 	}
 
 }

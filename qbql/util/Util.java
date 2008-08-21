@@ -51,10 +51,12 @@ public abstract class Util {
 		return "".equals(src)? null : src;
 	}
 
-	public static void identln(int level, String txt) {
+	public static String identln( int level, String txt ) {
+		StringBuffer b = new StringBuffer();
 		for(int i = 0; i< level;i++)
-			System.out.print("  "); // (authorized)
-		System.out.println(txt); // (authorized)
+			b.append(" "); 
+		b.append(txt); 
+		return b.toString();
 	}
 
 	// interval indexes

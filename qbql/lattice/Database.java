@@ -31,6 +31,8 @@ public class Database {
 	
 	final static String databaseFile = "Wittgenstein.db"; 
 	final static String assertionsFile = "Wittgenstein.assertions"; 
+	//final static String databaseFile = "Figure1.db"; 
+	//final static String assertionsFile = "bilattice.assertions"; 
 	public Database() throws Exception {				
 		String database = Util.readFile(Database.class,"/qbql/lattice/"+databaseFile);
 		
