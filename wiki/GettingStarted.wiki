@@ -38,7 +38,7 @@ There is no special syntax for empty relation. Create non empty relation with a 
 
 Watch for *pitfalls*. Predefined relation constants `R00`, `R01` are not database dependent and, therefore are calculated before database creation. `R10` and `R11`, however  are not defined until the very last relation is added to the database. In other words, you can use can be use `R00`, `R01` in relational expression within database definition file, but not `R10` and `R11`. Likewise, outer union and complement leverage the `R11` definition and, therefore, can't be used in the database definition file.  
 
-The name of the database definition text file is hard coded in the beginning of `Database.java` file. Try `Wittgenstein.db` for a database of geometric shapes borrowed from _"Language, Proof, and Logic"_ textbook.
+The name of the database definition text file is hard coded in the beginning of `Database.java` file. 
 
 == Assertions ==
  
@@ -52,7 +52,7 @@ You define _assertions_ as equations
 
 in a text file as well. Each expression is either a relational variable, or terms built with operations of join `^`, inner union `v`, outer union `+`, inner join `*`, and negation `'` applied to relations. See QbqlGrammar for the details.
 
-For example, the Wittgenstein.assertions file 
+For example, the `Wittgenstein.assertions` file 
 
 `(Blocks ^ D) v Size = Large.`
 
