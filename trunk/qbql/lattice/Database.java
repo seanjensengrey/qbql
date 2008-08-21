@@ -41,6 +41,12 @@ public class Database {
 		cyk.closure(matrix, 0, size+1, skipRanges, -1);
 		ParseNode root = cyk.forest(size, matrix);
 		
+		if( root.topLevel != null ) {
+			System.out.println("*** Parse Error in database file ***");
+			printErrors(database, src, root);
+			throw new Exception("Parse Error");
+		}
+		
 		lattice.put("R00",R00);	
 		lattice.put("R01",R01);
 		
@@ -106,7 +112,7 @@ public class Database {
 		return ret;	
 	}
 	
-	public Relation eval( String input ) {
+	public Relation eval( String input ) throws Exception {
 		List<LexerToken> src =  LexerToken.parse(input);
 		Matrix matrix = cyk.initArray1(src);
 		int size = matrix.size();
@@ -115,9 +121,13 @@ public class Database {
 		ParseNode root = cyk.forest(size, matrix);
 		return eval(root,src);
 	}
-	private Relation eval( ParseNode node, List<LexerToken> src ) {
-		if( node.from + 1 == node.to )
-			return lattice.get(src.get(node.from).content);
+	private Relation eval( ParseNode node, List<LexerToken> src ) throws Exception {
+		if( node.from + 1 == node.to ) {
+			Relation ret = lattice.get(src.get(node.from).content);
+			if( ret == null )
+				throw new Exception("There is no relation "+src.get(node.from).content+" in the database");
+			return ret;
+		}
 		
 		Relation x = null;
 		Relation y = null;
@@ -128,11 +138,16 @@ public class Database {
 				return eval(child, src);
 			else if( child.contains(openParen) )
 				parenGroup = true;
-			else if( child.contains(expr) ) {
+			else if( child.contains(relation) ) {
 				if( x == null )
-					x = eval(child,src);
+					x = compute(child,src);
 				else
-					y = eval(child,src);
+					y = compute(child,src);
+			} else if( child.contains(expr) ) {
+					if( x == null )
+						x = eval(child,src);
+					else
+						y = eval(child,src);
 			} else
 				oper = child.content().toArray(new Integer[0])[0];
 		}
@@ -156,7 +171,7 @@ public class Database {
 		}
 		throw new Exception("Missed equation in the assertion");
 	}
-	public boolean equation( ParseNode root, List<LexerToken> src ) {
+	public boolean equation( ParseNode root, List<LexerToken> src ) throws Exception {
 		String[] relVars = lattice.keySet().toArray(new String[0]);
 		
 		Set<String> variables = new HashSet<String>();
@@ -223,11 +238,11 @@ public class Database {
 	
 	
 	public void database( ParseNode root, List<LexerToken> src ) throws Exception {
-		if( root.contains(relVar) )
+		if( root.contains(assignment) )
 			createRelation(root,src);
 		else
 			for( ParseNode child : root.children() ) {				
-				if( child.contains(relVar) )
+				if( child.contains(assignment) )
 					createRelation(child,src);
 				else 
 					database(child,src);
@@ -323,7 +338,7 @@ public class Database {
 	static int assertion;
 	static int identifier;
 	
-	static int relVar;
+	static int assignment;
 	static int relation;
 	static int tuples;
 	static int tuple;
@@ -350,7 +365,7 @@ public class Database {
 			assertion = cyk.symbolIndexes.get("assertion");
 			identifier = cyk.symbolIndexes.get("identifier");
 			
-			relVar = cyk.symbolIndexes.get("relVar");
+			assignment = cyk.symbolIndexes.get("assignment");
 			relation = cyk.symbolIndexes.get("relation");
 			tuples = cyk.symbolIndexes.get("tuples");
 			tuple = cyk.symbolIndexes.get("tuple");
@@ -371,11 +386,35 @@ public class Database {
 		TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
 		cyk.closure(matrix, 0, size+1, skipRanges, -1);
 		ParseNode root = cyk.forest(size, matrix);
+		
+		if( root.topLevel != null ) {
+			System.out.println("*** Parse Error in assertions file ***");
+			printErrors(axioms, src, root);
+		}
 						
 		Database model = new Database();
 		if( !model.axioms(root,src) )
 			System.out.println("*** False Assertion ***");
 		else
 			System.out.println("All Assertions are OK");
+	}
+
+	private static void printErrors( String axioms, List<LexerToken> src, ParseNode root ) {
+		int begin = 0;
+		int end = axioms.length();
+		int iteration = 0;
+		for( ParseNode node : root.children() ) {
+			if( iteration == 0 ) {
+				iteration++;
+				continue;
+			}
+			if( begin < src.get(node.from).begin ) 
+				begin = src.get(node.from).begin;
+			if( src.get(node.to).end < end ) 
+				end = src.get(node.to).end;
+			if( 1 <= iteration++ )
+				break;
+		}
+		System.out.println(axioms.substring(begin, end));
 	}
 }
