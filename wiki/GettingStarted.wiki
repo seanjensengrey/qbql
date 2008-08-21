@@ -51,6 +51,7 @@ claims the following propositions
 "A is a Small Block"
 "A is smaller than D"
 
+
 The name of the assertions text file is hard coded in the beginning of `Database.java`.
 
 == Run the program ==
