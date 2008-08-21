@@ -168,8 +168,7 @@ public class Relation {
 	/////////////////////////PARSER//////////////////////////
 	private static final String fname = "grammar.serializedBNF";
 	private static final String path = "/qbql/lattice/";
-	public static void memorizeRules() throws Exception {
-		Set<RuleTuple> rules = extractRules();				    
+	public static void memorizeRules( Set<RuleTuple> rules ) throws Exception {
 		FileOutputStream fos = new FileOutputStream("c:/qbql_trunk"+path+fname);
 		ObjectOutputStream out = new ObjectOutputStream(fos);
 		out.writeObject(rules);
@@ -200,8 +199,8 @@ public class Relation {
 		ret.add(new RuleTuple("expr", new String[] {"complement"}));
 		ret.add(new RuleTuple("equation", new String[] {"expr","'='","expr"}));
 		ret.add(new RuleTuple("assertion", new String[] {"equation","'.'"}));
-		ret.add(new RuleTuple("axioms", new String[] {"assertion"}));
-		ret.add(new RuleTuple("axioms", new String[] {"axioms","assertion"}));
+		ret.add(new RuleTuple("assertions", new String[] {"assertion"}));
+		ret.add(new RuleTuple("assertions", new String[] {"assertions","assertion"}));
 
 		// Set Theoretic part
 		ret.add(new RuleTuple("attribute", new String[] {"identifier"}));
@@ -230,8 +229,9 @@ public class Relation {
 
 	
 	public static void main( String[] args ) throws Exception {
-		//memorizeRules();
-		printRules(extractRules());
+		Set<RuleTuple> rules = extractRules();
+		memorizeRules(rules);
+		printRules(rules);
 	}
 
 }
