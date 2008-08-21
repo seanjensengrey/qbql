@@ -15,11 +15,17 @@ or build a relation from the existing ones by applying [http://arxiv.org/abs/080
 
 `Blocks = {`
 `  <name=a,shape=tet,size=small>,`
+
 `  <name=b,shape=cube,size=small>,`
+
 `  <name=c,shape=cube,size=medium>,`
+
 `  <name=d,shape=cube,size=large>,`
+
 `  <name=e,shape=dodec,size=large>,`
+
 `  <name=f,shape=tet,size=large>`
+
 `};`
 
 `Large = {<size=large>};`
