@@ -1,0 +1,30 @@
+People = {
+  <name=max,sex=male>,
+  <name=claire,sex=female>
+};
+
+Pets = {
+  <nickname=folly,specie=dog>,
+  <nickname=scruffy,specie=cat>
+};
+
+Time = {
+  <timestamp=200>,
+  <timestamp=300>
+};
+
+Fed = {
+  <name=max,nickname=folly,timestamp=200>
+};
+
+Max = {
+  <name=max>
+};
+
+Folly = {
+  <nickname=folly>
+};
+
+TwoOclock = {
+  <timestamp=200>
+};
