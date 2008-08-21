@@ -1,3 +1,6 @@
 (Blocks ^ D) v Size = Large.
 
-(Blocks ^ A) v Size = Large.
+(Blocks ^ A) v Size = Small.
+
+((A ^ Left) v Comparison) ^ ((D ^ Right) v Comparison) = ApairD. 
+

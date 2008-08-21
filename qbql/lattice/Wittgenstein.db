@@ -1,13 +1,15 @@
 Blocks = {
-<name=a,shape=tet,size=small>,
-<name=b,shape=cube,size=small>,
-<name=c,shape=cube,size=medium>,
-<name=d,shape=cube,size=large>,
-<name=e,shape=dodec,size=large>,
-<name=f,shape=tet,size=large>
+  <name=a,shape=tet,size=small>,
+  <name=b,shape=cube,size=small>,
+  <name=c,shape=cube,size=medium>,
+  <name=d,shape=cube,size=large>,
+  <name=e,shape=dodec,size=large>,
+  <name=f,shape=tet,size=large>
 };
 
 Large = {<size=large>};
+Medium = {<size=medium>};
+Small = {<size=small>};
 
 A = {<name=a>};
 B = {<name=b>};
@@ -15,3 +17,22 @@ C = {<name=c>};
 D = {<name=d>};
 
 Size = Large ^ R00;
+
+Left = {
+  <name=a,pair=aLGc>,
+  <name=a,pair=aLGd>,
+  <name=b,pair=bLGd>,
+  <name=c,pair=cLGd>
+};
+Right = {
+  <name=c,pair=aLGc>,
+  <name=d,pair=aLGd>,
+  <name=d,pair=bLGd>,
+  <name=d,pair=cLGd>
+};
+Comparison = {
+  <pair=dummy>
+} ^ R00;
+ApairD = {
+  <pair=aLGd>
+}; 
