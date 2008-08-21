@@ -1,0 +1,33 @@
+= QBQL Grammar =
+
+{{{
+assertion:   equation "."
+assignment:  identifier "=" expr ";"
+attribute:   identifier
+axioms:      assertion
+          |  axioms assertion
+complement:  expr "'"
+database:    assignment
+          |  database assignment
+equation:    expr "=" expr
+expr:        complement
+          |  identifier
+          |  innerJoin
+          |  innerUnion
+          |  join
+          |  outerUnion
+          |  relation
+          |  "(" expr ")"
+innerJoin:   expr "*" expr
+innerUnion:  expr "v" expr
+join:        expr "^" expr
+outerUnion:  expr "+" expr
+relation:    "{" tuples "}"
+tuple:       "<" values ">"
+tuples:      tuple
+          |  tuples "," tuple
+value:       attribute "=" digits
+          |  attribute "=" identifier
+values:      value
+          |  values "," value
+}}}
