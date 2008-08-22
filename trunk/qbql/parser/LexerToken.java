@@ -118,8 +118,7 @@ public class LexerToken {
                 continue;
             }
             if( isPercentLineComment && "%".equals(token) ) {
-            	last.content = last.content + token;
-            	last.type = Token.LINE_COMMENT;
+            	ret.add(new LexerToken(token, pos-1, -10, Token.LINE_COMMENT));
                 continue;
             }
             if( isQuotedString && "'".equals(token) ) {  // start
