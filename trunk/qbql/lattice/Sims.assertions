@@ -1,3 +1,5 @@
 (Max ^ Fed ^ Folly ^ TwoOclock) v R00 = R01.
 
 Time v (Claire ^ Where ^ Library) < Time v (Max ^ Where ^ Home).
+
+(((Peter ^ Parent) v Relationship) ^ (Max ^ Child)) v R00 = R01.

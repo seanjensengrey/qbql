@@ -2,5 +2,5 @@
 
 (Blocks ^ A) v Size = Small.
 
-(((A ^ Left) v Comparison) ^ (D ^ Right)) v R00 = R01. 
+ 
 

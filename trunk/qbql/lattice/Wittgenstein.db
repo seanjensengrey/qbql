@@ -18,19 +18,5 @@ D = {<name=d>};
 
 Size = Large ^ R00;
 
-Left = {
-  <name=a,pair=aLGc>,
-  <name=a,pair=aLGd>,
-  <name=b,pair=bLGd>,
-  <name=c,pair=cLGd>
-};
-Right = {
-  <name=c,pair=aLGc>,
-  <name=d,pair=aLGd>,
-  <name=d,pair=bLGd>,
-  <name=d,pair=cLGd>
-};
-Comparison = {
-  <pair=dummy>
-} ^ R00;
+
  
