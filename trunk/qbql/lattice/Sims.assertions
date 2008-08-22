@@ -2,10 +2,11 @@ R00 < Relationship.
 
 (Max ^ Fed ^ Folly ^ TwoOclock) v R00 = R01.
 
-Time v (Claire ^ Where ^ Library) < Time v (Max ^ Where ^ Home).
+(Max ^ Fed ^ Folly) v Time < TwoOclock.
 
-(((Peter ^ Parent) v Relationship) ^ (Max ^ Child)) %= {<name=max,relationship=peterFatherMax>}.
-v R00 = R01.
+Time v (Claire ^ At ^ Library) < Time v (Max ^ At ^ Home).
 
-Time v (Max ^ Where ^ Home) < Time v (Claire ^ Where ^ Library). 
+(((Peter ^ Parent) v Relationship) ^ (Max ^ Child)) v R00 = R01.
+
+Time v (Max ^ At ^ Home) < Time v (Claire ^ At ^ Library). 
 
