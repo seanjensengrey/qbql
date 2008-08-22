@@ -38,10 +38,12 @@ TwoOclock = {
 };
 
 Where = {
-  <name=max,location=home,time=200>,
+  <name=max,   location=home,   time=200>,
   <name=claire,location=library,time=200>,
-  <name=max,location=library,time=300>,
-  <name=claire,location=home,time=300>
+  <name=max,   location=library,time=300>,
+  <name=claire,location=home,   time=300>,
+  <name=max,   location=library,time=400>,
+  <name=claire,location=library,time=500>
 };
 
 Home = {

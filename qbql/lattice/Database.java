@@ -142,16 +142,11 @@ public class Database {
 				return eval(child, src);
 			else if( child.contains(openParen) )
 				parenGroup = true;
-			else if( child.contains(relation) ) {
+			else if( child.contains(relation) || child.contains(expr) ) {
 				if( x == null )
 					x = compute(child,src);
 				else
 					y = compute(child,src);
-			} else if( child.contains(expr) ) {
-					if( x == null )
-						x = eval(child,src);
-					else
-						y = eval(child,src);
 			} else
 				oper = child.content().toArray(new Integer[0])[0];
 		}
@@ -198,16 +193,16 @@ public class Database {
 			Relation right = null;
 			for( ParseNode child : root.children() ) {
 				if( left == null )
-					left = eval(child,src);
+					left = compute(child,src);
 				else if( child.contains(eq) )
 					isEquation = true;
 				else if( child.contains(inequality) )
 					isEquation = false;
 				else 				
-					right = eval(child,src);
+					right = compute(child,src);
 			}
 			if( isEquation && !left.equals(right)
-			  || !isEquation && !Relation.le(right,left)
+			  || !isEquation && !Relation.le(left,right)
 			) {
 				System.out.println(root.content(src));
 				for( String variable : variables )
