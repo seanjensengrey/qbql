@@ -14,7 +14,10 @@ Time = {
 } ^ R00 ;
 
 Fed = {
-  <name=max,nickname=folly,time=200>
+  <name=max,nickname=folly,time=200>,
+  <name=claire,nickname=folly,time=200>,
+  <name=max,nickname=folly,time=300>,
+  <name=max,nickname=scruffy,time=200>
 };
 
 Max = {
@@ -37,7 +40,7 @@ TwoOclock = {
   <time=200>
 };
 
-Where = {
+At = {
   <name=max,   location=home,   time=200>,
   <name=claire,location=library,time=200>,
   <name=max,   location=library,time=300>,
