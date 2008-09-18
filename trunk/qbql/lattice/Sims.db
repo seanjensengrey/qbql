@@ -36,9 +36,18 @@ Folly = {
   <nickname=folly>
 };
 
+Scruffy = {
+  <nickname=scruffy>
+};
+
 TwoOclock = {
   <time=200>
 };
+
+ThreeOclock = {
+  <time=300>
+};
+
 
 At = {
   <name=max,   location=home,   time=200>,

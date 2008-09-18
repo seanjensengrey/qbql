@@ -29,12 +29,12 @@ public class Database {
 		LexerToken.isPercentLineComment = true;
 	}
 	
-	//final static String databaseFile = "Figure1.db"; 
-	//final static String assertionsFile = "bilattice.assertions"; 
+	final static String databaseFile = "Figure1.db"; 
+	final static String assertionsFile = "bilattice.assertions"; 
 	//final static String databaseFile = "Wittgenstein.db"; 
 	//final static String assertionsFile = "Wittgenstein.assertions"; 
-	final static String databaseFile = "Sims.db"; 
-	final static String assertionsFile = "Sims.assertions"; 
+	//final static String databaseFile = "Sims.db"; 
+	//final static String assertionsFile = "Sims.assertions"; 
 	public Database() throws Exception {				
 		String database = Util.readFile(Database.class,"/qbql/lattice/"+databaseFile);
 		
