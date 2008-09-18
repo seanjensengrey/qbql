@@ -36,9 +36,17 @@ public class Relation {
 		this.content.add(new Tuple(newTuple));
 	}
 	
+	TreeSet<Tuple> orderedContent() {
+		TreeSet<Tuple> ret = new TreeSet<Tuple>();
+		for( Tuple tuple : content ) 
+			ret.add(tuple);
+		return ret;		
+	}
+
+	
 	public String toString() {
 		StringBuffer ret = new StringBuffer("{");
-		for( Tuple tuple : content ) {
+		for( Tuple tuple : orderedContent() ) {
 			ret.append("<");
 			for( int i = 0; i < tuple.data.length; i++ )
 				ret.append(colNames[i]+"="+tuple.data[i]+",");

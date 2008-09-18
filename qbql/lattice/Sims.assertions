@@ -1,12 +1,12 @@
 R00 < Relationship.
 
-(Max ^ Fed ^ Folly ^ TwoOclock) v R00 = R01.
-
 (Max ^ Fed ^ Folly) v Time < TwoOclock.
+
+%invalid: (Claire ^ Fed ^ Scruffy) v Time < TwoOclock.
 
 Time v (Claire ^ At ^ Library) < Time v (Max ^ At ^ Home).
 
-(((Peter ^ Parent) v Relationship) ^ (Max ^ Child)) v R00 = R01.
+%invalid: Time v (Max ^ At ^ Home) < Time v (Claire ^ At ^ Library). 
 
-Time v (Max ^ At ^ Home) < Time v (Claire ^ At ^ Library). 
+(((Peter ^ Parent) v Relationship) ^ (Max ^ Child)) v R00 = R01.
 
