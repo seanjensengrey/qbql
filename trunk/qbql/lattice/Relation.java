@@ -215,8 +215,13 @@ public class Relation {
 		ret.add(new RuleTuple("expr", new String[] {"complement"}));
 		ret.add(new RuleTuple("equation", new String[] {"expr","'='","expr"}));
 		ret.add(new RuleTuple("inequality", new String[] {"expr","'<'","expr"}));
+		ret.add(new RuleTuple("implication", new String[] {"equation","'-'","'>'","equation"}));
+		ret.add(new RuleTuple("implication", new String[] {"equation","'-'","'>'","inequality"}));
+		ret.add(new RuleTuple("implication", new String[] {"inequality","'-'","'>'","equation"}));
+		ret.add(new RuleTuple("implication", new String[] {"inequality","'-'","'>'","inequality"}));
 		ret.add(new RuleTuple("assertion", new String[] {"equation","'.'"}));
 		ret.add(new RuleTuple("assertion", new String[] {"inequality","'.'"}));
+		ret.add(new RuleTuple("assertion", new String[] {"implication","'.'"}));
 		ret.add(new RuleTuple("assertions", new String[] {"assertion"}));
 		ret.add(new RuleTuple("assertions", new String[] {"assertions","assertion"}));
 

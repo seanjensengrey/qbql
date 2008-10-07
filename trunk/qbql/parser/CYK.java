@@ -67,7 +67,7 @@ public class CYK {
 		CYK cyk = new CYK(Relation.getRules());
 		cyk.printSelectedChomskiRules("nion");		
 		final String input = 
-			"(R01 * x) * x' = R01 * (x * x').";
+			"R01 = R00 -> R01 = R00.";
 		//Util.readFile("c:/raptor_trunk/db/src/oracle/dbtools/parser/test.sql")
 		;
 		long t1 = System.currentTimeMillis();

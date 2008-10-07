@@ -163,57 +163,57 @@ public class Database {
 		return null;
 	}
 	
-	public boolean assertion( ParseNode root, List<LexerToken> src ) throws Exception {
+	public ParseNode assertion( ParseNode root, List<LexerToken> src ) throws Exception {
 //System.out.println(root.content(src));
 		for( ParseNode child : root.children() ) {
-			return equationOrConstraint(child,src);
+			if( child.contains(equation) ) {
+				boolean OK = equationOrConstraint(child,src);
+				if( !OK )
+					return child;
+				else
+					return null;
+			} else if( child.contains(implication) )
+				return implication(child,src);
 		}
 		throw new Exception("Missed equation in the assertion");
 	}
+	
 	public boolean equationOrConstraint( ParseNode root, List<LexerToken> src ) throws Exception {
-		String[] relVars = lattice.keySet().toArray(new String[0]);
-		
-		Set<String> variables = new HashSet<String>();
-		for( ParseNode descendant : root.descendants() ) {
-			String id = descendant.content(src);
-			if( descendant.from+1 == descendant.to && descendant.contains(expr) && Character.isLowerCase(id.substring(0,1).toCharArray()[0]) ) 
-				variables.add(id);
-		}
-		
 		boolean isEquation = false;
-		int[] indexes = new int[variables.size()];
-		for(int i = 0; i < indexes.length; i++)
-			indexes[i] = 0;
-		do {
-			int var = 0;
-			for( String variable : variables ) {
-				lattice.put(variable, lattice.get(relVars[indexes[var++]]));
-			}
-			Relation left = null;
-			Relation right = null;
-			for( ParseNode child : root.children() ) {
-				if( left == null )
-					left = compute(child,src);
-				else if( child.contains(eq) )
-					isEquation = true;
-				else if( child.contains(inequality) )
-					isEquation = false;
-				else 				
-					right = compute(child,src);
-			}
-			if( isEquation && !left.equals(right)
-			  || !isEquation && !Relation.le(left,right)
-			) {
-				System.out.println(root.content(src));
-				for( String variable : variables )
-					System.out.println(variable+" = "+lattice.get(variable));
-				System.out.println("left = "+left);
-				System.out.println("right = "+right);
-				return false;
-			}
-		} while( next(indexes,relVars.length) );
-		
+		Relation left = null;
+		Relation right = null;
+		for( ParseNode child : root.children() ) {
+			if( left == null )
+				left = compute(child,src);
+			else if( child.contains(eq) )
+				isEquation = true;
+			else if( child.contains(lt) )
+				isEquation = false;
+			else 				
+				right = compute(child,src);
+		}
+		if( isEquation && !left.equals(right)
+				|| !isEquation && !Relation.le(left,right)
+		) 
+			return false;
+
 		return true;
+	}
+	public ParseNode implication( ParseNode root, List<LexerToken> src ) throws Exception {
+		Boolean left = null;
+		Boolean right = null;
+		for( ParseNode child : root.children() ) {
+			if( left == null )
+				left = equationOrConstraint(child,src);
+			else if( child.contains(gt)||child.contains(minus) )
+				;
+			else 				
+				right = equationOrConstraint(child,src);
+		}		
+		if( !left || right )
+			return null;
+		else
+			return root;
 	}
 	
 	private boolean next( int[] state, int limit ) {
@@ -227,15 +227,23 @@ public class Database {
 		return false;
 	}
 	
-	public boolean axioms( ParseNode root, List<LexerToken> src ) throws Exception {
+	/**
+	 * @param root
+	 * @param src
+	 * @return node that violates assertion
+	 * @throws Exception
+	 */
+	public ParseNode assertions( ParseNode root, List<LexerToken> src ) throws Exception {
 		if( root.contains(assertion) )
 			return assertion(root,src);
-		boolean ret = true;
+		ParseNode ret = null;
 		for( ParseNode child : root.children() ) {
 			if( child.contains(assertion) )
-				ret =  ret && assertion(child,src);
+				ret =  assertion(child,src);
 			else 
-				ret =  ret && axioms(child,src);				
+				ret =  assertions(child,src);	
+			if( ret != null )
+				return ret;
 		}
 		return ret;
 	}
@@ -336,10 +344,13 @@ public class Database {
 	static int outerUnion;
 	static int complement;
 	static int eq;
+	static int minus;
 	static int expr;
 	static int openParen;
 	static int equation;
-	static int inequality;
+	static int implication;
+	static int lt;
+	static int gt;
 	static int assertion;
 	static int identifier;
 	
@@ -364,10 +375,13 @@ public class Database {
 			outerUnion = cyk.symbolIndexes.get("'+'");
 			complement = cyk.symbolIndexes.get("'''");
 			eq = cyk.symbolIndexes.get("'='");
+			minus = cyk.symbolIndexes.get("'-'");
+			lt = cyk.symbolIndexes.get("'<'");
+			gt = cyk.symbolIndexes.get("'>'");
 			expr = cyk.symbolIndexes.get("expr");
 			openParen = cyk.symbolIndexes.get("'('");
 			equation = cyk.symbolIndexes.get("equation");
-			inequality = cyk.symbolIndexes.get("'<'");
+			implication = cyk.symbolIndexes.get("implication");
 			assertion = cyk.symbolIndexes.get("assertion");
 			identifier = cyk.symbolIndexes.get("identifier");
 			
@@ -383,6 +397,49 @@ public class Database {
 		}
 	}
 
+	/**
+	 * Iterate through all the relations in the database
+	 * @param root
+	 * @param src
+	 * @return
+	 * @throws Exception
+	 */
+	public void iterate( ParseNode root, List<LexerToken> src ) throws Exception {
+		String[] relVars = lattice.keySet().toArray(new String[0]);
+		
+		Set<String> variables = new HashSet<String>();
+		for( ParseNode descendant : root.descendants() ) {
+			String id = descendant.content(src);
+			if( descendant.from+1 == descendant.to && descendant.contains(expr) && Character.isLowerCase(id.substring(0,1).toCharArray()[0]) ) 
+				variables.add(id);
+		}
+		
+		int[] indexes = new int[variables.size()];
+		for(int i = 0; i < indexes.length; i++)
+			indexes[i] = 0;
+		do {
+			int var = 0;
+			for( String variable : variables ) {
+				lattice.put(variable, lattice.get(relVars[indexes[var++]]));
+			}
+			
+			ParseNode exception = assertions(root,src);
+			if( exception != null ) {
+				System.out.println("*** False Assertion ***");
+				System.out.println(exception.content(src));
+				for( String variable : variables )
+					System.out.println(variable+" = "+lattice.get(variable));
+				//System.out.println("left = "+left);
+				//System.out.println("right = "+right);
+				return;
+			}
+		} while( next(indexes,relVars.length) );
+		
+		System.out.println("All Assertions are OK");
+		return;
+	}
+	
+	
 	public static void main( String[] args ) throws Exception {
 		String axioms = Util.readFile(Database.class,"/qbql/lattice/"+assertionsFile);
 		
@@ -399,10 +456,7 @@ public class Database {
 		}
 						
 		Database model = new Database();
-		if( !model.axioms(root,src) )
-			System.out.println("*** False Assertion ***");
-		else
-			System.out.println("All Assertions are OK");
+		model.iterate(root, src);
 	}
 
 	private static void printErrors( String axioms, List<LexerToken> src, ParseNode root ) {
