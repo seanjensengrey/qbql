@@ -6,6 +6,7 @@
 
 {{{
 assertion:   equation "."
+          |  implication "."
           |  inequality "."
 assertions:  assertion
           |  assertions assertion
@@ -23,6 +24,10 @@ expr:        complement
           |  outerUnion
           |  relation
           |  "(" expr ")"
+implication:  equation "-" ">" equation
+          |  equation "-" ">" inequality
+          |  inequality "-" ">" equation
+          |  inequality "-" ">" inequality
 inequality:  expr "<" expr
 innerJoin:   expr "*" expr
 innerUnion:  expr "v" expr
