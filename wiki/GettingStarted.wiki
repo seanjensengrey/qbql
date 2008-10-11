@@ -34,7 +34,7 @@ or build a relation from the existing ones by applying [http://arxiv.org/abs/080
 
 defines two relations named `Blocks` and `Large` from `Wittgenstein.db` for a database of geometric shapes borrowed from [http://ggww2.stanford.edu/GUS/lpl/ Language, Proof, and Logic] textbook.
 
-There is no special syntax for empty relation. Create non empty relation with a dummy tuple and join it with R00.
+There is no special syntax for empty relation. Create non empty relation with a dummy tuple and join it with `R00`.
 
 Watch for *pitfalls*. Predefined relation constants `R00`, `R01` are not database dependent and, therefore are calculated before database creation. `R10` and `R11`, however  are not defined until the very last relation is added to the database. In other words, you can use can be use `R00`, `R01` in relational expression within database definition file, but not `R10` and `R11`. Likewise, outer union and complement leverage the `R11` definition and, therefore, can't be used in the database definition file.  
 
