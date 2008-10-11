@@ -32,7 +32,7 @@ or build a relation from the existing ones by applying [http://arxiv.org/abs/080
 `Large = {<size=large>};`
 
 
-defines two relations named `Blocks` and `Large` from `Wittgenstein.db` for a database of geometric shapes borrowed from _"Language, Proof, and Logic"_ textbook.
+defines two relations named `Blocks` and `Large` from `Wittgenstein.db` for a database of geometric shapes borrowed from [http://ggww2.stanford.edu/GUS/lpl/ Language, Proof, and Logic] textbook.
 
 There is no special syntax for empty relation. Create non empty relation with a dummy tuple and join it with R00.
 
