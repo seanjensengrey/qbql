@@ -44,5 +44,7 @@ x' v x = x v R11.
 x' + y' = (x ^ y)'.
 (x'+(x+y')) v R00=R01.
 R00 ^ (x v y) = R00 ^ (x v z)  -> x ^ (y v z) = (x ^ y) v (x ^ z). 
-(x' ^ y) v R00 = R00 -> (x' v y) v R00 = R01. 
-
+x + y = x ^ y -> x ^ R11 = y ^ R11. 
+x ^ R11 = y ^ R11 -> x + y = x ^ y.
+x * y = x v y -> x v R00 = y v R00.
+x v R00 = y v R00 -> x * y = x v y.
