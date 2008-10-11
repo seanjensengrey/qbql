@@ -5,17 +5,19 @@
 = QBQL Grammar =
 
 {{{
-assertion:   equation "."
+assertion:   boolean "."
           |  implication "."
-          |  inequality "."
 assertions:  assertion
           |  assertions assertion
 assignment:  identifier "=" expr ";"
 attribute:   identifier
+boolean:     "(" boolean ")"
+          |  boolean "&" boolean
+          |  expr "<" expr
+          |  expr "=" expr
 complement:  expr "'"
 database:    assignment
           |  database assignment
-equation:    expr "=" expr
 expr:        complement
           |  identifier
           |  innerJoin
@@ -24,11 +26,7 @@ expr:        complement
           |  outerUnion
           |  relation
           |  "(" expr ")"
-implication:  equation "-" ">" equation
-          |  equation "-" ">" inequality
-          |  inequality "-" ">" equation
-          |  inequality "-" ">" inequality
-inequality:  expr "<" expr
+implication:  boolean "-" ">" boolean
 innerJoin:   expr "*" expr
 innerUnion:  expr "v" expr
 join:        expr "^" expr
