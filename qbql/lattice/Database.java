@@ -166,8 +166,8 @@ public class Database {
 	public ParseNode assertion( ParseNode root, List<LexerToken> src ) throws Exception {
 //System.out.println(root.content(src));
 		for( ParseNode child : root.children() ) {
-			if( child.contains(equation) ) {
-				boolean OK = equationOrConstraint(child,src);
+			if( child.contains(bool) ) {
+				boolean OK = bool(child,src);
 				if( !OK )
 					return child;
 				else
@@ -178,37 +178,52 @@ public class Database {
 		throw new Exception("Missed equation in the assertion");
 	}
 	
-	public boolean equationOrConstraint( ParseNode root, List<LexerToken> src ) throws Exception {
-		boolean isEquation = false;
-		Relation left = null;
-		Relation right = null;
-		for( ParseNode child : root.children() ) {
-			if( left == null )
-				left = compute(child,src);
-			else if( child.contains(eq) )
-				isEquation = true;
-			else if( child.contains(lt) )
-				isEquation = false;
-			else 				
-				right = compute(child,src);
-		}
-		if( isEquation && !left.equals(right)
+	public boolean bool( ParseNode root, List<LexerToken> src ) throws Exception {
+		for( ParseNode c : root.children() ) 
+			if( c.contains(bool) ) {
+				Boolean left = null;
+				Boolean right = null;
+				for( ParseNode child : root.children() ) {
+					if( left == null )
+						left = bool(child,src);
+					else if( child.contains(amp) ) {
+					} else 				
+						right = bool(child,src);
+				}
+				return left & right;
+			} else {
+				boolean isEquation = false;
+				Relation left = null;
+				Relation right = null;
+				for( ParseNode child : root.children() ) {
+					if( left == null )
+						left = compute(child,src);
+					else if( child.contains(eq) )
+						isEquation = true;
+					else if( child.contains(lt) )
+						isEquation = false;
+					else 				
+						right = compute(child,src);
+				}
+				if( isEquation && !left.equals(right)
 				|| !isEquation && !Relation.le(left,right)
-		) 
-			return false;
+				) 
+					return false;
 
-		return true;
+				return true;				
+			}
+		throw new Exception("Impossible case");		
 	}
 	public ParseNode implication( ParseNode root, List<LexerToken> src ) throws Exception {
 		Boolean left = null;
 		Boolean right = null;
 		for( ParseNode child : root.children() ) {
 			if( left == null )
-				left = equationOrConstraint(child,src);
+				left = bool(child,src);
 			else if( child.contains(gt)||child.contains(minus) )
 				;
 			else 				
-				right = equationOrConstraint(child,src);
+				right = bool(child,src);
 		}		
 		if( !left || right )
 			return null;
@@ -347,10 +362,11 @@ public class Database {
 	static int minus;
 	static int expr;
 	static int openParen;
-	static int equation;
+	static int bool;
 	static int implication;
 	static int lt;
 	static int gt;
+	static int amp;
 	static int assertion;
 	static int identifier;
 	
@@ -378,9 +394,10 @@ public class Database {
 			minus = cyk.symbolIndexes.get("'-'");
 			lt = cyk.symbolIndexes.get("'<'");
 			gt = cyk.symbolIndexes.get("'>'");
+			amp = cyk.symbolIndexes.get("'&'");
 			expr = cyk.symbolIndexes.get("expr");
 			openParen = cyk.symbolIndexes.get("'('");
-			equation = cyk.symbolIndexes.get("equation");
+			bool = cyk.symbolIndexes.get("boolean");
 			implication = cyk.symbolIndexes.get("implication");
 			assertion = cyk.symbolIndexes.get("assertion");
 			identifier = cyk.symbolIndexes.get("identifier");
