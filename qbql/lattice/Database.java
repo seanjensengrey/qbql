@@ -179,8 +179,14 @@ public class Database {
 	}
 	
 	public boolean bool( ParseNode root, List<LexerToken> src ) throws Exception {
+		boolean isParen = false;
 		for( ParseNode c : root.children() ) 
-			if( c.contains(bool) ) {
+			if( c.contains(openParen) ) {
+				isParen = true;
+				continue;
+			} else if( isParen ) {
+				return bool(c,src);
+			} else if( c.contains(bool) ) {
 				Boolean left = null;
 				Boolean right = null;
 				for( ParseNode child : root.children() ) {
