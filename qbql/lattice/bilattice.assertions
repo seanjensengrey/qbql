@@ -47,6 +47,8 @@ R00 ^ (x v y) = R00 ^ (x v z)  -> x ^ (y v z) = (x ^ y) v (x ^ z).
 x + y = x ^ y -> x ^ R11 = y ^ R11. 
 x ^ R11 = y ^ R11 -> (x ^ y) v (x ^ R00) = x.
 
-(x ^ y) ^ R00 = z ^ R00 & (z ^ (x v y)) ^ R00 = R00 -> (x v z) ^ (y v z) = (x ^ y) v z.  
 
-%x < z -> x + (y * z ) = (x + y ) * z. 
+
+x ^ R00 = y ^ R00 & 
+(x ^ y') v R00 = R00
+-> x ^ y = x.  
