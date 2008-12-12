@@ -1,3 +1,6 @@
+% Relational lattice instance from the Figure 1
+% http://arxiv1.library.cornell.edu/pdf/0807.3795
+
 A = {<x=1>};		
 
 B = {<x=1>,<x=2>};
