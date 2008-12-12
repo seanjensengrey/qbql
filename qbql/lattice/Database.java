@@ -63,7 +63,7 @@ public class Database {
 
         // relations that requre complement can be built only after R10 and R11 are defined
         try {
-            lattice.put("UAjDBjC'",complement(lattice.get("UAjDBjC")));
+            lattice.put("UJADJBC'",complement(lattice.get("UJADJBC")));
         } catch( Exception e ) { // NPE if databaseFile is not Figure1.db
         }
 
