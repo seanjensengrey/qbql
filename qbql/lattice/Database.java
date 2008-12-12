@@ -17,7 +17,7 @@ import qbql.util.Util;
 
 public class Database {
 
-    Map<String,Relation> lattice = new HashMap<String,Relation>();
+    Map<String,Relation> lattice = new TreeMap<String,Relation>();
     static Relation R00 = new Relation(new String[]{});
     Relation R11;
     static Relation R01 = new Relation(new String[]{});
@@ -63,7 +63,7 @@ public class Database {
 
         // relations that requre complement can be built only after R10 and R11 are defined
         try {
-            lattice.put("((A ^ D) v (B ^ C))'",complement(lattice.get("AjDuBjC")));
+            lattice.put("UAjDBjC'",complement(lattice.get("UAjDBjC")));
         } catch( Exception e ) { // NPE if databaseFile is not Figure1.db
         }
 

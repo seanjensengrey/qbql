@@ -9,17 +9,17 @@ C = {<y=a>};
 		
 D = {<y=a>,<y=b>};
 
-AjC = A ^ C;
+JAC = A ^ C;
 
-AjD = A ^ D;
+JAD = A ^ D;
 
-BjC = B ^ C;
+JBC = B ^ C;
 
-`x` = A ^ R00;
+_A = A ^ R00;
 
-`y` = C ^ R00;
+_B = C ^ R00;
 
-AjDuBjC = (A ^ D) v (B ^ C);
+UAjDBjC = (A ^ D) v (B ^ C);
 
 E = {<x=0,z=t>,<x=1,z=t>};
 
