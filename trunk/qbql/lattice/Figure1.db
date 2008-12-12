@@ -17,9 +17,9 @@ JBC = B ^ C;
 
 _A = A ^ R00;
 
-_B = C ^ R00;
+_C = C ^ R00;
 
-UAjDBjC = (A ^ D) v (B ^ C);
+UJADJBC = (A ^ D) v (B ^ C);
 
 E = {<x=0,z=t>,<x=1,z=t>};
 
