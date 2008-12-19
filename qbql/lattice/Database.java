@@ -13,6 +13,7 @@ import qbql.parser.CYK;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
+import qbql.parser.RuleTuple;
 import qbql.util.Util;
 
 public class Database {
@@ -35,8 +36,9 @@ public class Database {
     //final static String assertionsFile = "Wittgenstein.assertions"; 
     //final static String databaseFile = "Sims.db"; 
     //final static String assertionsFile = "Sims.assertions"; 
+    private static final String path = "/qbql/lattice/";
     public Database() throws Exception {				
-        String database = Util.readFile(Database.class,"/qbql/lattice/"+databaseFile);
+        String database = Util.readFile(getClass(),path+databaseFile);
 
         List<LexerToken> src =  LexerToken.parse(database);
         Matrix matrix = cyk.initArray1(src);
@@ -47,7 +49,7 @@ public class Database {
 
         if( root.topLevel != null ) {
             System.out.println("*** Parse Error in database file ***");
-            printErrors(database, src, root);
+            CYK.printErrors(database, src, root);
             throw new Exception("Parse Error");
         }
 
@@ -384,9 +386,10 @@ public class Database {
     static int values;
     static int value;
     static int comma;
+    private static final String bnf = "grammar.serializedBNF";
     static {
         try {
-            cyk = new CYK(Relation.getRules()) {
+            cyk = new CYK(RuleTuple.getRules(path+bnf)) {
                 public int[] atomicSymbols() {
                     return new int[] {assertion};
                 }
@@ -464,7 +467,7 @@ public class Database {
 
 
     public static void main( String[] args ) throws Exception {
-        String axioms = Util.readFile(Database.class,"/qbql/lattice/"+assertionsFile);
+        String axioms = Util.readFile(Database.class,path+assertionsFile);
 
         List<LexerToken> src =  LexerToken.parse(axioms);
         Matrix matrix = cyk.initArray1(src);
@@ -475,29 +478,10 @@ public class Database {
 
         if( root.topLevel != null ) {
             System.out.println("*** Parse Error in assertions file ***");
-            printErrors(axioms, src, root);
+            CYK.printErrors(axioms, src, root);
         }
 
         Database model = new Database();
         model.iterate(root, src);
-    }
-
-    private static void printErrors( String axioms, List<LexerToken> src, ParseNode root ) {
-        int begin = 0;
-        int end = axioms.length();
-        int iteration = 0;
-        for( ParseNode node : root.children() ) {
-            if( iteration == 0 ) {
-                iteration++;
-                continue;
-            }
-            if( begin < src.get(node.from).begin ) 
-                begin = src.get(node.from).begin;
-            if( src.get(node.to).end < end ) 
-                end = src.get(node.to).end;
-            if( 1 <= iteration++ )
-                break;
-        }
-        System.out.println(axioms.substring(begin, end));
     }
 }
