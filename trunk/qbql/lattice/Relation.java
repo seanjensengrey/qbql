@@ -1,10 +1,5 @@
 package qbql.lattice;
 
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -13,7 +8,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import qbql.parser.RuleTuple;
-import qbql.parser.CYK.ChomskiTuple;
 
 public class Relation {
     Map<String,Integer> header = new HashMap<String,Integer>();
@@ -184,21 +178,8 @@ public class Relation {
     /////////////////////////PARSER//////////////////////////
     private static final String fname = "grammar.serializedBNF";
     private static final String path = "/qbql/lattice/";
-    public static void memorizeRules( Set<RuleTuple> rules ) throws Exception {
-        FileOutputStream fos = new FileOutputStream("c:/qbql_trunk"+path+fname);
-        ObjectOutputStream out = new ObjectOutputStream(fos);
-        out.writeObject(rules);
-        out.close();
-    }
-    public static Set<RuleTuple> getRules() throws Exception {
-        URL u = Relation.class.getResource( path+fname );
-        InputStream is = u.openStream();
-        ObjectInputStream in = new ObjectInputStream(is);
-        Set<RuleTuple> rules = (Set<RuleTuple>) in.readObject();
-        in.close();
-        return rules;
-    }
-    private static Set<RuleTuple> extractRules() {
+    private static final String location = "c:/qbql_trunk"+path+fname;
+    private static Set<RuleTuple> latticeRules() {
         Set<RuleTuple> ret = new TreeSet<RuleTuple>();
         // LATTICE part
         ret.add(new RuleTuple("expr", new String[] {"identifier"}));
@@ -240,19 +221,10 @@ public class Relation {
         return ret;
     }
 
-    public static void printRules( Set<RuleTuple> rules ) {
-        RuleTuple predecessor = null;
-        for( RuleTuple rule : rules ) {
-            System.out.println(rule.toHTML(predecessor)); 
-            predecessor = rule;
-        }
-    }
-
-
     public static void main( String[] args ) throws Exception {
-        Set<RuleTuple> rules = extractRules();
-        memorizeRules(rules);
-        printRules(rules);
+        Set<RuleTuple> rules = latticeRules();
+        RuleTuple.memorizeRules(rules,location);
+        RuleTuple.printRules(rules);
     }
 
 }

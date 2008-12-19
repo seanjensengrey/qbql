@@ -62,9 +62,11 @@ public class CYK {
 
     Set<Integer> keywords = new TreeSet<Integer>(); // pure Keywords
 
+    private static final String fname = "grammar.serializedBNF";
+    private static final String path = "/qbql/lattice/";
     //static boolean debug = true;
     public static void main( String[] dummy ) throws Exception {
-        CYK cyk = new CYK(Relation.getRules());
+        CYK cyk = new CYK(RuleTuple.getRules(path+fname));
         cyk.printSelectedChomskiRules("nion");		
         final String input = 
             "R01 = R00 -> R01 = R00.";
@@ -810,6 +812,25 @@ public class CYK {
         pseudoRoot.topLevel = topLevelNodes;
         return pseudoRoot;
 
+    }
+
+    public static void printErrors( String axioms, List<LexerToken> src, ParseNode root ) {
+        int begin = 0;
+        int end = axioms.length();
+        int iteration = 0;
+        for( ParseNode node : root.children() ) {
+            if( iteration == 0 ) {
+                iteration++;
+                continue;
+            }
+            if( begin < src.get(node.from).begin ) 
+                begin = src.get(node.from).begin;
+            if( src.get(node.to).end < end ) 
+                end = src.get(node.to).end;
+            if( 1 <= iteration++ )
+                break;
+        }
+        System.out.println(axioms.substring(begin, end));
     }
 
     public static int[] toArray( Set<Integer> s ) {

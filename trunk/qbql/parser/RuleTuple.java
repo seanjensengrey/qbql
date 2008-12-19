@@ -1,10 +1,16 @@
 package qbql.parser;
 
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import qbql.lattice.Relation;
 import qbql.util.Util;
 
 /**
@@ -93,6 +99,27 @@ public class RuleTuple implements Comparable, Serializable {
             else
                 b.append(" "+t);
         return b.toString();
+    }
+    public static void memorizeRules( Set<RuleTuple> rules, String location ) throws Exception {
+        FileOutputStream fos = new FileOutputStream(location);
+        ObjectOutputStream out = new ObjectOutputStream(fos);
+        out.writeObject(rules);
+        out.close();
+    }
+    public static Set<RuleTuple> getRules( String location ) throws Exception {
+        URL u = Relation.class.getResource( location );
+        InputStream is = u.openStream();
+        ObjectInputStream in = new ObjectInputStream(is);
+        Set<RuleTuple> rules = (Set<RuleTuple>) in.readObject();
+        in.close();
+        return rules;
+    }
+    public static void printRules( Set<RuleTuple> rules ) {
+        RuleTuple predecessor = null;
+        for( RuleTuple rule : rules ) {
+            System.out.println(rule.toHTML(predecessor)); 
+            predecessor = rule;
+        }
     }
 
 }
