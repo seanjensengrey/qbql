@@ -1,13 +1,15 @@
 % Relational lattice instance from the Figure 1
 % http://arxiv1.library.cornell.edu/pdf/0807.3795
+% Renamed x -> p, y -> q, z -> r, because 
+% elsewhere x, y, and z are relation variables!
 
-A = {<x=1>};		
+A = {<p=1>};		
 
-B = {<x=1>,<x=2>};
+B = {<p=1>,<p=2>};
 		
-C = {<y=a>};
+C = {<q=a>};
 		
-D = {<y=a>,<y=b>};
+D = {<q=a>,<q=b>};
 
 JAC = A ^ C;
 
@@ -21,6 +23,8 @@ _C = C ^ R00;
 
 UJADJBC = (A ^ D) v (B ^ C);
 
-E = {<x=0,z=t>,<x=1,z=t>};
+% Additional relations (which are not on Figure 1)
 
-F = {<y=c,z=t>,<y=a,z=t>,<y=a,z=u>};
+E = {<p=0,r=t>,<p=1,r=t>};
+
+F = {<q=c,r=t>,<q=a,r=t>,<q=a,r=u>};
