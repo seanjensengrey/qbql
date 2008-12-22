@@ -189,11 +189,13 @@ public class Relation {
         ret.add(new RuleTuple("innerUnion", new String[] {"expr","'v'","expr"}));
         ret.add(new RuleTuple("outerUnion", new String[] {"expr","'+'","expr"}));
         ret.add(new RuleTuple("complement", new String[] {"expr","'''"}));
+        ret.add(new RuleTuple("semiInverse", new String[] {"expr","'~'"}));
         ret.add(new RuleTuple("expr", new String[] {"join"}));
         ret.add(new RuleTuple("expr", new String[] {"innerJoin"}));
         ret.add(new RuleTuple("expr", new String[] {"innerUnion"}));
         ret.add(new RuleTuple("expr", new String[] {"outerUnion"}));
         ret.add(new RuleTuple("expr", new String[] {"complement"}));
+        ret.add(new RuleTuple("expr", new String[] {"semiInverse"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'='","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'<'","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"boolean","'&'","boolean"}));

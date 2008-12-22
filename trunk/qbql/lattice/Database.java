@@ -93,6 +93,18 @@ public class Database {
         return ret;
     }
 
+    Relation semiInverse( Relation x ) {
+        String[] header = new String[R10.colNames.length-x.colNames.length];
+        int i = -1;
+        for( String attr : R10.colNames ) {
+            if( x.header.get(attr) == null ) {
+                i++;
+                header[i] = attr;
+            }
+        }
+        return new Relation(header);
+    }
+    
     Relation buildR10() {
         Relation ret = new Relation(new String[]{});
         for( Relation r : lattice.values() )
@@ -162,6 +174,8 @@ public class Database {
             return Relation.innerUnion(x,y);
         if( oper == complement ) 
             return complement(x);
+        if( oper == semiInverse ) 
+            return semiInverse(x);
         return null;
     }
 
@@ -366,6 +380,7 @@ public class Database {
     static int innerUnion;
     static int outerUnion;
     static int complement;
+    static int semiInverse;
     static int eq;
     static int minus;
     static int expr;
@@ -399,6 +414,7 @@ public class Database {
             innerUnion = cyk.symbolIndexes.get("'v'");
             outerUnion = cyk.symbolIndexes.get("'+'");
             complement = cyk.symbolIndexes.get("'''");
+            semiInverse = cyk.symbolIndexes.get("'~'");
             eq = cyk.symbolIndexes.get("'='");
             minus = cyk.symbolIndexes.get("'-'");
             lt = cyk.symbolIndexes.get("'<'");
