@@ -77,6 +77,13 @@ public class Database {
         );
     }
 
+    /**
+     * Complement x' returns relation with the same header as x
+     * with tuples which are not in x
+     * Axioms:
+        x' ^ x = x ^ R00.
+        x' v x = x v R11.
+     */
     Relation complement( Relation x ) {
         Relation xvR11 = Relation.innerUnion(x, R11);
         Relation ret = Relation.join(x, R00);
@@ -93,6 +100,12 @@ public class Database {
         return ret;
     }
 
+    /**
+     * Semi inverse x~ returns empty relation with header complementary to that of x
+     * Axioms:
+        x~ ^ x = R00 ^ R11.
+        x~ v x = x v R00.
+     */
     Relation semiInverse( Relation x ) {
         String[] header = new String[R10.colNames.length-x.colNames.length];
         int i = -1;
