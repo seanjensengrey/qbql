@@ -31,11 +31,11 @@ public class Database {
     }
 
     final static String databaseFile = "Figure1.db"; 
-    final static String assertionsFile = "bilattice.assertions"; 
+    final static String programFile = "Figure1.prg"; 
     //final static String databaseFile = "Wittgenstein.db"; 
-    //final static String assertionsFile = "Wittgenstein.assertions"; 
+    //final static String programFile = "Wittgenstein.assertions"; 
     //final static String databaseFile = "Sims.db"; 
-    //final static String assertionsFile = "Sims.assertions"; 
+    //final static String programFile = "Sims.assertions"; 
     private static final String path = "/qbql/lattice/";
     public Database() throws Exception {				
         String database = Util.readFile(getClass(),path+databaseFile);
@@ -294,14 +294,18 @@ public class Database {
                 if( child.contains(bool) ) {
                     if( !bool(child,src) ) {
                         for( String variable : variables )
-                            System.out.println(variable+" = "+lattice.get(variable).toString(variable.length()+3));
+                            System.out.println(variable+" = "
+                                               +lattice.get(variable).toString(variable.length()+3)
+                                               +";");
                         return child;
                     }
                 } else if( child.contains(implication) ) {
                     ParseNode ret = implication(child,src);
                     if( ret != null ) {
                         for( String variable : variables )
-                            System.out.println(variable+" = "+lattice.get(variable).toString(variable.length()+3));
+                            System.out.println(variable+" = "
+                                               +lattice.get(variable).toString(variable.length()+3)
+                                               +";");
                         return ret;
                     }
                 } 
@@ -317,7 +321,7 @@ public class Database {
     public ParseNode query( ParseNode root, List<LexerToken> src ) throws Exception {
         for( ParseNode child : root.children() ) {
             if( child.contains(expr) ) {
-                System.out.println(compute(child,src).toString());
+                System.out.println(child.content(src)+"="+compute(child,src).toString());
                 return null;
             } 
         }
@@ -507,7 +511,7 @@ public class Database {
 
 
     public static void main( String[] args ) throws Exception {
-        String prg = Util.readFile(Database.class,path+assertionsFile);
+        String prg = Util.readFile(Database.class,path+programFile);
 
         List<LexerToken> src =  LexerToken.parse(prg);
         Matrix matrix = cyk.initArray1(src);
@@ -529,6 +533,5 @@ public class Database {
             System.out.println(prg.substring(src.get(exception.from).begin, src.get(exception.to-1).end));
             return;
         }
-        System.out.println("End of Program");
     }
 }

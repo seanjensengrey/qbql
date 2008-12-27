@@ -25,7 +25,7 @@ public class Relation {
         }		
     }
     
-    public void rename( String from, String to ) {
+    private void rename( String from, String to ) {
         header.remove(from);
         for( int i = 0; i < colNames.length; i++ )
             if( colNames[i].equals(from) ) {
@@ -34,11 +34,21 @@ public class Relation {
                 return;
             }
     }
-    public void rename( String[] from, String[] to ) {
+    /*public void rename( String[] from, String[] to ) {
         for( int i = 0; i < from.length; i++ )
             rename(from[i],to[i]);
-    }
+    }*/
     public void rename( Map<String,String> m ) {
+        // clone header and colNames
+        Map<String,Integer> hdr = new HashMap<String,Integer>();
+        String[] cols = new String[colNames.length];
+        for( int i = 0; i < colNames.length; i++ ) {
+            cols[i]=colNames[i];
+            hdr.put(colNames[i],i);
+        }
+        header = hdr;
+        colNames = cols;
+        
         for( String from : m.keySet() )
             rename(from,m.get(from));
     }
@@ -163,9 +173,21 @@ public class Relation {
         header1.removeAll(x.header.keySet());
         header.addAll(header1);
               
+        // fix x@R01 = x.
+        if( x.colNames.length == 0 && x.content.size() > 0 ) 
+            return y;
+        if( y.colNames.length == 0 && y.content.size() > 0 ) 
+            return x;
+        
         Relation ret = new Relation(header.toArray(new String[0]));
         if( x.colNames.length != y.colNames.length )
             return ret;
+        
+        // fix x@x = R00 v R11 
+        if( ret.colNames.length == 0 && x.content.size() == 0 && y.content.size() == 0 ) {
+            ret.content.add(new Tuple(new String[]{}));
+            return ret;
+        }
         
         Map<String, Integer> origHdr = cloneHeader(x);
         String[] origColNames = cloneColumnNames(x);
@@ -181,7 +203,7 @@ public class Relation {
                     if( tupleX.equals(tupleY,x,y) ) {
                         String[] data = new String[header.size()];
                         for( String attr: ret.colNames ) {
-                            Integer posX = x.header.get(attr);
+                            Integer posX = origHdr.get(attr);
                             if( posX != null ) {
                                 data[ret.header.get(attr)] = tupleX.data[posX];
                                 continue;
@@ -198,6 +220,8 @@ public class Relation {
             if( tmp.size() > ret.content.size() )
                 ret.content = tmp;
         }
+        x.header = origHdr;
+        x.colNames = origColNames;
 
         return ret;
     }
