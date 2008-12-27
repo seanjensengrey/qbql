@@ -54,7 +54,7 @@ class Tuple implements Comparable {
     public String toString() {
         StringBuffer ret = new StringBuffer("<");
         for( int i = 0; i < data.length; i++ )
-            ret.append(data[i]+",");
+            ret.append((i==0?"":",")+data[i]);
         ret.append(">");
         return ret.toString();
     }
