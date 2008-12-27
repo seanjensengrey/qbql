@@ -25,6 +25,10 @@ UJADJBC = (A ^ D) v (B ^ C);
 
 % Additional relations (which are not on Figure 1)
 
-E = {<p=0,r=t>,<p=1,r=t>};
+S = {<p=0,r=0>,<p=1,r=0>};
 
-F = {<q=c,r=t>,<q=a,r=t>,<q=a,r=u>};
+T = {<q=c,r=0>,<q=a,r=0>,<q=a,r=1>};
+
+U = {<r=1>};  % A ~ U.
+
+V = {<q=c,p=0>,<q=a,p=0>,<q=a,p=1>}; % T ~ V.

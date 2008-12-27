@@ -3,11 +3,14 @@ package qbql.lattice;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import qbql.parser.RuleTuple;
+import qbql.util.Permutations;
+import qbql.util.Util;
 
 public class Relation {
     Map<String,Integer> header = new HashMap<String,Integer>();
@@ -20,6 +23,24 @@ public class Relation {
         for( int i = 0; i < columns.length; i++ ) {
             header.put(colNames[i],i);
         }		
+    }
+    
+    public void rename( String from, String to ) {
+        header.remove(from);
+        for( int i = 0; i < colNames.length; i++ )
+            if( colNames[i].equals(from) ) {
+                colNames[i] = to;
+                header.put(to, i);
+                return;
+            }
+    }
+    public void rename( String[] from, String[] to ) {
+        for( int i = 0; i < from.length; i++ )
+            rename(from[i],to[i]);
+    }
+    public void rename( Map<String,String> m ) {
+        for( String from : m.keySet() )
+            rename(from,m.get(from));
     }
 
     public void addTuple( Map<String,String> content ) {
@@ -39,12 +60,20 @@ public class Relation {
 
 
     public String toString() {
+        return toString(0);
+    }
+    public String toString( int ident ) {
         StringBuffer ret = new StringBuffer("{");
+        boolean firstTuple = true;
+        String tupleSeparator = ",";
+        if( ident > 0 )
+            tupleSeparator = "\n"+Util.identln(ident,",");
         for( Tuple tuple : orderedContent() ) {
-            ret.append("<");
+            ret.append((firstTuple?"":tupleSeparator)+"<");
+            firstTuple = false;
             for( int i = 0; i < tuple.data.length; i++ )
-                ret.append(colNames[i]+"="+tuple.data[i]+",");
-            ret.append(">,");
+                ret.append((i==0?"":",")+colNames[i]+"="+tuple.data[i]);
+            ret.append(">");
         }
         ret.append("}");
         return ret.toString();
@@ -125,6 +154,54 @@ public class Relation {
         return ret;
     }
 
+    public static Relation unison( Relation x, Relation y ) throws Exception {
+        Set<String> header = new HashSet<String>();
+        header.addAll(x.header.keySet());
+        header.removeAll(y.header.keySet());            
+        Set<String> header1 = new HashSet<String>();
+        header1.addAll(y.header.keySet());
+        header1.removeAll(x.header.keySet());
+        header.addAll(header1);
+              
+        Relation ret = new Relation(header.toArray(new String[0]));
+        if( x.colNames.length != y.colNames.length )
+            return ret;
+        
+        Map<String, Integer> origHdr = cloneHeader(x);
+        String[] origColNames = cloneColumnNames(x);
+        
+        Set<Tuple> tmp = new HashSet<Tuple>(); 
+        List<Map<String,String>> permutations = Permutations.permute(x.colNames,y.colNames);
+        for( Map<String,String> m : permutations ) {
+            x.header = origHdr;
+            x.colNames = origColNames;
+            x.rename(m);
+            for( Tuple tupleX: x.content )
+                for( Tuple tupleY: y.content )
+                    if( tupleX.equals(tupleY,x,y) ) {
+                        String[] data = new String[header.size()];
+                        for( String attr: ret.colNames ) {
+                            Integer posX = x.header.get(attr);
+                            if( posX != null ) {
+                                data[ret.header.get(attr)] = tupleX.data[posX];
+                                continue;
+                            }
+                            Integer posY = y.header.get(attr);
+                            if( posY != null ) {
+                                data[ret.header.get(attr)] = tupleY.data[posY];
+                                continue;
+                            }
+                            throw new Exception("unexpected case");
+                        }
+                        tmp.add(new Tuple(data));
+                    }
+            if( tmp.size() > ret.content.size() )
+                ret.content = tmp;
+        }
+
+        return ret;
+    }
+    
     /**
      * @param x
      * @param y
@@ -161,6 +238,39 @@ public class Relation {
         }
         return false;
     }
+    public static boolean equivalent( Relation x, Relation y ) {
+        if( x.colNames.length != y.colNames.length )
+            return false;
+        if( x.content.size() != y.content.size() )
+            return false;
+        Map<String, Integer> origHdr = cloneHeader(x);
+        String[] origColNames = cloneColumnNames(x);
+        
+        List<Map<String,String>> permutations = Permutations.permute(x.colNames,y.colNames);
+        for( Map<String,String> m : permutations ) {
+            x.header = origHdr;
+            x.colNames = origColNames;
+            x.rename(m);
+            if( x.equals(y) )
+                return true;
+        }
+        return false;
+    }
+
+    // rename is in-place operation.
+    // therefore auxiliary methods to restore relation header after each rename
+    private static String[] cloneColumnNames( Relation src ) {
+        String[] origColNames = new String[src.colNames.length];
+        for( int i = 0; i < origColNames.length; i++ )
+            origColNames[i] = src.colNames[i];
+        return origColNames;
+    }
+    private static Map<String, Integer> cloneHeader( Relation src ) {
+        Map<String,Integer> origHdr = new HashMap<String,Integer>();
+        for( String key : src.header.keySet() )
+            origHdr.put(key, src.header.get(key));
+        return origHdr;
+    }
 
     public int hashCode() {
         StringBuffer ret = new StringBuffer();
@@ -188,23 +298,27 @@ public class Relation {
         ret.add(new RuleTuple("innerJoin", new String[] {"expr","'*'","expr"}));
         ret.add(new RuleTuple("innerUnion", new String[] {"expr","'v'","expr"}));
         ret.add(new RuleTuple("outerUnion", new String[] {"expr","'+'","expr"}));
+        ret.add(new RuleTuple("unison", new String[] {"expr","'@'","expr"}));
         ret.add(new RuleTuple("complement", new String[] {"expr","'''"}));
-        ret.add(new RuleTuple("semiInverse", new String[] {"expr","'~'"}));
         ret.add(new RuleTuple("expr", new String[] {"join"}));
         ret.add(new RuleTuple("expr", new String[] {"innerJoin"}));
         ret.add(new RuleTuple("expr", new String[] {"innerUnion"}));
         ret.add(new RuleTuple("expr", new String[] {"outerUnion"}));
+        ret.add(new RuleTuple("expr", new String[] {"unison"}));
         ret.add(new RuleTuple("expr", new String[] {"complement"}));
-        ret.add(new RuleTuple("expr", new String[] {"semiInverse"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'='","expr"}));
+        ret.add(new RuleTuple("boolean", new String[] {"expr","'~'","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'<'","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"boolean","'&'","boolean"}));
         ret.add(new RuleTuple("boolean", new String[] {"'('","boolean","')'"}));
         ret.add(new RuleTuple("implication", new String[] {"boolean","'-'","'>'","boolean"}));
         ret.add(new RuleTuple("assertion", new String[] {"boolean","'.'"}));
         ret.add(new RuleTuple("assertion", new String[] {"implication","'.'"}));
-        ret.add(new RuleTuple("assertions", new String[] {"assertion"}));
-        ret.add(new RuleTuple("assertions", new String[] {"assertions","assertion"}));
+        ret.add(new RuleTuple("query", new String[] {"expr","';'"}));
+        ret.add(new RuleTuple("program", new String[] {"assignment"}));
+        ret.add(new RuleTuple("program", new String[] {"query"}));
+        ret.add(new RuleTuple("program", new String[] {"assertion"}));
+        ret.add(new RuleTuple("program", new String[] {"program","program"}));
 
         // Set Theoretic part
         ret.add(new RuleTuple("attribute", new String[] {"identifier"}));
