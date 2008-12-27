@@ -7,14 +7,13 @@
 {{{
 assertion:   boolean "."
           |  implication "."
-assertions:  assertion
-          |  assertions assertion
 assignment:  identifier "=" expr ";"
 attribute:   identifier
 boolean:     "(" boolean ")"
           |  boolean "&" boolean
           |  expr "<" expr
           |  expr "=" expr
+          |  expr "~" expr
 complement:  expr "'"
 database:    assignment
           |  database assignment
@@ -25,16 +24,23 @@ expr:        complement
           |  join
           |  outerUnion
           |  relation
+          |  unison
           |  "(" expr ")"
 implication:  boolean "-" ">" boolean
 innerJoin:   expr "*" expr
 innerUnion:  expr "v" expr
 join:        expr "^" expr
 outerUnion:  expr "+" expr
+program:     assertion
+          |  assignment
+          |  query
+          |  program program
+query:       expr ";"
 relation:    "{" tuples "}"
 tuple:       "<" values ">"
 tuples:      tuple
           |  tuples "," tuple
+unison:      expr "@" expr
 value:       attribute "=" digits
           |  attribute "=" identifier
 values:      value
