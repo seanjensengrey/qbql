@@ -1,1 +1,3 @@
-(button button button)/2
+(button A, button B, input C, 
+   (button x, button y, input z)/2
+)/3
