@@ -321,7 +321,7 @@ public class Database {
     public ParseNode query( ParseNode root, List<LexerToken> src ) throws Exception {
         for( ParseNode child : root.children() ) {
             if( child.contains(expr) ) {
-                System.out.println(child.content(src)+"="+compute(child,src).toString());
+                System.out.println(child.content(src)+"="+compute(child,src).toString(child.content(src).length()+1));
                 return null;
             } 
         }

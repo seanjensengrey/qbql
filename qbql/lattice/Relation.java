@@ -235,6 +235,8 @@ public class Relation {
         return y.equals(join(x,y));
     }
     public boolean equals( Object o ) {
+        if( this == o )
+            return true;
         Relation src = (Relation) o;
         if( colNames.length != src.colNames.length )
             return false;
@@ -263,6 +265,8 @@ public class Relation {
         return false;
     }
     public static boolean equivalent( Relation x, Relation y ) {
+        if( x == y )
+            return true;
         if( x.colNames.length != y.colNames.length )
             return false;
         if( x.content.size() != y.content.size() )
@@ -272,11 +276,14 @@ public class Relation {
         
         List<Map<String,String>> permutations = Permutations.permute(x.colNames,y.colNames);
         for( Map<String,String> m : permutations ) {
+            x.rename(m);
+            if( x.equals(y) ) {
+                x.header = origHdr;
+                x.colNames = origColNames;
+                return true;
+            }
             x.header = origHdr;
             x.colNames = origColNames;
-            x.rename(m);
-            if( x.equals(y) )
-                return true;
         }
         return false;
     }
