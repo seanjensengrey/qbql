@@ -10,14 +10,42 @@ Time v (Claire ^ At ^ Library) < Time v (Max ^ At ^ Home).
 
 (((Peter ^ Parent) v Relationship) ^ (Max ^ Child)) v R00 = R01.
 
-(Time ^ People) v (At ^ Library);
+%(Time ^ People) v (At ^ Library);
 
 Certified /\ Requirements;
-Certified \/ Requirements;
+%Certified \/ Requirements;
 
-At \/ Certified;
+%(x ^ R00) v (y ^ R00) = R00 -> x \/ y = x ^ y.
+%(x ^ R00) v (y ^ R00) = R00 -> x \/ y = x /\ y.
 
-%(((x \/ y) ^ R00) v x) ^ (((x \/ y) ^ R00) v y) = x \/ y.
 
-x ^ R00 < y ^ R00 & y v (x ^ R00) = x
--> x \/ y = y v ((x @ y) ^ R00).
+% invalid, why? (((x \/ y) ^ R00) v x) ^ (((x \/ y) ^ R00) v y) = x \/ y.
+
+% why long? x ^ R00 < y ^ R00 & y v (x ^ R00) = x -> x \/ y = y v ((x @ y) ^ R00).
+
+
+%x /\ y = (((x @ y) ^ R00) v x) ^ (((x @ y) ^ R00) v y)
+
+/*CdRheader = (Certified \/ Requirements) ^ R00;
+
+(CdRheader v Certified) ^ (CdRheader v Requirements)
+^
+((((CdRheader v Certified) ^ Requirements) ^
+((CdRheader v Requirements) ^ Certified)')
+v
+(((CdRheader v Requirements) ^ Certified) ^
+((CdRheader v Certified) ^ Requirements)')
+v 
+CdRheader)';*/
+
+
+
+x /\ y = (((x@y) ^ R00) v x) ^ (((x@y) ^ R00) v y)
+^
+((((((x@y) ^ R00) v x) ^ y) ^
+((((x@y) ^ R00) v y) ^ x)')
+v
+(((((x@y) ^ R00) v y) ^ x) ^
+((((x@y) ^ R00) v x) ^ y)')
+v 
+((x@y) ^ R00))'.

@@ -96,17 +96,25 @@ public class Database {
         Relation bind = Relation.innerUnion(x, y); 
               
         Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
+        Relation X = Relation.innerUnion(x,hdrXmY);
+        Relation Y = Relation.innerUnion(y,hdrYmX);
         if( type == forAll )
-            ret = Relation.innerUnion(ret,R11);
+            ret = Relation.join(X,Y);
         for( Tuple b : bind.content ) {
             Relation singleValue = new Relation(bind.colNames);
             singleValue.content.add(b);
             Relation summand = Relation.innerUnion(
-                  Relation.join(Relation.join(x, y), singleValue),
-                  Relation.join(
-                         complement(Relation.innerUnion(Relation.join(x, singleValue),hdrXmY)),
-                         complement(Relation.innerUnion(Relation.join(y, singleValue),hdrYmX))
-                  )
+                Relation.join(Relation.join(x, y), singleValue),
+                Relation.join(
+                    Relation.join(
+                        X,
+                        complement(Relation.innerUnion(Relation.join(x, singleValue),hdrXmY))
+                    ),
+                    Relation.join(
+                        Y,
+                        complement(Relation.innerUnion(Relation.join(y, singleValue),hdrYmX))
+                    )
+                )
             );
             if( type == exists )
                 ret = Relation.innerUnion(ret, summand);
@@ -127,7 +135,7 @@ public class Database {
      */
     Relation complement( Relation x ) {
         Relation xvR11 = Relation.innerUnion(x, R11);
-        Relation ret = Relation.join(x, R00);
+        Relation ret = new Relation(x.colNames);
         for( Tuple t : xvR11.content ) {
             boolean matched = false;
             for( Tuple tx : x.content )
@@ -213,7 +221,10 @@ public class Database {
                 return eval(child, src);
             else if( child.contains(openParen) )
                 parenGroup = true;
-            else if( child.contains(relation) || child.contains(expr) ) {
+            else if( child.contains(relation) 
+                  || child.contains(expr) 
+                  || child.contains(parExpr) 
+            ) {
                 if( x == null )
                     x = compute(child,src);
                 else
@@ -498,6 +509,7 @@ public class Database {
     static int equality;
     static int minus;
     static int expr;
+    static int parExpr;
     static int openParen;
     static int bool;
     static int implication;
@@ -539,6 +551,7 @@ public class Database {
             gt = cyk.symbolIndexes.get("'>'");
             amp = cyk.symbolIndexes.get("'&'");
             expr = cyk.symbolIndexes.get("expr");
+            parExpr = cyk.symbolIndexes.get("parExpr");
             openParen = cyk.symbolIndexes.get("'('");
             bool = cyk.symbolIndexes.get("boolean");
             implication = cyk.symbolIndexes.get("implication");
