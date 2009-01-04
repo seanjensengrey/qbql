@@ -73,6 +73,12 @@ public class Relation {
         return toString(0, true);
     }
     public String toString( int ident, boolean isSetNotation ) {
+        if( colNames.length == 0 ) {
+            if( content.size() == 0 )
+                return "R00";
+            else
+                return "R01";
+        }
         StringBuffer ret = new StringBuffer("");
         if( !isSetNotation ) {
             ret.append(header.keySet()+"\n");
@@ -339,7 +345,7 @@ public class Relation {
         Set<RuleTuple> ret = new TreeSet<RuleTuple>();
         // LATTICE part
         ret.add(new RuleTuple("expr", new String[] {"identifier"}));
-        ret.add(new RuleTuple("expr", new String[] {"'('","expr","')'"}));
+        ret.add(new RuleTuple("parExpr", new String[] {"'('","expr","')'"}));
         ret.add(new RuleTuple("join", new String[] {"expr","'^'","expr"}));
         ret.add(new RuleTuple("innerJoin", new String[] {"expr","'*'","expr"}));
         ret.add(new RuleTuple("innerUnion", new String[] {"expr","'v'","expr"}));
@@ -347,7 +353,8 @@ public class Relation {
         ret.add(new RuleTuple("unison", new String[] {"expr","'@'","expr"}));
         ret.add(new RuleTuple("exists", new String[] {"expr","'\\'","'/'","expr"}));
         ret.add(new RuleTuple("forAll", new String[] {"expr","'/'","'\\'","expr"}));
-        ret.add(new RuleTuple("complement", new String[] {"expr","'''"}));
+        ret.add(new RuleTuple("complement", new String[] {"identifier","'''"}));  
+        ret.add(new RuleTuple("complement", new String[] {"parExpr","'''"}));
         ret.add(new RuleTuple("expr", new String[] {"join"}));
         ret.add(new RuleTuple("expr", new String[] {"innerJoin"}));
         ret.add(new RuleTuple("expr", new String[] {"innerUnion"}));
@@ -355,6 +362,7 @@ public class Relation {
         ret.add(new RuleTuple("expr", new String[] {"exists"}));
         ret.add(new RuleTuple("expr", new String[] {"forAll"}));
         ret.add(new RuleTuple("expr", new String[] {"unison"}));
+        ret.add(new RuleTuple("expr", new String[] {"parExpr"}));
         ret.add(new RuleTuple("expr", new String[] {"complement"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'='","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'~'","expr"}));

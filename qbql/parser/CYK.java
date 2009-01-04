@@ -70,7 +70,7 @@ public class CYK {
         cyk.printSelectedChomskiRules("nion");		
         final String input = 
             //"x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";
-            "x \\/ y"
+            "((CdRheader v Certified) ^ Requirements) ^((CdRheader v Requirements) ^ Certified)';"
             //Util.readFile("c:/...")
         ;
         long t1 = System.currentTimeMillis();
