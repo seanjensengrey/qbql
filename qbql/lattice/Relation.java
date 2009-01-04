@@ -70,22 +70,35 @@ public class Relation {
 
 
     public String toString() {
-        return toString(0);
+        return toString(0, true);
     }
-    public String toString( int ident ) {
-        StringBuffer ret = new StringBuffer("{");
-        boolean firstTuple = true;
-        String tupleSeparator = ",";
-        if( ident > 0 )
-            tupleSeparator = "\n"+Util.identln(ident,",");
-        for( Tuple tuple : orderedContent() ) {
-            ret.append((firstTuple?"":tupleSeparator)+"<");
-            firstTuple = false;
-            for( int i = 0; i < tuple.data.length; i++ )
-                ret.append((i==0?"":",")+colNames[i]+"="+tuple.data[i]);
-            ret.append(">");
+    public String toString( int ident, boolean isSetNotation ) {
+        StringBuffer ret = new StringBuffer("");
+        if( !isSetNotation ) {
+            ret.append(header.keySet()+"\n");
+            for( Tuple tuple : orderedContent() ) {
+                boolean firstTuple = true;
+                for( int i = 0; i < tuple.data.length; i++ ) {
+                    ret.append((firstTuple?Util.identln(ident," "):"  ")+tuple.data[i]);
+                    firstTuple = false;
+                }
+                ret.append("\n");
+            }
+        } else {
+            ret.append("{");
+            boolean firstTuple = true;
+            String tupleSeparator = ",";
+            if( ident > 0 )
+                tupleSeparator = "\n"+Util.identln(ident,",");
+            for( Tuple tuple : orderedContent() ) {
+                ret.append((firstTuple?"":tupleSeparator)+"<");
+                firstTuple = false;
+                for( int i = 0; i < tuple.data.length; i++ )
+                    ret.append((i==0?"":",")+colNames[i]+"="+tuple.data[i]);
+                ret.append(">");
+            }
+            ret.append("}");
         }
-        ret.append("}");
         return ret.toString();
     }
 
@@ -174,10 +187,10 @@ public class Relation {
         header.addAll(header1);
               
         // fix x@R01 = x.
-        if( x.colNames.length == 0 && x.content.size() > 0 ) 
+        /*if( x.colNames.length == 0 && x.content.size() > 0 ) 
             return y;
         if( y.colNames.length == 0 && y.content.size() > 0 ) 
-            return x;
+            return x;*/
         
         Relation ret = new Relation(header.toArray(new String[0]));
         if( x.colNames.length != y.colNames.length )
@@ -242,11 +255,13 @@ public class Relation {
             return false;
         if( content.size() != src.content.size() )
             return false;
-        String[] hdr = header.keySet().toArray(new String[0]);
-        String[] srcHdr = src.header.keySet().toArray(new String[0]);
-        for( int i = 0; i < hdr.length; i++ )
-            if( !hdr[i].equals(srcHdr[i]) )
+        
+        for( String colName : header.keySet() ) {
+            Integer j = src.header.get(colName);
+            if( j == null )
                 return false;
+        }
+
         LinkedList<Tuple> list = new LinkedList<Tuple>();
         for( Tuple t : content )
             list.add(t);
@@ -330,11 +345,15 @@ public class Relation {
         ret.add(new RuleTuple("innerUnion", new String[] {"expr","'v'","expr"}));
         ret.add(new RuleTuple("outerUnion", new String[] {"expr","'+'","expr"}));
         ret.add(new RuleTuple("unison", new String[] {"expr","'@'","expr"}));
+        ret.add(new RuleTuple("exists", new String[] {"expr","'\\'","'/'","expr"}));
+        ret.add(new RuleTuple("forAll", new String[] {"expr","'/'","'\\'","expr"}));
         ret.add(new RuleTuple("complement", new String[] {"expr","'''"}));
         ret.add(new RuleTuple("expr", new String[] {"join"}));
         ret.add(new RuleTuple("expr", new String[] {"innerJoin"}));
         ret.add(new RuleTuple("expr", new String[] {"innerUnion"}));
         ret.add(new RuleTuple("expr", new String[] {"outerUnion"}));
+        ret.add(new RuleTuple("expr", new String[] {"exists"}));
+        ret.add(new RuleTuple("expr", new String[] {"forAll"}));
         ret.add(new RuleTuple("expr", new String[] {"unison"}));
         ret.add(new RuleTuple("expr", new String[] {"complement"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'='","expr"}));

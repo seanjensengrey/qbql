@@ -69,7 +69,8 @@ public class CYK {
         CYK cyk = new CYK(RuleTuple.getRules(path+fname));
         cyk.printSelectedChomskiRules("nion");		
         final String input = 
-            "x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";
+            //"x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";
+            "x \\/ y"
             //Util.readFile("c:/...")
         ;
         long t1 = System.currentTimeMillis();

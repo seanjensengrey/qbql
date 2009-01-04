@@ -30,12 +30,12 @@ public class Database {
         LexerToken.isPercentLineComment = true;
     }
 
-    final static String databaseFile = "Figure1.db"; 
-    final static String programFile = "Figure1.prg"; 
+    //final static String databaseFile = "Figure1.db"; 
+    //final static String programFile = "Figure1.prg"; 
     //final static String databaseFile = "Wittgenstein.db"; 
     //final static String programFile = "Wittgenstein.assertions"; 
-    //final static String databaseFile = "Sims.db"; 
-    //final static String programFile = "Sims.assertions"; 
+    final static String databaseFile = "Sims.db"; 
+    final static String programFile = "Sims.assertions"; 
     private static final String path = "/qbql/lattice/";
     public Database() throws Exception {				
         String database = Util.readFile(getClass(),path+databaseFile);
@@ -77,6 +77,47 @@ public class Database {
         );
     }
 
+    /**
+     * Generalized set intersection and set union
+     */
+    Relation quantifier( Relation x, Relation y, int type ) throws Exception {
+        Set<String> headerXmY = new HashSet<String>();
+        headerXmY.addAll(x.header.keySet());
+        headerXmY.removeAll(y.header.keySet());            
+        Set<String> headerYmX = new HashSet<String>();
+        headerYmX.addAll(y.header.keySet());
+        headerYmX.removeAll(x.header.keySet());
+        Set<String> headerSymDiff = new HashSet<String>();
+        headerSymDiff.addAll(headerXmY);
+        headerSymDiff.addAll(headerYmX);
+        Relation hdrXmY = new Relation(headerXmY.toArray(new String[0]));
+        Relation hdrYmX = new Relation(headerYmX.toArray(new String[0]));
+        
+        Relation bind = Relation.innerUnion(x, y); 
+              
+        Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
+        if( type == forAll )
+            ret = Relation.innerUnion(ret,R11);
+        for( Tuple b : bind.content ) {
+            Relation singleValue = new Relation(bind.colNames);
+            singleValue.content.add(b);
+            Relation summand = Relation.innerUnion(
+                  Relation.join(Relation.join(x, y), singleValue),
+                  Relation.join(
+                         complement(Relation.innerUnion(Relation.join(x, singleValue),hdrXmY)),
+                         complement(Relation.innerUnion(Relation.join(y, singleValue),hdrYmX))
+                  )
+            );
+            if( type == exists )
+                ret = Relation.innerUnion(ret, summand);
+            else if( type == forAll )
+                ret = Relation.join(ret, summand);
+            else
+                throw new Exception("Unknown quantifier type");
+        }
+        
+        return ret;
+    }
     /**
      * Complement x' returns relation with the same header as x
      * with tuples which are not in x
@@ -166,7 +207,6 @@ public class Database {
 
         Relation x = null;
         Relation y = null;
-        int oper = -1;
         boolean parenGroup = false;
         for( ParseNode child : node.children() ) {
             if( parenGroup )
@@ -178,21 +218,24 @@ public class Database {
                     x = compute(child,src);
                 else
                     y = compute(child,src);
-            } else
-                oper = child.content().toArray(new Integer[0])[0];
+            } 
         }
-        if( oper == join ) 
+        if( node.contains(join) ) 
             return Relation.join(x,y);
-        if( oper == innerJoin ) 
+        if( node.contains(innerJoin) ) 
             return Relation.innerJoin(x,y);
-        if( oper == outerUnion ) 
+        if( node.contains(outerUnion) ) 
             return outerUnion(x,y);
-        if( oper == innerUnion ) 
+        if( node.contains(innerUnion) ) 
             return Relation.innerUnion(x,y);
-        if( oper == unison ) 
+        if( node.contains(unison) ) 
             return Relation.unison(x,y);
-        if( oper == complement ) 
+        if( node.contains(complement) ) 
             return complement(x);
+        if( node.contains(exists) ) 
+            return quantifier(x,y,exists);
+        if( node.contains(forAll) ) 
+            return quantifier(x,y,forAll);
         return null;
     }
 
@@ -245,14 +288,16 @@ public class Database {
         Boolean left = null;
         Boolean right = null;
         for( ParseNode child : root.children() ) {
-            if( left == null )
+            if( left == null ) {
                 left = bool(child,src);
-            else if( child.contains(gt)||child.contains(minus) )
+                if( !left ) // optimization: early termination
+                    return null;
+            } else if( child.contains(gt)||child.contains(minus) )
                 ;
             else 				
                 right = bool(child,src);
         }		
-        if( !left || right )
+        if( /*!left ||*/ right )
             return null;
         else
             return root;
@@ -295,7 +340,7 @@ public class Database {
                     if( !bool(child,src) ) {
                         for( String variable : variables )
                             System.out.println(variable+" = "
-                                               +lattice.get(variable).toString(variable.length()+3)
+                                               +lattice.get(variable).toString(variable.length()+3, false)
                                                +";");
                         return child;
                     }
@@ -304,7 +349,7 @@ public class Database {
                     if( ret != null ) {
                         for( String variable : variables )
                             System.out.println(variable+" = "
-                                               +lattice.get(variable).toString(variable.length()+3)
+                                               +lattice.get(variable).toString(variable.length()+3, false)
                                                +";");
                         return ret;
                     }
@@ -321,7 +366,7 @@ public class Database {
     public ParseNode query( ParseNode root, List<LexerToken> src ) throws Exception {
         for( ParseNode child : root.children() ) {
             if( child.contains(expr) ) {
-                System.out.println(child.content(src)+"="+compute(child,src).toString(child.content(src).length()+1));
+                System.out.println(child.content(src)+"="+compute(child,src).toString(child.content(src).length()+1, false));
                 return null;
             } 
         }
@@ -446,6 +491,8 @@ public class Database {
     static int innerUnion;
     static int outerUnion;
     static int unison;
+    static int exists;
+    static int forAll;
     static int complement;
     static int equivalence;
     static int equality;
@@ -477,12 +524,14 @@ public class Database {
                     return new int[] {assertion};
                 }
             };
-            join = cyk.symbolIndexes.get("'^'");
-            innerJoin = cyk.symbolIndexes.get("'*'");
-            innerUnion = cyk.symbolIndexes.get("'v'");
-            outerUnion = cyk.symbolIndexes.get("'+'");
-            unison = cyk.symbolIndexes.get("'@'");
-            complement = cyk.symbolIndexes.get("'''");
+            join = cyk.symbolIndexes.get("join");
+            innerJoin = cyk.symbolIndexes.get("innerJoin");
+            innerUnion = cyk.symbolIndexes.get("innerUnion");
+            outerUnion = cyk.symbolIndexes.get("outerUnion");
+            unison = cyk.symbolIndexes.get("unison");
+            exists = cyk.symbolIndexes.get("exists");
+            forAll = cyk.symbolIndexes.get("forAll");
+            complement = cyk.symbolIndexes.get("complement");
             equivalence = cyk.symbolIndexes.get("'~'");
             equality = cyk.symbolIndexes.get("'='");
             minus = cyk.symbolIndexes.get("'-'");
