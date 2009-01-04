@@ -39,7 +39,6 @@ v
 CdRheader)';*/
 
 
-
 x /\ y = (((x@y) ^ R00) v x) ^ (((x@y) ^ R00) v y)
 ^
 ((((((x@y) ^ R00) v x) ^ y) ^

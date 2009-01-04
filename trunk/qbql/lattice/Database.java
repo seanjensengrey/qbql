@@ -94,6 +94,7 @@ public class Database {
         Relation hdrYmX = new Relation(headerYmX.toArray(new String[0]));
         
         Relation bind = Relation.innerUnion(x, y); 
+        Relation xjy = Relation.join(x, y);
               
         Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
         Relation X = Relation.innerUnion(x,hdrXmY);
@@ -104,7 +105,7 @@ public class Database {
             Relation singleValue = new Relation(bind.colNames);
             singleValue.content.add(b);
             Relation summand = Relation.innerUnion(
-                Relation.join(Relation.join(x, y), singleValue),
+                Relation.join(xjy, singleValue),
                 Relation.join(
                     Relation.join(
                         X,
@@ -346,6 +347,7 @@ public class Database {
                 lattice.put(variable, lattice.get(tables[indexes[var++]]));
             }
 
+            
             for( ParseNode child : root.children() ) {
                 if( child.contains(bool) ) {
                     if( !bool(child,src) ) {
@@ -367,6 +369,7 @@ public class Database {
                 } 
             }
         } while( next(indexes,tables.length) );
+
         
         for( String variable : variables )
             lattice.remove(variable);
@@ -589,7 +592,10 @@ public class Database {
         }
 
         Database model = new Database();
+        long t1 = System.currentTimeMillis();
         ParseNode exception = model.program(root,src);
+        long t2 = System.currentTimeMillis();
+        System.out.println("Time = "+(t2-t1)); // (authorized)
         if( exception != null ) {
             System.out.println("*** False Assertion ***");
             System.out.println(prg.substring(src.get(exception.from).begin, src.get(exception.to-1).end));
