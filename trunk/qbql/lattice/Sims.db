@@ -52,10 +52,12 @@ ThreeOclock = {
 At = {
   <name=max,   location=home,   time=200>,
   <name=claire,location=library,time=200>,
+  <name=peter, location=library,time=200>,
   <name=max,   location=library,time=300>,
   <name=claire,location=home,   time=300>,
   <name=max,   location=library,time=400>,
-  <name=claire,location=library,time=500>
+  <name=claire,location=library,time=500>,
+  <name=peter, location=library,time=500>
 };
 
 Home = {
@@ -77,3 +79,19 @@ Child = {
 Relationship = {
   <relationship=dummy>
 } ^ R00;
+
+
+Certified = {
+  <name=max,   skill=java>,
+  <name=max,   skill=sql>,
+  <name=peter, skill=java>,
+  <name=peter, skill=html>,
+  <name=claire,skill=java>
+};
+
+Requirements = {
+  <job=appl,skill=java>,
+  <job=appl,skill=sql>,
+  <job=web, skill=java>,
+  <job=web, skill=html>
+};
