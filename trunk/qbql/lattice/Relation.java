@@ -380,15 +380,23 @@ public class Relation {
 
         // Set Theoretic part
         ret.add(new RuleTuple("attribute", new String[] {"identifier"}));
-        ret.add(new RuleTuple("value", new String[] {"attribute","'='","digits"}));
-        ret.add(new RuleTuple("value", new String[] {"attribute","'='","identifier"}));
-        ret.add(new RuleTuple("values", new String[] {"value"}));
-        ret.add(new RuleTuple("values", new String[] {"values","','","value"}));
+        ret.add(new RuleTuple("value", new String[] {"digits"}));
+        ret.add(new RuleTuple("value", new String[] {"identifier"}));
+        ret.add(new RuleTuple("namedValue", new String[] {"attribute","'='","value"}));
+        ret.add(new RuleTuple("values", new String[] {"namedValue"}));
+        ret.add(new RuleTuple("values", new String[] {"values","','","namedValue"}));
         ret.add(new RuleTuple("tuple", new String[] {"'<'","values","'>'"}));
         ret.add(new RuleTuple("tuples", new String[] {"tuple"}));
         ret.add(new RuleTuple("tuples", new String[] {"tuples","','","tuple"}));
         ret.add(new RuleTuple("relation", new String[] {"'{'","tuples","'}'"}));
+        ret.add(new RuleTuple("table", new String[] {"'['","header","']'","content"}));
+        ret.add(new RuleTuple("table", new String[] {"'['","header","']'"}));
+        ret.add(new RuleTuple("header", new String[] {"header","','","identifier"}));
+        ret.add(new RuleTuple("header", new String[] {"identifier"}));
+        ret.add(new RuleTuple("content", new String[] {"content","value"}));
+        ret.add(new RuleTuple("content", new String[] {"value"}));
         ret.add(new RuleTuple("expr", new String[] {"relation"}));
+        ret.add(new RuleTuple("expr", new String[] {"table"}));
         ret.add(new RuleTuple("assignment", new String[] {"identifier","'='","expr","';'"})); // if defined in terms of lattice operations
         ret.add(new RuleTuple("database", new String[] {"assignment"}));
         ret.add(new RuleTuple("database", new String[] {"database","assignment"}));
