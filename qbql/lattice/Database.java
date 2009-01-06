@@ -14,6 +14,7 @@ import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.parser.RuleTuple;
+import qbql.parser.Token;
 import qbql.util.Util;
 
 public class Database {
@@ -30,12 +31,12 @@ public class Database {
         LexerToken.isPercentLineComment = true;
     }
 
-    //final static String databaseFile = "Figure1.db"; 
-    //final static String programFile = "Figure1.prg"; 
+    final static String databaseFile = "Figure1.db"; 
+    final static String programFile = "Figure1.prg"; 
     //final static String databaseFile = "Wittgenstein.db"; 
     //final static String programFile = "Wittgenstein.assertions"; 
-    final static String databaseFile = "Sims.db"; 
-    final static String programFile = "Sims.assertions"; 
+    //final static String databaseFile = "Sims.db"; 
+    //final static String programFile = "Sims.assertions"; 
     private static final String path = "/qbql/lattice/";
     public Database() throws Exception {				
         String database = Util.readFile(getClass(),path+databaseFile);
@@ -380,7 +381,7 @@ public class Database {
     public ParseNode query( ParseNode root, List<LexerToken> src ) throws Exception {
         for( ParseNode child : root.children() ) {
             if( child.contains(expr) ) {
-                System.out.println(child.content(src)+"="+compute(child,src).toString(child.content(src).length()+1, false));
+                System.out.println(child.content(src)+"="+compute(child,src).toString(child.content(src).length()+1, false)+";");
                 return null;
             } 
         }
@@ -443,6 +444,16 @@ public class Database {
                 if( child.contains(tuples) )
                     return tuples(child,src);
             }
+        } else if( root.contains(table) ) {
+            Relation ret = null;
+            for( ParseNode child : root.children() ) {
+                if( child.contains(header) )                    
+                    ret = new Relation(strings(child,src).toArray(new String[0]));
+                else if( child.contains(content) ) {
+                    addContent(ret,child,src);
+                    return ret;
+                }                 
+            }            
         } else
             return eval(root,src);
         throw new Exception("Unknown case");
@@ -457,7 +468,7 @@ public class Database {
         addTuples(ret,root,src);		
         return ret;
     }
-    public void addTuples( Relation ret, ParseNode root, List<LexerToken> src ) throws Exception {
+    private void addTuples( Relation ret, ParseNode root, List<LexerToken> src ) throws Exception {
         if( root.contains(tuple) ) 
             ret.addTuple(tuple(root,src));
         else for( ParseNode child : root.children() )
@@ -466,7 +477,7 @@ public class Database {
             else if( child.contains(tuples) )
                 addTuples(ret,child,src);
     }
-    public Map<String,String> tuple( ParseNode root, List<LexerToken> src ) throws Exception {
+    private Map<String,String> tuple( ParseNode root, List<LexerToken> src ) throws Exception {
         for( ParseNode child : root.children() ) {
             if( child.contains(values) ) {
                 Map<String,String> tuple = new TreeMap<String,String>(); 
@@ -476,11 +487,11 @@ public class Database {
         }
         throw new Exception("Unknown case");
     }
-    public void values( Map<String,String> tuple, ParseNode root, List<LexerToken> src ) {
-        if( root.contains(value) )
+    private void values( Map<String,String> tuple, ParseNode root, List<LexerToken> src ) {
+        if( root.contains(namedValue) )
             value(tuple,root,src);
         else for( ParseNode child : root.children() )
-            if( child.contains(value) )
+            if( child.contains(namedValue) )
                 value(tuple,child,src);
             else if( child.contains(values) )
                 values(tuple,child,src);
@@ -497,6 +508,30 @@ public class Database {
                 right = child.content(src);
         }
         tuple.put(left, right);
+    }
+    
+    private List<String> strings( ParseNode root, List<LexerToken> src ) throws Exception {
+        List<String> ret = new LinkedList<String>();
+        if( root.from + 1 == root.to && 
+            (src.get(root.from).type == Token.IDENTIFIER || src.get(root.from).type == Token.DIGITS )
+        )
+            ret.add(root.content(src));
+        else
+            for( ParseNode child : root.children() )
+                ret.addAll(strings(child, src));
+        return ret;
+    }
+    private void addContent( Relation ret, ParseNode root, List<LexerToken> src ) throws Exception {
+        int i = 0;
+        String[] t = new String[ret.colNames.length];
+        for( String elem : strings(root, src) ) {
+            t[i%ret.colNames.length] = elem;
+            if( i%ret.colNames.length == ret.colNames.length-1 ) {
+                ret.content.add(new Tuple(t));
+                t = new String[ret.colNames.length];
+            }
+            i++;
+        }
     }
 
     static CYK cyk;
@@ -525,11 +560,14 @@ public class Database {
 
     static int assignment;
     static int relation;
+    static int table;
     static int tuples;
     static int tuple;
+    static int header;
+    static int content;
     static int attribute;
     static int values;
-    static int value;
+    static int namedValue;
     static int comma;
     private static final String bnf = "grammar.serializedBNF";
     static {
@@ -564,11 +602,14 @@ public class Database {
 
             assignment = cyk.symbolIndexes.get("assignment");
             relation = cyk.symbolIndexes.get("relation");
+            table = cyk.symbolIndexes.get("table");
             tuples = cyk.symbolIndexes.get("tuples");
             tuple = cyk.symbolIndexes.get("tuple");
+            header = cyk.symbolIndexes.get("header");
+            content = cyk.symbolIndexes.get("content");
             attribute = cyk.symbolIndexes.get("attribute");
             values = cyk.symbolIndexes.get("values");
-            value = cyk.symbolIndexes.get("value");
+            namedValue = cyk.symbolIndexes.get("namedValue");
         } catch( Exception e ) {
             e.printStackTrace();
         }

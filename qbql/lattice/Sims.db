@@ -95,3 +95,11 @@ Requirements = {
   <job=web, skill=java>,
   <job=web, skill=html>
 };
+
+Requirements2 = {
+  <job=entry,skill=java>
+};
+
+Requirements3 = {
+  <job=web,skill=sql>
+};

@@ -12,16 +12,25 @@ Time v (Claire ^ At ^ Library) < Time v (Max ^ At ^ Home).
 
 %(Time ^ People) v (At ^ Library);
 
-Certified /\ Requirements;
+%Certified /\ Requirements;
 %Certified \/ Requirements;
 
 %(x ^ R00) v (y ^ R00) = R00 -> x \/ y = x ^ y.
 %(x ^ R00) v (y ^ R00) = R00 -> x \/ y = x /\ y.
 
+/*
+x = Certified^{<name=max>,<name=claire>};
+y = At^TwoOclock^{<name=max>,<name=claire>};
+x;
+y;
+((x \/ y) ^ R00) v x;
+((x \/ y) ^ R00) v y;
+(((x \/ y) ^ R00) v x) ^ (((x \/ y) ^ R00) v y);
+x \/ y;
+invalid: (((x \/ y) ^ R00) v x) ^ (((x \/ y) ^ R00) v y) = x \/ y.
+*/
 
-% invalid, why? (((x \/ y) ^ R00) v x) ^ (((x \/ y) ^ R00) v y) = x \/ y.
-
-% why long? x ^ R00 < y ^ R00 & y v (x ^ R00) = x -> x \/ y = y v ((x @ y) ^ R00).
+%x ^ R00 < y ^ R00 & y v (x ^ R00) = x -> x \/ y = y v ((x @ y) ^ R00).
 
 
 %x /\ y = (((x @ y) ^ R00) v x) ^ (((x @ y) ^ R00) v y)
@@ -36,7 +45,7 @@ v
 (((CdRheader v Requirements) ^ Certified) ^
 ((CdRheader v Certified) ^ Requirements)')
 v 
-CdRheader)';*/
+CdRheader)';
 
 
 x /\ y = (((x@y) ^ R00) v x) ^ (((x@y) ^ R00) v y)
@@ -47,4 +56,15 @@ v
 (((((x@y) ^ R00) v y) ^ x) ^
 ((((x@y) ^ R00) v x) ^ y)')
 v 
-((x@y) ^ R00))'.
+((x@y) ^ R00))'.*/
+
+%y^R00 = z^R00 -> x /\ (y ^ z) = (x /\ y) ^ (x /\ z).
+
+x = Requirements;
+y = Certified;
+x;
+y;
+x /\ y;
+(x /\ y) /\ x;
+((x /\ y) /\ x) /\ x;
+((x /\ y) /\ x) /\ x = x /\ y.
