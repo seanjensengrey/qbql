@@ -81,7 +81,12 @@ public class Relation {
         }
         StringBuffer ret = new StringBuffer("");
         if( !isSetNotation ) {
-            ret.append(header.keySet()+"\n");
+            //ret.append(header.keySet()+"\n");
+            // no commas
+            ret.append("[");
+            for( int i = 0; i < colNames.length; i++ )
+                ret.append((i>0?"  ":"")+colNames[i]);
+            ret.append("]\n");
             for( Tuple tuple : orderedContent() ) {
                 boolean firstTuple = true;
                 for( int i = 0; i < tuple.data.length; i++ ) {
@@ -109,7 +114,7 @@ public class Relation {
     }
 
     public static Relation join( Relation x, Relation y ) {
-        Set<String> header = new HashSet<String>();
+        Set<String> header = new TreeSet<String>();
         header.addAll(x.header.keySet());
         header.addAll(y.header.keySet());		
         Relation ret = new Relation(header.toArray(new String[0]));
@@ -138,7 +143,7 @@ public class Relation {
     }
 
     public static Relation innerUnion( Relation x, Relation y ) {
-        Set<String> header = new HashSet<String>();
+        Set<String> header = new TreeSet<String>();
         header.addAll(x.header.keySet());
         header.retainAll(y.header.keySet());		
         Relation ret = new Relation(header.toArray(new String[0]));
@@ -391,7 +396,7 @@ public class Relation {
         ret.add(new RuleTuple("relation", new String[] {"'{'","tuples","'}'"}));
         ret.add(new RuleTuple("table", new String[] {"'['","header","']'","content"}));
         ret.add(new RuleTuple("table", new String[] {"'['","header","']'"}));
-        ret.add(new RuleTuple("header", new String[] {"header","','","identifier"}));
+        ret.add(new RuleTuple("header", new String[] {"header","identifier"}));
         ret.add(new RuleTuple("header", new String[] {"identifier"}));
         ret.add(new RuleTuple("content", new String[] {"content","value"}));
         ret.add(new RuleTuple("content", new String[] {"value"}));
