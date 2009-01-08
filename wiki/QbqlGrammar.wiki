@@ -14,35 +14,49 @@ boolean:     "(" boolean ")"
           |  expr "<" expr
           |  expr "=" expr
           |  expr "~" expr
-complement:  expr "'"
+complement:  identifier "'"
+          |  parExpr "'"
+content:     value
+          |  content value
 database:    assignment
           |  database assignment
+exists:      expr "\" "/" expr
 expr:        complement
+          |  exists
+          |  forAll
           |  identifier
           |  innerJoin
           |  innerUnion
           |  join
           |  outerUnion
+          |  parExpr
           |  relation
+          |  table
           |  unison
-          |  "(" expr ")"
+forAll:      expr "/" "\" expr
+header:      identifier
+          |  header identifier
 implication:  boolean "-" ">" boolean
 innerJoin:   expr "*" expr
 innerUnion:  expr "v" expr
 join:        expr "^" expr
+namedValue:  attribute "=" value
 outerUnion:  expr "+" expr
+parExpr:     "(" expr ")"
 program:     assertion
           |  assignment
           |  query
           |  program program
 query:       expr ";"
 relation:    "{" tuples "}"
+table:       "[" header "]"
+          |  "[" header "]" content
 tuple:       "<" values ">"
 tuples:      tuple
           |  tuples "," tuple
 unison:      expr "@" expr
-value:       attribute "=" digits
-          |  attribute "=" identifier
-values:      value
-          |  values "," value
+value:       digits
+          |  identifier
+values:      namedValue
+          |  values "," namedValue
 }}}
