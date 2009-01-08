@@ -20,7 +20,7 @@ content:     value
           |  content value
 database:    assignment
           |  database assignment
-exists:      expr "\" "/" expr
+exists:      expr "\\" "/" expr
 expr:        complement
           |  exists
           |  forAll
