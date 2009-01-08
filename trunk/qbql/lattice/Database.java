@@ -453,7 +453,8 @@ public class Database {
                     addContent(ret,child,src);
                     return ret;
                 }                 
-            }            
+            } 
+            return ret;
         } else
             return eval(root,src);
         throw new Exception("Unknown case");

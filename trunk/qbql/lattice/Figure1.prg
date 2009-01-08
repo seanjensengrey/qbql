@@ -1,18 +1,20 @@
-T;
-c=(T v (C ^ R00));
-c;
-T /\ c;
-S;
-c=(S v (A ^ R00));
-c;
-S /\ c;
-c=S v (S @ (A ^ R00));
-c;
-S /\ c;
+S1;
+V;
+S1V;
 
-TT=[r, q]
-   0  a
-   0  c
-   1  a
-;
-T=TT.
+sv_p = S1V v [p];
+sv_q = S1V v [q];
+sv_pr = S1V v [p r];
+sv_qr = S1V v [q r];
+
+S1V /\ sv_p;
+S1V v sv_qr;
+
+S1V v sv_p;
+S1V /\ sv_qr;
+
+S1V /\ sv_q;
+S1V v sv_pr;
+
+S1V v sv_q;
+S1V /\ sv_pr;
