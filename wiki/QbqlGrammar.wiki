@@ -20,7 +20,7 @@ content:     value
           |  content value
 database:    assignment
           |  database assignment
-exists:      expr "\\" "/" expr
+exists:      expr "\\" "/" expr         # e.g. x \/ y
 expr:        complement
           |  exists
           |  forAll
@@ -33,7 +33,7 @@ expr:        complement
           |  relation
           |  table
           |  unison
-forAll:      expr "/" "\" expr
+forAll:      expr "/" "\\" expr         # e.g. x /\ y
 header:      identifier
           |  header identifier
 implication:  boolean "-" ">" boolean
