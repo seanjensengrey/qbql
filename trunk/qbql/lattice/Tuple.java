@@ -22,18 +22,18 @@ class Tuple implements Comparable {
     }
     /**
      * @param obj
-     * @param x -- need to map named perspective into positional
-     * @param y -- the order of x and y doesn't matter
+     * @param th -- need to map named perspective into positional
+     * @param sr -- the order of th (-->this) and sr (-->src) matters?
      * @return
      */
-    public boolean equals( Object obj, Relation x, Relation y ) {
+    public boolean equals( Object obj, Relation th, Relation sr ) {
         Tuple src = (Tuple) obj;
         if( src.data.length != data.length )
             return false;
         for( int i = 0; i < data.length; i++ ) {
-            String colName = x.colNames[i];
-            int j = y.header.get(colName);
-            if( !src.data[i].equals(data[j]) )
+            String colName = th.colNames[i];
+            int j = sr.header.get(colName);
+            if( !data[i].equals(src.data[j]) )
                 return false;
         }
         return true;

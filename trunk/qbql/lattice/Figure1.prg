@@ -1,20 +1,24 @@
-S1;
-V;
-S1V;
 
-sv_p = S1V v [p];
-sv_q = S1V v [q];
-sv_pr = S1V v [p r];
-sv_qr = S1V v [q r];
+/*
+transitivity:
 
-S1V /\ sv_p;
-S1V v sv_qr;
+x v R00 = R00 &
+y v R00 = R00 &
+z v R00 = R00 &
+(r v (x ^ y)) ^ (r v (x ^ ((r^R00) v (x^y)`))) = r &  
+(r v (y ^ z)) ^ (r v (y ^ ((r^R00) v (y^z)`))) = r ->
+( r v (x ^ (z v y`)) ) ^ ( r v (x ^ ((r^R00) v (x ^ (z v y`))`))) = r.
 
-S1V v sv_p;
-S1V /\ sv_qr;
+augmentation:
+x v R00 = R00 &
+y v R00 = R00 &
+z v R00 = R00 &
+(r v (x ^ y)) ^ (r v (x ^ (r v (x^y)`))) = r ->  
+( r v (x ^ (y ^ z)) ) ^ ( r v ((x ^ z) ^ (r v (x ^ (y ^ z))`))) = r.
 
-S1V /\ sv_q;
-S1V v sv_pr;
-
-S1V v sv_q;
-S1V /\ sv_pr;
+x v R00 = R00 &
+y v R00 = R00 &
+z v R00 = R00 &
+(r v (x ^ y)) ^ (r v (x ^ ((r^R00) v (x^y)`))) = r ->  
+( r v (x ^ (y ^ z)) ) ^ ( r v ((x ^ z) ^ ((r^R00) v (x ^ (y ^ z))`))) = r.
+*/

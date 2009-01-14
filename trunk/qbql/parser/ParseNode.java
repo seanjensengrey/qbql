@@ -161,6 +161,11 @@ public class ParseNode implements Comparable {
     // If fail to parse complete text, then accumulate all children here
     // if topLevel != null then lft and rgt == null, and content is empty. 
     public Set<ParseNode> topLevel = null;
+    public void addTopLevel( ParseNode child ) {
+        if( topLevel == null )
+            topLevel = new TreeSet<ParseNode>();
+        topLevel.add(child);
+    }
 
     private CYK cyk;
     public ParseNode( int begin, int end, int sIn, int sOut, CYK c ) {
