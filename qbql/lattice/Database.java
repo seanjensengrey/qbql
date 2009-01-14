@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import qbql.parser.CYK;
 import qbql.parser.LexerToken;
@@ -31,12 +32,14 @@ public class Database {
         LexerToken.isPercentLineComment = true;
     }
 
-    final static String databaseFile = "Figure1.db"; 
-    final static String programFile = "Figure1.prg"; 
+    //final static String databaseFile = "Figure1.db"; 
+    //final static String programFile = "Figure1.prg"; 
     //final static String databaseFile = "Wittgenstein.db"; 
     //final static String programFile = "Wittgenstein.assertions"; 
-    //final static String databaseFile = "Sims.db"; 
-    //final static String programFile = "Sims.assertions"; 
+    final static String databaseFile = "Sims.db"; 
+    final static String programFile = "Sims.assertions"; 
+    //final static String databaseFile = "Aggregate.db"; 
+    //final static String programFile = "Aggregate.prg"; 
     private static final String path = "/qbql/lattice/";
     public Database() throws Exception {				
         String database = Util.readFile(getClass(),path+databaseFile);
@@ -141,7 +144,7 @@ public class Database {
         for( Tuple t : xvR11.content ) {
             boolean matched = false;
             for( Tuple tx : x.content )
-                if( t.equals(tx, ret, x) ) {
+                if( t.equals(tx, x, ret) ) {
                     matched = true;
                     break;
                 }
@@ -192,13 +195,52 @@ public class Database {
                     domains.get(rel.colNames[i]).content.add(newTuple);
                 }
 
+        /* Bad performance for large db
         Relation ret = R01;
         for( Relation domain : domains.values() )
             ret = Relation.join(ret, domain);
-        return ret;	
+        return ret;
+        */
+        
+        Map<String, String[]> doms = new TreeMap<String, String[]>();
+        for( String r : domains.keySet() ) {
+            Set<Tuple> tuples = domains.get(r).content;
+            String[] content = new String[tuples.size()];
+            int i = 0;
+            for( Tuple t : tuples )
+                content[i++] = t.data[0];
+            doms.put(r, content);
+        }
+        
+        Relation ret = new Relation(doms.keySet().toArray(new String[0]));
+        
+        Map<String, Integer> indexes = new HashMap<String, Integer>();
+        for( String key : doms.keySet() )
+            indexes.put(key, 0);
+        do {
+            String[] t = new String[ret.colNames.length];
+            for( String key : doms.keySet() )
+                t[ ret.header.get(key) ] = doms.get(key)[ indexes.get(key) ];
+            
+            ret.content.add(new Tuple(t));
+            
+        } while( next(indexes,doms) );
+        
+        return ret;
+    }
+    private boolean next( Map<String, Integer> state, Map<String, String[]> doms ) {
+        for( String pos: state.keySet() ) {
+            int rownum = state.get(pos);
+            if( rownum < doms.get(pos).length-1 ) {
+                state.put(pos, rownum+1);
+                return true;
+            }
+            state.put(pos, 0);
+        }
+        return false;
     }
 
-    public Relation eval( String input ) throws Exception {
+    /*public Relation eval( String input ) throws Exception {
         List<LexerToken> src =  LexerToken.parse(input);
         Matrix matrix = cyk.initArray1(src);
         int size = matrix.size();
@@ -206,7 +248,7 @@ public class Database {
         cyk.closure(matrix, 0, size+1, skipRanges, -1);
         ParseNode root = cyk.forest(size, matrix);
         return eval(root,src);
-    }
+    }*/
     private Relation eval( ParseNode node, List<LexerToken> src ) throws Exception {
         if( node.from + 1 == node.to ) {
             Relation ret = lattice.get(src.get(node.from).content);
@@ -310,9 +352,9 @@ public class Database {
             else 				
                 right = bool(child,src);
         }		
-        if( /*!left ||*/ right )
+        if( /*!left ||*/ right ) {
             return null;
-        else
+        } else
             return root;
     }
 
@@ -460,7 +502,7 @@ public class Database {
         throw new Exception("Unknown case");
     }
     public Relation tuples( ParseNode root, List<LexerToken> src ) throws Exception {
-        Set<String> attrs = new HashSet<String>();
+        Set<String> attrs = new TreeSet<String>();
         for( ParseNode descendant: root.descendants() )
             if( descendant.contains(attribute) )
                 attrs.add(descendant.content(src));

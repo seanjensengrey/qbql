@@ -12,8 +12,7 @@ Time v (Claire ^ At ^ Library) < Time v (Max ^ At ^ Home).
 
 %(Time ^ People) v (At ^ Library);
 
-%Certified /\ Requirements;
-%Certified \/ Requirements;
+Certified /\ Requirements;
 
 %(x ^ R00) v (y ^ R00) = R00 -> x \/ y = x ^ y.
 %(x ^ R00) v (y ^ R00) = R00 -> x \/ y = x /\ y.
