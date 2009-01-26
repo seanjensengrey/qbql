@@ -267,6 +267,7 @@ public class Database {
                 parenGroup = true;
             else if( child.contains(relation) 
                   || child.contains(expr) 
+                  || child.contains(identifier) 
                   || child.contains(parExpr) 
             ) {
                 if( x == null )
