@@ -377,7 +377,7 @@ public class Database {
         for( ParseNode descendant : root.descendants() ) {
             String id = descendant.content(src);
             if( descendant.from+1 == descendant.to 
-             && descendant.contains(expr) 
+             && (descendant.contains(expr) || descendant.contains(identifier))
              && lattice.get(id) == null ) 
                 variables.add(id);
         }
