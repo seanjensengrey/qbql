@@ -294,52 +294,77 @@ public class Database {
             return quantifier(x,y,forAll);
         return null;
     }
-
+    
     public boolean bool( ParseNode root, List<LexerToken> src ) throws Exception {
-        boolean isParen = false;
-        for( ParseNode c : root.children() ) 
-            if( c.contains(openParen) ) {
-                isParen = true;
-                continue;
-            } else if( isParen ) {
-                return bool(c,src);
-            } else if( c.contains(bool) ) {
-                Boolean left = null;
-                Boolean right = null;
-                for( ParseNode child : root.children() ) {
-                    if( left == null )
-                        left = bool(child,src);
-                    else if( child.contains(amp) ) {
-                    } else 				
-                        right = bool(child,src);
-                }
-                return left & right;
-            } else {
-                int oper = -1;
-                Relation left = null;
-                Relation right = null;
-                for( ParseNode child : root.children() ) {
-                    if( left == null )
-                        left = compute(child,src);
-                    else if( child.contains(equality) )
-                        oper = equality;
-                    else if( child.contains(lt) )
-                        oper = lt;
-                    else if( child.contains(equivalence) )
-                        oper = equivalence;
-                    else 				
-                        right = compute(child,src);
-                }
-                if( oper == equality && !left.equals(right)
-                 || oper == lt && !Relation.le(left,right)
-                 || oper == equivalence && !Relation.equivalent(left,right)
-                ) 
-                    return false;
+        for( ParseNode child : root.children() ) 
+            if( child.contains(expr) )
+                return boolExpr(root, src);
+            else 
+                return logical(root, src);
+        throw new Exception("Impossible exception, no children??"+root.content(src));
+    }
 
-                return true;				
+    public boolean logical( ParseNode root, List<LexerToken> src ) throws Exception {
+        Boolean left = null;
+        Boolean right = null;
+        int oper = -1;
+        for( ParseNode child : root.children() ) {
+            if( left == null ) {
+                if( child.contains(minus) ) {
+                    oper = minus;
+                    left = true;
+                } else if( child.contains(openParen) ) {
+                        oper = openParen;
+                        left = true;
+                } else 
+                    left = bool(child,src);
+            } else if( child.contains(amp) ) 
+                oper = amp;
+            else if( child.contains(bar) ) 
+                oper = bar;
+            else {                               
+                right = bool(child,src);
+                break;    // e.g.   "(" "x = y" ")"
+                          // break after ^^^^^
             }
+        }
+        if( oper == amp )
+            return left & right;
+        else if( oper == bar )
+            return left | right;
+        else if( oper == minus )
+            return ! right;
+        else if( oper == openParen )
+            return right;
+        throw new Exception("Unknown boolean operation "+oper);
+    }
+        
+    public boolean boolExpr( ParseNode root, List<LexerToken> src ) throws Exception {
+        int oper = -1;
+        Relation left = null;
+        Relation right = null;
+        for( ParseNode child : root.children() ) {
+            if( left == null )
+                left = compute(child,src);
+            else if( child.contains(equality) )
+                oper = equality;
+            else if( child.contains(lt) )
+                oper = lt;
+            else if( child.contains(equivalence) )
+                oper = equivalence;
+            else 				
+                right = compute(child,src);
+        }
+        if( oper == equality )
+            return left.equals(right);
+        if( oper == lt )
+            return Relation.le(left,right);
+        if( oper == equivalence )
+            return Relation.equivalent(left,right);
+
         throw new Exception("Impossible case");		
     }
+    
     public ParseNode implication( ParseNode root, List<LexerToken> src ) throws Exception {
         Boolean left = null;
         Boolean right = null;
@@ -598,6 +623,7 @@ public class Database {
     static int lt;
     static int gt;
     static int amp;
+    static int bar;
     static int assertion;
     static int query;
     static int identifier;
@@ -635,6 +661,7 @@ public class Database {
             lt = cyk.symbolIndexes.get("'<'");
             gt = cyk.symbolIndexes.get("'>'");
             amp = cyk.symbolIndexes.get("'&'");
+            bar = cyk.symbolIndexes.get("'|'");
             expr = cyk.symbolIndexes.get("expr");
             parExpr = cyk.symbolIndexes.get("parExpr");
             openParen = cyk.symbolIndexes.get("'('");

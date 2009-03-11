@@ -16,7 +16,12 @@ B = {<name=b>};
 C = {<name=c>};
 D = {<name=d>};
 
+BlockD = Blocks ^ D;
+
 Size = Large ^ R00;
 
+Cube = {<shape=cube>};
+Tet = {<shape=tet>};
 
+Shape = Cube ^ R00;
  
