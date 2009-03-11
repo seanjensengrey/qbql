@@ -2,5 +2,15 @@
 
 (Blocks ^ A) v Size = Small.
 
- 
+(Blocks ^ C) v Shape = Cube. 
 
+(Blocks ^ C) v Shape = Cube & C = B -> (Blocks ^ A) v Shape = Cube.
+------------------------------FALSE! because C and B are constants, not variables
+
+
+((Blocks ^ A) v Size) ^ ((Blocks ^ C) v Shape) = Small ^ Cube.
+
+(Blocks ^ D) v (Size ^ Shape) = Large ^ Cube -> (Blocks ^ D) v Size = Large.
+
+BlockD ^ Large < BlockD ^ Large'.
+BlockD ^ Cube < BlockD ^ Cube'.
