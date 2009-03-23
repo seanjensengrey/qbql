@@ -1,15 +1,2 @@
-%x ^ y < x ^ y' -> -( x ^ y' < x ^ y).
-
-y = [p]
-     1
-;
-x = [r]
-;
-y';
-x';
-
-x ^ y;
-x ^ y';
-
-x ^ y < x ^ y'.
-x ^ y' < x ^ y.
+x ^ (y v z) = (x ^ (z v (R00 ^ y))) v (x ^ (y v (R00 ^ z))).
+(R00 ^ (x ^ (y v z))) v (y ^ z) = ((R00 ^ (x ^ y)) v z) ^ ((R00 ^ (x ^ z)) v y).
