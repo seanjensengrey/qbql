@@ -155,16 +155,12 @@ public class Database {
     }
 
     /**
-     * Semi inverse x~ returns empty relation with header complementary to that of x
+     * Inverse x` 
      * Axioms:
-        x~ ^ x = R00 ^ R11.
-        x~ v x = x v R00.
-       (Genuine inverse would honor
-        x~ ^ x = x ^ R11.
-        x~ v x = x v R00. 
-        which is unsatisfiable by finite models!)
-     
-    Relation semiInverse( Relation x ) {
+        x` ^ x = x ^ R11.
+        x` v x = x v R00. 
+    */ 
+    Relation inverse( Relation x ) {
         String[] header = new String[R10.colNames.length-x.colNames.length];
         int i = -1;
         for( String attr : R10.colNames ) {
@@ -173,8 +169,11 @@ public class Database {
                 header[i] = attr;
             }
         }
-        return new Relation(header);
-    }*/
+        if( x.content.size() == 0 )
+            return new Relation(header);
+        else
+            return Relation.innerUnion(new Relation(header),R11);
+    }
     
     Relation buildR10() {
         Relation ret = new Relation(new String[]{});
@@ -288,6 +287,8 @@ public class Database {
             return Relation.unison(x,y);
         if( node.contains(complement) ) 
             return complement(x);
+        if( node.contains(inverse) ) 
+            return inverse(x);
         if( node.contains(exists) ) 
             return quantifier(x,y,exists);
         if( node.contains(forAll) ) 
@@ -612,6 +613,7 @@ public class Database {
     static int exists;
     static int forAll;
     static int complement;
+    static int inverse;
     static int equivalence;
     static int equality;
     static int minus;
@@ -655,6 +657,7 @@ public class Database {
             exists = cyk.symbolIndexes.get("exists");
             forAll = cyk.symbolIndexes.get("forAll");
             complement = cyk.symbolIndexes.get("complement");
+            inverse = cyk.symbolIndexes.get("inverse");
             equivalence = cyk.symbolIndexes.get("'~'");
             equality = cyk.symbolIndexes.get("'='");
             minus = cyk.symbolIndexes.get("'-'");
