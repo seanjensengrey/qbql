@@ -360,6 +360,8 @@ public class Relation {
         ret.add(new RuleTuple("forAll", new String[] {"expr","'/'","'\\'","expr"}));
         ret.add(new RuleTuple("complement", new String[] {"identifier","'''"}));  
         ret.add(new RuleTuple("complement", new String[] {"parExpr","'''"}));
+        ret.add(new RuleTuple("inverse", new String[] {"identifier","'`'"}));  
+        ret.add(new RuleTuple("inverse", new String[] {"parExpr","'`'"}));
         ret.add(new RuleTuple("expr", new String[] {"join"}));
         ret.add(new RuleTuple("expr", new String[] {"innerJoin"}));
         ret.add(new RuleTuple("expr", new String[] {"innerUnion"}));
@@ -369,6 +371,7 @@ public class Relation {
         ret.add(new RuleTuple("expr", new String[] {"unison"}));
         ret.add(new RuleTuple("expr", new String[] {"parExpr"}));
         ret.add(new RuleTuple("expr", new String[] {"complement"}));
+        ret.add(new RuleTuple("expr", new String[] {"inverse"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'='","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'~'","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'<'","expr"}));

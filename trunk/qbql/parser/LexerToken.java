@@ -45,7 +45,7 @@ public class LexerToken {
     public static LinkedList<LexerToken> tokenize( String sourceExpr ) {
 
         LinkedList<LexerToken> ret = new LinkedList<LexerToken>();
-        final String operation = "()[]^-~|!*+./><='\",;:%@";
+        final String operation = "()[]^-~|!*+./><='`\",;:%@";
         final String ws = " \n\r\t";
         StringTokenizer st = new StringTokenizer(sourceExpr,
                                                  //".*-+/|><=()\'\", \n\r\t"
