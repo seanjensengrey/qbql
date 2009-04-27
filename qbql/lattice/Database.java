@@ -367,22 +367,35 @@ public class Database {
     }
     
     public ParseNode implication( ParseNode root, List<LexerToken> src ) throws Exception {
-        Boolean left = null;
-        Boolean right = null;
+        ParseNode left = null;
+        ParseNode right = null;
+        boolean impl = false;
+        boolean bimpl = false;
         for( ParseNode child : root.children() ) {
             if( left == null ) {
-                left = bool(child,src);
-                if( !left ) // optimization: early termination
-                    return null;
-            } else if( child.contains(gt)||child.contains(minus) )
-                ;
-            else 				
-                right = bool(child,src);
+                left = child;
+            } else if( child.contains(gt)||child.contains(minus)||child.contains(lt) ) {
+                if( child.contains(gt) )
+                    impl = true;
+                if( child.contains(lt) )
+                    bimpl = true;
+            } else 				
+                right = child;
         }		
-        if( /*!left ||*/ right ) {
+        if( impl && !bimpl && boolImpl(left,right,src) ) 
             return null;
-        } else
+        else if( !impl && bimpl && boolImpl(right,left,src) ) 
+            return null;
+        else if( impl && bimpl && boolImpl(left,right,src) && boolImpl(right,left,src) ) 
+            return null;
+        else
             return root;
+    }
+    private boolean boolImpl( ParseNode left,ParseNode right, List<LexerToken> src ) throws Exception {
+        boolean l = bool(left,src);
+        if( !l ) // optimization: early termination
+            return true;
+        return bool(right,src);
     }
 
     private boolean next( int[] state, int limit ) {
