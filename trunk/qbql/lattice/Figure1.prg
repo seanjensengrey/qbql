@@ -41,9 +41,49 @@ a v x = b &
 a^R00=x^R00 &
 (a^x)v R00 = R00 -> x = b ^ a'.
 
-*/
+
 
 --(R11 /\ x) ^ x = R11 ^ x.
 --x \/ y = (x ^ y) v ((x /\ y)^R00).
 x` ^ x = x ^ R11.
 x` v x = x v R00. 
+
+a ^ x = b &
+a v R00=x v R00 &
+(a v x)^ R00 = R00 -> x = b * a`.
+
+x` v y` = (x + y)`.
+x' ^ y' = (x + y)'.
+
+x` + y` = (x v y)`.
+
+x = (x ^ y') v (x ^ y`). 
+
+((x' ^ y')')` = x` v y`.
+
+
+x ^ (y` v z`) = (x ^ y`) v (x ^ z`).
+
+x`=y`-> x^R00 = y^R00.
+
+x`=y`-> x v R00 = y v R00.
+
+
+(x` v y`) ^ (y` v x`)=(x ^ y)` v (x v y)`.
+
+x ^ (y v z) = (x ^ (z v (x ^ y))) v (x ^ (y v (x ^ z))).
+
+--symmetric difference--
+((x'^y)v(x^y')) * ((x` v y) ^ (x v y`)) = R00 -> x = y.
+x = y ->  (x'^y)v(x^y') * ((x` v y) ^ (x v y`)) = R00.
+x = y ->  ((x v y)^(x^y)') * ((x ^ y)v(x v y)`) = R00.
+((x v y)^(x^y)') * ((x ^ y)v(x v y)`) = R00 -> x = y.
+*/
+x v R00 = R00 -> (x')` = (x`)'.
+x ^ R11 = R11 -> (x')` = (x`)'.
+(x')` = (x`)' -> R00 < x | x < R11.
+
+x ^ R00 = R00 -> x = R00 | x = R00'.
+
+(x`)` = x <-> (x')` = (x`)'.
+

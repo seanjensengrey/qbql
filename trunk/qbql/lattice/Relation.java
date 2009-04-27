@@ -380,6 +380,8 @@ public class Relation {
         ret.add(new RuleTuple("boolean", new String[] {"'-'","boolean"}));
         ret.add(new RuleTuple("boolean", new String[] {"'('","boolean","')'"}));
         ret.add(new RuleTuple("implication", new String[] {"boolean","'-'","'>'","boolean"}));
+        ret.add(new RuleTuple("implication", new String[] {"boolean","'<'","'-'","boolean"}));
+        ret.add(new RuleTuple("implication", new String[] {"boolean","'<'","'-'","'>'","boolean"}));
         ret.add(new RuleTuple("assertion", new String[] {"boolean","'.'"}));
         ret.add(new RuleTuple("assertion", new String[] {"implication","'.'"}));
         ret.add(new RuleTuple("query", new String[] {"expr","';'"}));
