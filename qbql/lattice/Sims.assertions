@@ -1,4 +1,4 @@
-Time v (Claire ^ At ^ Library) < Time v (Max ^ At ^ Home).
+Time v (Claire ^ At ^ Library) > Time v (Max ^ At ^ Home).
 
 Home /\ Max /\ At;
 

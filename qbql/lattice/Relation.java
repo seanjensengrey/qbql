@@ -253,9 +253,12 @@ public class Relation {
     /**
      * @param x
      * @param y
-     * @return x < y (i.e. x ^ y = y)
+     * @return x < y (i.e. x ^ y = x)
      */
     public static boolean le( Relation x, Relation y ) {
+        return x.equals(join(x,y));
+    }
+    public static boolean ge( Relation x, Relation y ) {
         return y.equals(join(x,y));
     }
     public boolean equals( Object o ) {
@@ -375,6 +378,7 @@ public class Relation {
         ret.add(new RuleTuple("boolean", new String[] {"expr","'='","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'~'","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'<'","expr"}));
+        ret.add(new RuleTuple("boolean", new String[] {"expr","'>'","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"boolean","'&'","boolean"}));
         ret.add(new RuleTuple("boolean", new String[] {"boolean","'|'","boolean"}));
         ret.add(new RuleTuple("boolean", new String[] {"'-'","boolean"}));

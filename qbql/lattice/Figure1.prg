@@ -1,10 +1,11 @@
-/*
+
 x ^ (y v z) = (x ^ (z v (R00 ^ y))) v (x ^ (y v (R00 ^ z))).
+
 (R00 ^ (x ^ (y v z))) v (y ^ z) = ((R00 ^ (x ^ y)) v z) ^ ((R00 ^ (x ^ z)) v y).
 (x ^ y) v (x ^ z) =  x ^ ( ((x v z) ^ y) v ((x v y) ^ z) ).
-y v z < y + z. --x ^ (y v z) < x ^ (y + z).
-y + z < y ^ z.
-(x ^ y) v (x ^ z) < x ^ (y + z).
+y v z > y + z. --x ^ (y v z) < x ^ (y + z).
+y + z > y ^ z.
+(x ^ y) v (x ^ z) > x ^ (y + z).
 
 
 
@@ -16,7 +17,7 @@ y v z = (y + z) v ((y v z) ^ R00).
 --R00 < (x v y v z) ^ ((x v y) + (x v z))'.-- -> x ^ (y v z) = (x ^ y) v (x ^ z).
 (x v y v z) = ((x v y) + (x v z))' -> x ^ (y v z) = (x ^ y) v (x ^ z).
 
-R00 ^ (x v y) = R00 ^ (x v z) -> R00 < (x v y v z) ^ ((x v y) + (x v z))'.
+R00 ^ (x v y) = R00 ^ (x v z) -> R00 > (x v y v z) ^ ((x v y) + (x v z))'.
 
 x ^ (y v z) = (x ^ y) v (x ^ z) v ((x ^ (y v z)) ^ ((x ^ y) v (x ^ z))').
 
@@ -71,19 +72,27 @@ x`=y`-> x v R00 = y v R00.
 
 (x` v y`) ^ (y` v x`)=(x ^ y)` v (x v y)`.
 
-x ^ (y v z) = (x ^ (z v (x ^ y))) v (x ^ (y v (x ^ z))).
-
 --symmetric difference--
 ((x'^y)v(x^y')) * ((x` v y) ^ (x v y`)) = R00 -> x = y.
 x = y ->  (x'^y)v(x^y') * ((x` v y) ^ (x v y`)) = R00.
 x = y ->  ((x v y)^(x^y)') * ((x ^ y)v(x v y)`) = R00.
 ((x v y)^(x^y)') * ((x ^ y)v(x v y)`) = R00 -> x = y.
-*/
-x v R00 = R00 -> (x')` = (x`)'.
-x ^ R11 = R11 -> (x')` = (x`)'.
-(x')` = (x`)' -> R00 < x | x < R11.
+
+(x')` = (x`)' <-> R00 > x | x > R11.
 
 x ^ R00 = R00 -> x = R00 | x = R00'.
 
 (x`)` = x <-> (x')` = (x`)'.
 
+(x ^ x') * (x v x`) = R00.
+
+R00'=R11`.
+
+x' v x` = R01. 
+
+
+x' + x` = R11.
+
+x ^ (x`)' = R10.
+
+(x`)` > x.

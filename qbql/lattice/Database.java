@@ -351,6 +351,8 @@ public class Database {
                 oper = equality;
             else if( child.contains(lt) )
                 oper = lt;
+            else if( child.contains(gt) )
+                oper = gt;
             else if( child.contains(equivalence) )
                 oper = equivalence;
             else 				
@@ -360,6 +362,8 @@ public class Database {
             return left.equals(right);
         if( oper == lt )
             return Relation.le(left,right);
+        if( oper == gt )
+            return Relation.ge(left,right);
         if( oper == equivalence )
             return Relation.equivalent(left,right);
 
