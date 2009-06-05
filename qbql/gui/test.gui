@@ -1,3 +1,4 @@
-(button A, button B, input C, 
-   (button x, button y, input z)/2
-)/3
+(codeArea x, 
+   ([], button y, [])/3,
+   codeArea y
+)/1

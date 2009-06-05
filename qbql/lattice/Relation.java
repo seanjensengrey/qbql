@@ -165,7 +165,7 @@ public class Relation {
     }
 
     public static Relation innerJoin( Relation x, Relation y ) {
-        Set<String> header = new HashSet<String>();
+        Set<String> header = new TreeSet<String>();
         header.addAll(x.header.keySet());
         header.retainAll(y.header.keySet());		
         Relation ret = new Relation(header.toArray(new String[0]));
@@ -189,10 +189,10 @@ public class Relation {
     }
 
     public static Relation unison( Relation x, Relation y ) throws Exception {
-        Set<String> header = new HashSet<String>();
+        Set<String> header = new TreeSet<String>();
         header.addAll(x.header.keySet());
         header.removeAll(y.header.keySet());            
-        Set<String> header1 = new HashSet<String>();
+        Set<String> header1 = new TreeSet<String>();
         header1.addAll(y.header.keySet());
         header1.removeAll(x.header.keySet());
         header.addAll(header1);
@@ -376,6 +376,7 @@ public class Relation {
         ret.add(new RuleTuple("expr", new String[] {"complement"}));
         ret.add(new RuleTuple("expr", new String[] {"inverse"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'='","expr"}));
+        ret.add(new RuleTuple("boolean", new String[] {"expr","'!'","'='","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'~'","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'<'","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'>'","expr"}));

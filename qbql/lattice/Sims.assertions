@@ -1,3 +1,4 @@
+/*
 Time v (Claire ^ At ^ Library) > Time v (Max ^ At ^ Home).
 
 Home /\ Max /\ At;
@@ -5,4 +6,39 @@ Home /\ Max /\ At;
 Library /\ At /\ Claire;
 
 At v Time;
+
+(Peter ^ Male) v Max;
+(Peter ^ Male) + Max;
+
+--( project_x(R) /\ project_z(Q) ) \
+--project_xz( (project_x(R) /\ Q ) symm_diff (R /\ project_z(Q) )  ) 
+x /\ y = (x v (y^R00)`) ^ (y v (x^R00)`) ^
+(
+ (((x ^ y) v (x v y)`) ^ R00) v
+ ( 
+    ( ((x v (y^R00)`) ^ y) v ((y v (x^R00)`) ^ x) ) 
+  ^ ( ((x v (y^R00)`) ^ y) ^ ((y v (x^R00)`) ^ x) )'
+ )
+)'.
+
+x v R00 = R01 & y v R00 = R01 -> y`*x = (y^R00)` v x.
+(x`*y)^(y`*x) = (x v (y^R00)`) ^ (y v (x^R00)`).
+
+
+x /\ y = ((x`*y)^(y`*x)) *
+(
+(((x v y`) ^ (x` v y)) ^ R00) v
+ ( 
+    ( x'^y ) v ( y'^x )
+ )
+)'.
+
+x /\ y = ((x`*y)^(y`*x)) * (
+ ((x`*y)^(y`*x)) *
+ ((x'^y)v(y'^x))
+)'.
+*/
+
+
+
 
