@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -85,13 +84,13 @@ public class Database {
      * Generalized set intersection and set union
      */
     Relation quantifier( Relation x, Relation y, int type ) throws Exception {
-        Set<String> headerXmY = new HashSet<String>();
+        Set<String> headerXmY = new TreeSet<String>();
         headerXmY.addAll(x.header.keySet());
         headerXmY.removeAll(y.header.keySet());            
-        Set<String> headerYmX = new HashSet<String>();
+        Set<String> headerYmX = new TreeSet<String>();
         headerYmX.addAll(y.header.keySet());
         headerYmX.removeAll(x.header.keySet());
-        Set<String> headerSymDiff = new HashSet<String>();
+        Set<String> headerSymDiff = new TreeSet<String>();
         headerSymDiff.addAll(headerXmY);
         headerSymDiff.addAll(headerYmX);
         Relation hdrXmY = new Relation(headerXmY.toArray(new String[0]));
@@ -344,9 +343,12 @@ public class Database {
         int oper = -1;
         Relation left = null;
         Relation right = null;
+        boolean not = false;
         for( ParseNode child : root.children() ) {
             if( left == null )
                 left = compute(child,src);
+            else if( child.contains(excl) )
+                not = true;
             else if( child.contains(equality) )
                 oper = equality;
             else if( child.contains(lt) )
@@ -359,7 +361,7 @@ public class Database {
                 right = compute(child,src);
         }
         if( oper == equality )
-            return left.equals(right);
+            return not ? !left.equals(right) : left.equals(right);
         if( oper == lt )
             return Relation.le(left,right);
         if( oper == gt )
@@ -643,6 +645,7 @@ public class Database {
     static int gt;
     static int amp;
     static int bar;
+    static int excl;
     static int assertion;
     static int query;
     static int identifier;
@@ -682,6 +685,7 @@ public class Database {
             gt = cyk.symbolIndexes.get("'>'");
             amp = cyk.symbolIndexes.get("'&'");
             bar = cyk.symbolIndexes.get("'|'");
+            excl = cyk.symbolIndexes.get("'!'");
             expr = cyk.symbolIndexes.get("expr");
             parExpr = cyk.symbolIndexes.get("parExpr");
             openParen = cyk.symbolIndexes.get("'('");
