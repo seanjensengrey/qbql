@@ -731,7 +731,7 @@ public class Database {
         long t1 = System.currentTimeMillis();
         ParseNode exception = model.program(root,src);
         long t2 = System.currentTimeMillis();
-        System.out.println("Time = "+(t2-t1)); // (authorized)
+        System.out.println("Time = "+(t2-t1)); 
         if( exception != null ) {
             System.out.println("*** False Assertion ***");
             System.out.println(prg.substring(src.get(exception.from).begin, src.get(exception.to-1).end));
