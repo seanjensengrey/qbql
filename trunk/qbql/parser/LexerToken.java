@@ -20,7 +20,7 @@ public class LexerToken {
     }
 
     public void print() {
-        System.out.println(toString()); // (authorized)
+        System.out.println(toString()); 
     }
     public String toString() {
         return "["+begin+","+end+") "+content+"   <"+type+">"; 
@@ -28,16 +28,20 @@ public class LexerToken {
     public static void print( List<LexerToken> src ) {
         int j = 0;
         for( LexerToken t: src ) {
-            System.out.print(j+"    "); // (authorized)
+            System.out.print(j+"    "); 
             t.print(); 
             j++;
         }
     }
     public static void print( List<LexerToken> src, int from, int to ) {		
+        System.out.println(toString(src, from, to)); 
+    }
+    public static String toString( List<LexerToken> src, int from, int to ) {
+        StringBuilder ret = new StringBuilder();
         for( int i = from; i < to; i++ ) {
-            System.out.print(" "+src.get(i).content); // (authorized)
+            ret.append(" "+src.get(i).content);
         }
-        System.out.println(); // (authorized)
+        return ret.toString(); 
     }
     // homegrown one pass method -- should be faster than regexpr based one
     public static boolean isPercentLineComment = false; // Prover9 comments

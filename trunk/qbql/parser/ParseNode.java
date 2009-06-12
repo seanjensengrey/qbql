@@ -241,41 +241,77 @@ public class ParseNode implements Comparable {
         }
     }
 
-    /*
-	public BigInteger weight() {
-		Set<ParseNode> tmp = new TreeSet<ParseNode>();
-		return weight(tmp);
-	}
-	private BigInteger weight( Set<ParseNode> tmp ) {
-		if( tmp.contains(this) )
-			return new BigInteger("0");
-		tmp.add(this);
-		if( !isAuxiliary() )
-			return (new BigInteger(""+(to-from))).pow(2);			
-		BigInteger ret = new BigInteger("0");
-		for( ParseNode child : children() ) {
-			ret = ret.add(child.weight(tmp));
-		}
-		return ret;   
-	}*/
-    /*
-     * debug
-	public BigInteger weight1( int depth, Set<ParseNode> tmp ) {
-		System.out.println(toString(depth)); // (authorized)
-		if( tmp.contains(this) )
-			return new BigInteger("0");
-		tmp.add(this);
-		if( !isAuxiliary() )
-			return (new BigInteger(""+(to-from))).pow(2);			
-		BigInteger ret = new BigInteger("0");
-		for( ParseNode child : children() ) {
-			ret = ret.add(child.weight1(depth+1, tmp));
-		}
-		return ret;   
-	}*/
-
-
-    public static void main(String[] args) throws Exception {
+    
+    public ParseNode clone() {
+        ParseNode ret = new ParseNode(from,to,payloadIn,payloadOut,cyk);
+        if( rgt != null ) {
+            ret.rgt = rgt.clone();
+        }
+        if( lft != null ) {
+            ret.lft = lft.clone();
+        }
+        // TODO: for syntactically invalid
+        return ret;    
     }
+    
+    public ParseNode graft( int pos, ParseNode scion ) {
+        ParseNode clone = clone();
+        ParseNode scionClone = scion.clone();
+        ParseNode parent = clone.genuineParent(pos, pos+1);
+        clone.incrementAllDescendants(pos, scion.to-1);
+        scionClone.incrementAllDescendants(pos);
+        if( parent == null )
+            return scionClone;
+        if( parent.rgt != null && parent.rgt.from == pos ) {
+            //if( parent.rgt.from != scionClone.from || parent.rgt.to != scionClone.to )
+                //throw new RuntimeException("parent.rgt.from != scionClone.from || parent.rgt.to != scionClone.to");
+            parent.rgt = scionClone;
+        } else if( parent.lft != null && parent.lft.from == pos ) {
+            //if( parent.lft.from != scionClone.from || parent.lft.to != scionClone.to )
+                //throw new RuntimeException("parent.lft.from != scionClone.from || parent.lft.to != scionClone.to");
+            parent.lft = scionClone;
+        } else
+            throw new RuntimeException("parent.rgt.from == pos || parent.lft.from == pos");
+        return clone;
+    }
+    private ParseNode genuineParent( int from, int to ) {
+        if( rgt != null && rgt.from == from && to == rgt.to 
+         || lft != null && lft.from == from && to == lft.to ) {
+            return this;
+        }
+        if( rgt != null && rgt.from <= from && to <= rgt.to ) {
+            return rgt.genuineParent(from, to);
+        }
+        if( lft != null && lft.from <= from && to <= lft.to ) {
+            return lft.genuineParent(from, to);
+        }
+        return null;
+    }
+    private void incrementAllDescendants( int pos, int inc ) {
+        if( from <= pos && pos < to )
+            to += inc;        
+        if( pos < from ) {
+            to += inc;        
+            from += inc;
+        }
+        if( rgt != null ) 
+            rgt.incrementAllDescendants(pos, inc);
+        if( lft != null ) 
+            lft.incrementAllDescendants(pos, inc);
+        if( rgt != null && rgt.to != to || lft != null && lft.from != from )
+            throw new RuntimeException("rgt != null && rgt.to != to || lft != null && lft.from != from");
+    }
+    private void incrementAllDescendants( int inc ) {
+        from += inc;        
+        to += inc;        
+        if( rgt != null ) 
+            rgt.incrementAllDescendants(inc);
+        if( lft != null ) 
+            lft.incrementAllDescendants(inc);
+        // can't possibly violate the below constraint
+        //if( rgt != null && rgt.to != to || lft != null && lft.from != from )
+            //throw new RuntimeException("rgt != null && rgt.to != to || lft != null && lft.from != from");
+    }
+
 }
 
