@@ -267,6 +267,7 @@ public class Database {
                   || child.contains(expr) 
                   || child.contains(identifier) 
                   || child.contains(parExpr) 
+                  || child.contains(attribute) // produced by ExprGen 
             ) {
                 if( x == null )
                     x = compute(child,src);
@@ -415,15 +416,16 @@ public class Database {
         return false;
     }
 
-    public ParseNode assertion( ParseNode root, List<LexerToken> src ) throws Exception {
+    public ParseNode assertion( ParseNode root, List<LexerToken> src, boolean outputVariables ) throws Exception {
+        ParseNode ret = null;
+        Set<String> variables = new HashSet<String>();
         String[] tables = lattice.keySet().toArray(new String[0]);
 
-        Set<String> variables = new HashSet<String>();
         for( ParseNode descendant : root.descendants() ) {
             String id = descendant.content(src);
             if( descendant.from+1 == descendant.to 
-             && (descendant.contains(expr) || descendant.contains(identifier))
-             && lattice.get(id) == null ) 
+                    && (descendant.contains(expr) || descendant.contains(identifier))
+                    && lattice.get(id) == null ) 
                 variables.add(id);
         }
 
@@ -436,34 +438,34 @@ public class Database {
                 lattice.put(variable, lattice.get(tables[indexes[var++]]));
             }
 
-            
+
             for( ParseNode child : root.children() ) {
                 if( child.contains(bool) ) {
                     if( !bool(child,src) ) {
                         for( String variable : variables )
-                            System.out.println(variable+" = "
-                                               +lattice.get(variable).toString(variable.length()+3, false)
-                                               +";");
-                        return child;
+                            if( outputVariables )
+                                System.out.println(variable+" = "
+                                                   +lattice.get(variable).toString(variable.length()+3, false)
+                                                   +";");
+                        ret = child;
                     }
                 } else if( child.contains(implication) ) {
-                    ParseNode ret = implication(child,src);
+                    ret = implication(child,src);
                     if( ret != null ) {
                         for( String variable : variables )
-                            System.out.println(variable+" = "
-                                               +lattice.get(variable).toString(variable.length()+3, false)
-                                               +";");
-                        return ret;
+                            if( outputVariables )
+                                System.out.println(variable+" = "
+                                                   +lattice.get(variable).toString(variable.length()+3, false)
+                                                   +";");
                     }
                 } 
             }
         } while( next(indexes,tables.length) );
 
-        
         for( String variable : variables )
             lattice.remove(variable);
 
-        return null;
+        return ret;
     }
 
     public ParseNode query( ParseNode root, List<LexerToken> src ) throws Exception {
@@ -483,7 +485,7 @@ public class Database {
      */
     public ParseNode program( ParseNode root, List<LexerToken> src ) throws Exception {
         if( root.contains(assertion) )
-            return assertion(root,src);
+            return assertion(root,src,true);
         if( root.contains(query) )
             return query(root,src);
         if( root.contains(assignment) ) {
