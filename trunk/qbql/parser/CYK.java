@@ -76,36 +76,36 @@ public class CYK {
         long t1 = System.currentTimeMillis();
         List<LexerToken> src =  LexerToken.parse(input);
         long t2 = System.currentTimeMillis();
-        System.out.println("Lexer time = "+(t2-t1)); // (authorized)
+        System.out.println("Lexer time = "+(t2-t1)); 
         //LexerToken.print(src);
 
         long h = Runtime.getRuntime().totalMemory();
         long hf = Runtime.getRuntime().freeMemory();
-        System.out.println("mem="+(h-hf)); // (authorized)
+        System.out.println("mem="+(h-hf)); // 
         t1 = System.currentTimeMillis();
         Matrix matrix = cyk.initArray1(src);
         t2 = System.currentTimeMillis();
-        System.out.println("Init array time = "+(t2-t1)); // (authorized)
+        System.out.println("Init array time = "+(t2-t1)); 
 
         int size = matrix.size();
-        System.out.println("size = "+size); // (authorized)
+        System.out.println("size = "+size); 
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
         t1 = System.currentTimeMillis();
         cyk.closure(matrix, 0, size+1, skipRanges, -1);
         t2 = System.currentTimeMillis();
-        System.out.println("Parse time = "+(t2-t1)); // (authorized)
-        System.out.println(skipRanges);// (authorized)
+        System.out.println("Parse time = "+(t2-t1));
+        System.out.println(skipRanges);
         cyk.print(matrix, 0, size);
-        System.out.println("^^^^^^^^^^^^^"); // (authorized)
+        System.out.println("^^^^^^^^^^^^^"); 
         //cyk.print(matrix, 0, 1);
 
         t1 = System.currentTimeMillis();
         ParseNode root = cyk.forest(size, matrix);
         t2 = System.currentTimeMillis();
-        System.out.println("Reduction time = "+(t2-t1)); // (authorized)
+        System.out.println("Reduction time = "+(t2-t1)); 
         h = Runtime.getRuntime().totalMemory();
         hf = Runtime.getRuntime().freeMemory();
-        System.out.println("mem="+(h-hf)); // (authorized)
+        System.out.println("mem="+(h-hf)); 
 
         root.printTree();
         //root.printBinaryTree(0);                              

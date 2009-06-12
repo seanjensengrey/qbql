@@ -16,12 +16,16 @@ public class ExprGen {
     static ExprTree union = null;
     static ExprTree complementX = null;
     static ExprTree complementY = null;
+    static ExprTree r00 = null;
+    static ExprTree r11 = null;
     static {
         try {
             join = parse("(x ^ y)");
             union = parse("(x v y)");
             complementX = parse("(x)'");
             complementY = parse("(y)'");
+            r00 = parse("R00");
+            r11 = parse("R11");
         } catch (Exception e) {
             System.exit(1);
         }
@@ -32,20 +36,20 @@ public class ExprGen {
         accumulated.add(parse("x"));
         
         List<ExprTree> grafts = new LinkedList<ExprTree>();
-        grafts.add(parse("R00"));
-        grafts.add(parse("R11"));
-        grafts.add(complementX);
-        grafts.add(complementY);
+        grafts.add(r00);
+        grafts.add(r11);
+        //grafts.add(complementX);
+        //grafts.add(complementY);
         grafts.add(join);
         grafts.add(union);
      
         Database model = new Database();
+        ExprTree XeqExpr = parse("x = expr.");
         
-        long iter = 0;
-        for(;;) {
-            iter++;
-            if( iter%100==0 )
-                return;
+        
+        final long t1 = System.currentTimeMillis();
+        for( long iter = 0; iter < 1000; iter++) {            
+            //if( iter%100==0 )
                 //System.out.print('.');
             
             ExprTree current = smallest(accumulated);    
@@ -55,23 +59,36 @@ public class ExprGen {
                         continue;
                     ExprTree grown = current.grow(varPos, graft);
                     accumulated.add(grown);
-                    //if( isRedundant(graft,current,varPos) )
-                        LexerToken.print(grown.src, 0, grown.src.size());
                     // debug
-                    if( " ( R11 ) '".equals(LexerToken.toString(grown.src, 0, grown.src.size())) )
-                        grown = null;
+                    //if( isRedundant(graft,current,varPos) )
+                        //LexerToken.print(grown.src, 0, grown.src.size());
+                    String expr = LexerToken.toString(grown.src, 0, grown.src.size());
+                    //if( expr.contains("( x ^ R11 ) v ( x ^ R00 )") )
+                        //LexerToken.print(grown.src, 0, grown.src.size());                        
+                        
+                    ExprTree identity = XeqExpr.grow(2, grown);
+                    if( model.assertion(identity.root, identity.src, false) != null )
+                        continue;
+                    //if( expr.contains("( x ^ R11 ) v ( x ^ R00 )") ) {
+                    if( !ignore(graft,current,varPos) ) {
+                        long t2 = System.currentTimeMillis();
+                        //System.out.println("*************************** = "+(t2-t1)); 
+                        LexerToken.print(grown.src, 0, grown.src.size());
+                    }
                 }
             accumulated.remove(current);
         }
+        long t2 = System.currentTimeMillis();
+        System.out.println("Time = "+(t2-t1)); 
     }
 
-    private static boolean isRedundant( ExprTree graft, ExprTree current, int pos ) {
+    private static boolean ignore( ExprTree graft, ExprTree current, int pos ) {
         if( join == graft || union == graft ) {
             ParseNode parent = current.root.parent(pos, pos+1);
             if( parent == null )
                 return false;
             if( (parent.contains(Database.join) || parent.contains(Database.innerUnion)) 
-              && parent.from+3==parent.to ) {
+                    && parent.from+3==parent.to ) {
                 if( parent.from==pos ) {
                     String var = current.src.get(parent.to-1).content;
                     if( "x".equals(var) || "y".equals(var) )
@@ -84,6 +101,9 @@ public class ExprGen {
                 }
             }
         }
+        return false;
+    }
+    private static boolean isRedundant( ExprTree graft, ExprTree current, int pos ) {
         if( complementX == graft || complementY == graft ) {
             ParseNode parent = current.root.parent(pos, pos+1);
             if( parent == null || parent.contains(Database.expr) )
@@ -97,6 +117,24 @@ public class ExprGen {
                 //String var = current.src.get(pos).content;
                 //if( "x".equals(var) || "y".equals(var) )
                     return true;
+            }
+        }
+        if( r00 == graft || r11 == graft ) {
+            ParseNode parent = current.root.parent(pos, pos+1);
+            if( parent == null )
+                return false;
+            if( (parent.contains(Database.join) || parent.contains(Database.innerUnion)) 
+              && parent.from+3==parent.to ) {
+                if( parent.from==pos ) {
+                    String var = current.src.get(parent.to-1).content;
+                    if( "R00".equals(var) || "R11".equals(var) )
+                        return true;
+                }
+                if( parent.to-1==pos ) {
+                    String var = current.src.get(parent.from).content;
+                    if( "R00".equals(var) || "R11".equals(var) )
+                        return true;
+                }
             }
         }
         return false;
