@@ -16,6 +16,8 @@ public class ExprGen {
     static ExprTree union = null;
     static ExprTree complementX = null;
     static ExprTree complementY = null;
+    static ExprTree inverseX = null;
+    static ExprTree inverseY = null;
     static ExprTree r00 = null;
     static ExprTree r11 = null;
     static {
@@ -24,6 +26,8 @@ public class ExprGen {
             union = parse("(x v y)");
             complementX = parse("(x)'");
             complementY = parse("(y)'");
+            inverseX = parse("(x)`");
+            inverseY = parse("(y)`");
             r00 = parse("R00");
             r11 = parse("R11");
         } catch (Exception e) {
@@ -35,26 +39,39 @@ public class ExprGen {
         List<ExprTree> accumulated = new LinkedList<ExprTree>();
         accumulated.add(parse("x"));
         
-        List<ExprTree> grafts = new LinkedList<ExprTree>();
-        grafts.add(r00);
-        grafts.add(r11);
-        //grafts.add(complementX);
-        //grafts.add(complementY);
-        grafts.add(join);
-        grafts.add(union);
+        List<Substitution> grafts = new LinkedList<Substitution>();
+        grafts.add(new Substitution("x",r00));
+        grafts.add(new Substitution("y",r00));
+        grafts.add(new Substitution("x",r11));
+        grafts.add(new Substitution("y",r11));
+        grafts.add(new Substitution("x",join));
+        grafts.add(new Substitution("y",join));
+        grafts.add(new Substitution("x",union));
+        grafts.add(new Substitution("y",union));
+        grafts.add(new Substitution("x",complementX));
+        grafts.add(new Substitution("y",complementY));
+        //grafts.add(new Substitution("x",inverseX));
+        //grafts.add(new Substitution("y",inverseY));
      
         Database model = new Database();
-        ExprTree XeqExpr = parse("x = expr.");
-        
+        ExprTree XeqExpr = parse("((x)`)` = expr.");
+        int exprPos = 8; //-------0123456-7-^^^^
+        //ExprTree XeqExpr = parse("x /\\ y = expr.");
+        //int exprPos = 5; //-----------------^^^^
         
         final long t1 = System.currentTimeMillis();
-        for( long iter = 0; iter < 1000; iter++) {            
-            //if( iter%100==0 )
-                //System.out.print('.');
+        for( long i = 0; i < 100000; i++) {            
+            if( i%5000==0 )
+                System.out.println("i="+i);
+            else if( i%100==0 )
+                System.out.print('.');
             
             ExprTree current = smallest(accumulated);    
             for( Integer varPos : current.getVariables() )
-                for( ExprTree graft : grafts ) {
+                for( Substitution s : grafts ) {
+                    if( !s.var.equals(current.src.get(varPos).content) )
+                        continue;
+                    ExprTree graft = s.by;
                     if( isRedundant(graft,current,varPos) )
                         continue;
                     ExprTree grown = current.grow(varPos, graft);
@@ -63,18 +80,18 @@ public class ExprGen {
                     //if( isRedundant(graft,current,varPos) )
                         //LexerToken.print(grown.src, 0, grown.src.size());
                     String expr = LexerToken.toString(grown.src, 0, grown.src.size());
-                    //if( expr.contains("( x ^ R11 ) v ( x ^ R00 )") )
-                        //LexerToken.print(grown.src, 0, grown.src.size());                        
+                    if( expr.contains("( x ^ R11 ) v ( x ^ R00 )") )
+                        System.out.println("!!!!!!!!!   !!!!!!!!   !!!!!!!!!");                     
+                    if( expr.contains("( x ^ ( y ) ' ) v ( x ^ ( y ) ` )") )
+                        System.out.println("!!!!!!!!!  *******  !!!!!!!! ******* !!!!!!!!!");                     
                         
-                    ExprTree identity = XeqExpr.grow(2, grown);
+                    ExprTree identity = XeqExpr.grow(exprPos, grown);
                     if( model.assertion(identity.root, identity.src, false) != null )
                         continue;
-                    //if( expr.contains("( x ^ R11 ) v ( x ^ R00 )") ) {
-                    if( !ignore(graft,current,varPos) ) {
-                        long t2 = System.currentTimeMillis();
-                        //System.out.println("*************************** = "+(t2-t1)); 
-                        LexerToken.print(grown.src, 0, grown.src.size());
-                    }
+                    //long t2 = System.currentTimeMillis();
+                    //if( expr.contains("x") && expr.contains("y") && expr.contains("`") )
+                    System.out.println("*** found *** "+expr);
+                    //}
                 }
             accumulated.remove(current);
         }
@@ -105,19 +122,27 @@ public class ExprGen {
     }
     private static boolean isRedundant( ExprTree graft, ExprTree current, int pos ) {
         if( complementX == graft || complementY == graft ) {
+            if( current.src.get(pos).content.equals("R00") 
+                || current.src.get(pos).content.equals("R11") )
+                return true;
             ParseNode parent = current.root.parent(pos, pos+1);
             if( parent == null || parent.contains(Database.expr) )
                 return false;
             ParseNode grandparent = current.root.parent(parent.from, parent.to);
             if( grandparent == null )
                 return false;
-            if( (grandparent.contains(Database.complement)) 
-              //&& parent.from+3==parent.to 
-            ) {
+            if( (grandparent.contains(Database.complement)) ) {
+                if( parent.from+3!=parent.to )
+                    throw new RuntimeException("parent.from+3!=parent.to");
                 //String var = current.src.get(pos).content;
                 //if( "x".equals(var) || "y".equals(var) )
                     return true;
             }
+        }
+        if( inverseX == graft || inverseY == graft ) {
+            if( current.src.get(pos).content.equals("R00") 
+                || current.src.get(pos).content.equals("R11") )
+                return true;
         }
         if( r00 == graft || r11 == graft ) {
             ParseNode parent = current.root.parent(pos, pos+1);
@@ -136,6 +161,16 @@ public class ExprGen {
                         return true;
                 }
             }
+            ParseNode grandparent = current.root.parent(parent.from, parent.to);
+            if( grandparent == null )
+                return false;
+            if( (grandparent.contains(Database.complement)) || (grandparent.contains(Database.inverse)) ) {
+                if( parent.from+3!=parent.to )
+                    throw new RuntimeException("parent.from+3!=parent.to");
+                //String var = current.src.get(pos).content;
+                //if( "x".equals(var) || "y".equals(var) )
+                    return true;
+            }
         }
         return false;
     }
@@ -147,6 +182,8 @@ public class ExprGen {
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
         Database.cyk.closure(matrix, 0, size+1, skipRanges, -1);
         ParseNode root = Database.cyk.forest(size, matrix);
+        if( root.topLevel != null )
+            throw new Exception("root.topLevel!=null" );
         return new ExprTree(root,src);
     }
     
@@ -213,5 +250,15 @@ class ExprTree {
   
     public String toString() {
         return LexerToken.toString(src, 0, src.size());
+    }
+}
+
+class Substitution {
+    String var;
+    ExprTree by;
+    public Substitution( String var, ExprTree by ) {
+        super();
+        this.var = var;
+        this.by = by;
     }
 }
