@@ -124,3 +124,4 @@ x ^ (y v z) > (x ^ y) v (x ^ z).
 
 x+y = (x ^ R11) v (y ^ (x v R11)).
 x = ( x ^ ( x v R00 ) ) ^ ( x v y ).
+x = x v ( R00 ^ ( R11 ^ ( y ) ` ) ).
