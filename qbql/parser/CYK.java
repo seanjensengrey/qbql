@@ -70,8 +70,10 @@ public class CYK {
         cyk.printSelectedChomskiRules("nion");          
         final String input =
             //"x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";
-            "( x ) '"
-            //Util.readFile("c:/...")
+            //"( ( ( ( x v y ) ) ' v ( x ^ y ) ) ^ ( x v y ) )"
+            //"( ( x v y ) ^ ( ( x ^ y ) v ( ( x v y ) ) ' ) )"
+            "((x v (y ^ R00)) ^ (y v (x ^ R00)))"
+                    //Util.readFile("c:/...")
         ;
         long t1 = System.currentTimeMillis();
         List<LexerToken> src =  LexerToken.parse(input);
@@ -108,7 +110,7 @@ public class CYK {
         System.out.println("mem="+(h-hf)); 
 
         root.printTree();
-        //root.printBinaryTree(0);                              
+        System.out.println("signature="+root.signature(src)); 
     }
 
     public CYK( Set<RuleTuple> originalRules ) {
