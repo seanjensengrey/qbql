@@ -448,6 +448,9 @@ public class Database {
                                                    +lattice.get(variable).toString(variable.length()+3, false)
                                                    +";");
                         ret = child;
+                        for( String variable : variables )
+                            lattice.remove(variable);
+                        return ret;
                     }
                 } else if( child.contains(implication) ) {
                     ret = implication(child,src);
@@ -457,6 +460,9 @@ public class Database {
                                 System.out.println(variable+" = "
                                                    +lattice.get(variable).toString(variable.length()+3, false)
                                                    +";");
+                        for( String variable : variables )
+                            lattice.remove(variable);
+                        return ret;
                     }
                 } 
             }
@@ -464,7 +470,6 @@ public class Database {
 
         for( String variable : variables )
             lattice.remove(variable);
-
         return ret;
     }
 

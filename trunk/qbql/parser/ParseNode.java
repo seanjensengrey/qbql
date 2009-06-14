@@ -2,12 +2,14 @@ package qbql.parser;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import qbql.lattice.Database;
 import qbql.util.Util;
 
 public class ParseNode implements Comparable {
@@ -313,5 +315,39 @@ public class ParseNode implements Comparable {
             //throw new RuntimeException("rgt != null && rgt.to != to || lft != null && lft.from != from");
     }
 
+    private long hash = 0;
+    public long hash( List<LexerToken> src ) {
+        if( hash != 0 )
+            return hash;
+        if( from+1 == to )
+            hash += src.get(from).content.charAt(0);
+        /*for( int i : content() ) {
+            hash += i;
+        }*/
+        for( ParseNode child : children() )
+            hash += child.hash(src);
+        hash *= 2;
+        return hash;
+    }
+    private String signature = null;
+    public String signature( List<LexerToken> src ) {
+        if( signature != null )
+            return signature;
+        if( from+1 == to ) {
+            String s = src.get(from).content;
+            if( "(".equals(s) || ")".equals(s) )
+                s = "";
+            return s;
+        }
+        Map<Long,String> ordered = new TreeMap<Long,String>();
+        for( ParseNode child : children() )
+            ordered.put(child.hash(src), child.signature(src));
+        StringBuilder sb = new StringBuilder();
+        for( long key: ordered.keySet() )
+            sb.append(ordered.get(key));
+        signature = sb.toString();
+        return signature;
+    }
+    
 }
 
