@@ -4,7 +4,10 @@ x ^ (y v z) = (x ^ (z v (R00 ^ y))) v (x ^ (y v (R00 ^ z))).
 (R00 ^ (x ^ (y v z))) v (y ^ z) = ((R00 ^ (x ^ y)) v z) ^ ((R00 ^ (x ^ z)) v y).
 (x ^ y) v (x ^ z) =  x ^ ( ((x v z) ^ y) v ((x v y) ^ z) ).
 y v z > y + z. --x ^ (y v z) < x ^ (y + z).
-y + z > y ^ z.
+x v y > x + y.
+x ^ y < x * y.
+x + y > x ^ y.
+x v y > x * y.
 (x ^ y) v (x ^ z) > x ^ (y + z).
 
 
@@ -23,9 +26,13 @@ x ^ (y v z) = (x ^ y) v (x ^ z) v ((x ^ (y v z)) ^ ((x ^ y) v (x ^ z))').
 
 --(x ^ y) v (x ^ z) = (x ^ (y + z)) v (((x ^ y) v (x ^ z)) ^ R00).
 
+
 --false: (x /\ y) /\ z = x /\ (y /\ z).
 
 --false: x /\ (x /\ y) = x /\ y.
+
+x ^ y = x /\ y <-> (x v y)^R00 = R00. 
+
 
 x * (x * y) = x * y.
 
@@ -45,8 +52,6 @@ a^R00=x^R00 &
 
 
 
---(R11 /\ x) ^ x = R11 ^ x.
---x \/ y = (x ^ y) v ((x /\ y)^R00).
 x` ^ x = x ^ R11.
 x` v x = x v R00. 
 
@@ -104,7 +109,8 @@ x' + x` = R11.
 x ^ (x`)' = R10.
 
 (x`)` > x.
-
+x < y -> (x`)` < (y`)`. % `` is closure
+((x`)`)` = (x)`.        % (x``)``=x``
 
 x v R00 = R01 & y v R00 = R01 -> y`*x = (y^R00)` v x.
 (x`*y)^(y`*x) = (x v (y^R00)`) ^ (y v (x^R00)`).
@@ -126,8 +132,7 @@ x+y = (x ^ R11) v (y ^ (x v R11)).
 x = ( x ^ ( x v R00 ) ) ^ ( x v y ).
 x = x v ( R00 ^ ( R11 ^ ( y ) ` ) ).
 (((x)`)')` = ( x ) ' ^ ( ( x v R00 ) ) '.
-(x`)` = ( x v R11 ) ^ ( x v R00 ). 
-*/
+(x`)` = (x v R11) ^ (x v R00). 
 
 x + (x * y) > x.
 x + (x ^ y) < x.
@@ -140,4 +145,12 @@ x*y = (x ^ R00) v (x ^ y) v (R00 ^ y).
 x+y = (R00 ^ (x ^ y)) v (R11 ^ y) v (x ^ R11).
 x*y = (x ^ y ^ R11) v ((x v y) ^ R00).
 
-x*y = ((x)' v (y)')' v (x ^ y).
+
+--x*y = (x' v y')' v (x` ^ y`)`.
+x+y = (x' ^ y')' ^ (x` v y`)`.
+x+y = (x' ^ y')' ^ (x v y).
+
+x v (R11 /\ (R11 ^ (x /\ y)')) = R00 v R11.
+*/
+x = (x ^ (y')`) v (x ^ y).
+(x`)` = (x v (y')`) ^ (x v y). 

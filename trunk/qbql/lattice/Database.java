@@ -712,6 +712,7 @@ public class Database {
             attribute = cyk.symbolIndexes.get("attribute");
             values = cyk.symbolIndexes.get("values");
             namedValue = cyk.symbolIndexes.get("namedValue");
+            //System.out.println(cyk.allSymbols[20]);
         } catch( Exception e ) {
             e.printStackTrace();
         }
