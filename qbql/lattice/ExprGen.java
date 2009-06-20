@@ -42,7 +42,7 @@ public class ExprGen {
     }
 
     public static void main( String[] args ) throws Exception {
-        Map<Long,List<ExprTree>> accumulated = new HashMap<Long,List<ExprTree>>();
+        Map<String,ExprTree> accumulated = new HashMap<String,ExprTree>();
         put(accumulated,parse("x"));
         
         List<Substitution> grafts = new LinkedList<Substitution>();
@@ -58,14 +58,16 @@ public class ExprGen {
         grafts.add(new Substitution("y",complementY));
         grafts.add(new Substitution("x",inverseX));
         grafts.add(new Substitution("y",inverseY));
-        grafts.add(new Substitution("x",star));
-        grafts.add(new Substitution("y",star));
+        //grafts.add(new Substitution("x",star));
+        //grafts.add(new Substitution("y",star));
+        //grafts.add(new Substitution("x",parse("(x + y)")));
+        //grafts.add(new Substitution("y",parse("(x + y)")));
      
         
         //String goal = "((x)`)` = expr.";
         //String goal = "(x + (x * y))^(x)' = expr.";
-        //String goal = "x*y = expr.";
-        String goal = "x /\\ y = expr.";
+        String goal = "x = expr.";
+        //String goal = "x /\\ y = expr.";
         System.out.println("goal: "+goal);
         ExprTree XeqExpr = parse(goal);
         
@@ -77,14 +79,16 @@ public class ExprGen {
         long evalTime = 0;
        
         for( long i = 0; i < 1000000; i++) {            
+            ExprTree current = smallest(accumulated);    
             if( i%5001==5000 ) {
                 System.out.println("i="+i);
                 System.out.println("Eval time = "+evalTime); 
                 System.out.println("Other time = "+(System.currentTimeMillis()-startTime-evalTime)); 
+                String expr = LexerToken.toString(current.src, 0, current.src.size());
+                System.out.println("Current expr = "+sugarcoat(expr));  
             } else if( i%100==0 )
                 System.out.print('.');
             
-            ExprTree current = smallest(accumulated);    
             for( Integer varPos : current.getVariables() )
                 for( Substitution s : grafts ) {
                     if( !s.var.equals(current.src.get(varPos).content) )
@@ -99,12 +103,12 @@ public class ExprGen {
                     //evalTime += System.currentTimeMillis()-t2;
                     
                     // debug
-                    if( "^vyR00^xvxR00^y".equals(grown.root.signature(grown.src)) ) {
-                        String expr = LexerToken.toString(grown.src, 0, grown.src.size());
-                        System.out.println(">>>>>>>>> "+expr);  
-                    }
-                    //LexerToken.print(grown.src, 0, grown.src.size());
-                    if( ignore(graft,current,varPos) ) {
+                    /*String expr = LexerToken.toString(grown.src, 0, grown.src.size());
+                    //System.out.println(sugarcoat(expr));
+                    if( " ( ( ( x ^ y ) v ( x ^ y ) ) ) '".equals(sugarcoat(expr)) ) {
+                        System.out.println(">>>>>>>>> "+sugarcoat(expr));  
+                    }*/
+                    if( ignore(grown) ) {
                         continue;
                     }
                                             
@@ -115,71 +119,140 @@ public class ExprGen {
                     if( eval != null )
                         continue;
 
+if(grown.root.children().size()==2)
+continue;
                     String sig = grown.root.signature(grown.src);
                     if( !found.contains(sig) ) {
+                        String output = sugarcoat(LexerToken.toString(grown.src, 0, grown.src.size()));
+if( !output.contains("y`") || !output.contains("'") )
+continue;
                         System.out.println("*** found *** ");
-                        LexerToken.print(grown.src, 0, grown.src.size());
+                        System.out.println(output);
                         found.add(sig);
                     }
-                    return;
+                    //return;
                 }
             del(accumulated,current);
+            current = null;
         }
     }
 
-    private static void put( Map<Long, List<ExprTree>> accumulated, ExprTree tree ) {
-        long hash = tree.root.hash(tree.src);
-        List<ExprTree> l = accumulated.get(hash);
-        if( l == null ) {
-            l = new LinkedList<ExprTree>();
-            accumulated.put(hash, l);
-        }
-        l.add(tree);
-    }
-    private static void del( Map<Long, List<ExprTree>> accumulated, ExprTree tree ) {
-        long hash = tree.root.hash(tree.src);
-        List<ExprTree> l = accumulated.get(hash);
-        l.remove(tree);
-        if( l.size() == 0 ) 
-            accumulated.remove(hash);
+    private static String sugarcoat( String output ) {
+        output = output.replace("( x ) '", "x'");
+        output = output.replace("( x ) `", "x`");
+        output = output.replace("( y ) '", "y'");
+        output = output.replace("( y ) `", "y`");
+        if( output.endsWith(")") )
+            output = output.substring(2,output.length()-1);
+        return output;
     }
 
-    private static boolean addNotExistent( Map<Long,List<ExprTree>> accumulated, ExprTree grown ) {
-        long index = grown.root.hash(grown.src);
-        List<ExprTree> l = accumulated.get(index);
-        if( l == null )
-            l = new LinkedList<ExprTree>();
-        for( ExprTree t : l ) {
-            if( t.root.signature(t.src).equals(grown.root.signature(grown.src)) )
-                return false;
-            if( t.root.signature(t.src).equals(grown.signature1()) )
-                return false;
-        }
-        put(accumulated,grown);
-        return true;
+    private static void put( Map<String, ExprTree> accumulated, ExprTree tree ) {
+        accumulated.put(tree.root.signature(tree.src), tree);
+    }
+    private static void del( Map<String, ExprTree> accumulated, ExprTree tree ) {
+        accumulated.remove(tree.root.signature(tree.src));
     }
 
-    private static boolean ignore( ExprTree graft, ExprTree current, int pos ) {
-        if( join == graft || union == graft ) {
-            ParseNode parent = current.root.parent(pos, pos+1);
-            if( parent == null )
-                return false;
-            if( (parent.contains(Database.join) || parent.contains(Database.innerUnion)) 
-                    && parent.from+3==parent.to ) {
-                if( parent.from==pos ) {
-                    String var = current.src.get(parent.to-1).content;
-                    if( "x".equals(var) || "y".equals(var) )
-                        return true;
+    private static boolean addNotExistent( Map<String, ExprTree> accumulated, ExprTree grown ) {
+        boolean exists = accumulated.containsKey(grown.root.signature(grown.src));
+        if( !exists )
+            put(accumulated,grown);
+        return exists;
+    }
+
+    private static boolean ignore( ExprTree grown ) {
+        return ignore(grown.root,grown.src);
+    }
+    private static boolean ignore( ParseNode root, List<LexerToken> src ) {
+        Set<ParseNode> children = root.children();
+        if( children.size() == 0 ) 
+            return false;
+        
+        if( children.size() == 3 ) {
+            ParseNode lft = null;
+            ParseNode rgt = null;
+            String oper = null;
+            boolean isParen = false;
+            for( ParseNode child : children ) {
+                if( lft == null ) {
+                    lft = child;
+                    if( lft.contains(Database.openParen) )
+                        isParen = true;
+                } else if( oper == null ) {
+                    if( isParen )
+                        return ignore(child,src);
+                    oper = src.get(child.from).content;
+                } else if( rgt == null )                             
+                    rgt = child;
+                else
+                    throw new RuntimeException("Unexpected Case");
+            }
+            // idempotence
+            if( "^".equals(oper) || "v".equals(oper) ||
+                "*".equals(oper) || "+".equals(oper) 
+            )
+                if( LexerToken.toString(src, lft.from, lft.to).equals(LexerToken.toString(src, rgt.from, rgt.to))
+                ) return true;
+            if( "^".equals(oper) || "v".equals(oper) ) {
+                if( rgt.to-rgt.from < lft.to-lft.from ) {
+                    ParseNode tmp = rgt;
+                    rgt = lft;
+                    lft = tmp;
                 }
-                if( parent.to-1==pos ) {
-                    String var = current.src.get(parent.from).content;
-                    if( "x".equals(var) || "y".equals(var) )
-                        return true;
-                }
+                if( isAbsorption(lft,rgt,oper,src) )
+                    return true;
             }
         }
+
+        for( ParseNode child : children ) {
+            if( ignore(child,src) )
+                return true;
+        }    
+
+        return false;
+    }  
+    private static boolean isAbsorption( ParseNode lft, ParseNode rgt, String oper, List<LexerToken> src ) {
+        Set<ParseNode> children = rgt.children();
+        if( children.size() != 3 ) 
+            return false;
+        ParseNode paren = null;
+        for( ParseNode child : children ) {
+            if( paren == null ) {
+                paren = child;
+                if( !paren.contains(Database.openParen) )
+                    throw new RuntimeException("Unexpected Case");
+            } else {
+                children = child.children();
+                break;
+            }
+        }
+            
+        ParseNode rgtLft = null;
+        ParseNode rgtRgt = null;
+        String rgtOper = null;
+        for( ParseNode child : children ) {
+            if( rgtLft == null ) {
+                rgtLft = child;
+            } else if( rgtOper == null ) {
+                rgtOper = src.get(child.from).content;
+            } else if( rgtRgt == null )                             
+                rgtRgt = child;
+            else
+                throw new RuntimeException("Unexpected Case");
+        }
+        if( "^".equals(rgtOper) && "v".equals(oper) ||
+            "^".equals(oper) && "v".equals(rgtOper) 
+        ) {
+            String lftText = LexerToken.toString(src, lft.from, lft.to);
+            if( lftText.equals(LexerToken.toString(src, rgtLft.from, rgtLft.to)) ||
+                lftText.equals(LexerToken.toString(src, rgtRgt.from, rgtRgt.to))
+            ) return true;
+        }
+        
         return false;
     }
+
     private static boolean isRedundant( ExprTree graft, ExprTree current, int pos ) {
         if( complementX == graft || complementY == graft ) {
             if( current.src.get(pos).content.equals("R00") 
@@ -191,7 +264,9 @@ public class ExprGen {
             ParseNode grandparent = current.root.parent(parent.from, parent.to);
             if( grandparent == null )
                 return false;
-            if( (grandparent.contains(Database.complement)) ) {
+            if( (grandparent.contains(Database.complement) 
+               ||grandparent.contains(Database.inverse))
+            ) {
                 if( parent.from+3!=parent.to )
                     throw new RuntimeException("parent.from+3!=parent.to");
                 //String var = current.src.get(pos).content;
@@ -209,7 +284,9 @@ public class ExprGen {
             ParseNode grandparent = current.root.parent(parent.from, parent.to);
             if( grandparent == null )
                 return false;
-            if( (grandparent.contains(Database.inverse)) ) {
+            if( (grandparent.contains(Database.complement) 
+                    ||grandparent.contains(Database.inverse))
+            ) {
                 if( parent.from+3!=parent.to )
                     throw new RuntimeException("parent.from+3!=parent.to");
                 //String var = current.src.get(pos).content;
@@ -260,12 +337,20 @@ public class ExprGen {
         return new ExprTree(root,src);
     }
     
-    private static ExprTree smallest( Map<Long,List<ExprTree>> accumulated ) {
-        long index = Long.MAX_VALUE;
-        for( long candidate : accumulated.keySet() )
-            if( candidate < index)
-                index = candidate;
-        return accumulated.get(index).get(0);
+    private static ExprTree smallest( Map<String, ExprTree> accumulated ) {
+        int i = -1;
+        ExprTree ret = null;
+        for( String key : accumulated.keySet() ) {
+            //if( 1000 < i++ )
+                //break;
+            ExprTree current = accumulated.get(key);
+            if( ret == null )
+                ret = current;
+            else if( current.src.size() < ret.src.size() ) {
+                    ret = current;
+            }
+        }
+        return ret;
     }
 
 }
