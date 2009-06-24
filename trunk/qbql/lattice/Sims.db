@@ -1,6 +1,7 @@
 People = {
   <name=max,sex=male>,
   <name=peter,sex=male>,
+  <name=joe,sex=male>,
   <name=claire,sex=female>
 };
 

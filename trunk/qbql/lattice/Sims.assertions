@@ -37,13 +37,20 @@ x /\ y = ((x`*y)^(y`*x)) * (
  ((x`*y)^(y`*x)) *
  ((x'^y)v(y'^x))
 )'.
-*/
+
 
 x /\ y = ((x`*y)+(y`*x)) ^ 
 (
  ((x`*y)+(y`*x)) *
  ((x'^y)v(y'^x))
 )'.
+*/
 
-
+--Certified ^ Requirements;
+--Certified \/ Requirements;
+Certified;
+Requirements;
+Certified /\ Requirements;
+Certified /| Requirements;
+Certified |\ Requirements;
 
