@@ -58,16 +58,16 @@ public class ExprGen {
         grafts.add(new Substitution("y",complementY));
         grafts.add(new Substitution("x",inverseX));
         grafts.add(new Substitution("y",inverseY));
-        //grafts.add(new Substitution("x",star));
-        //grafts.add(new Substitution("y",star));
+        grafts.add(new Substitution("x",star));
+        grafts.add(new Substitution("y",star));
         //grafts.add(new Substitution("x",parse("(x + y)")));
         //grafts.add(new Substitution("y",parse("(x + y)")));
      
         
         //String goal = "((x)`)` = expr.";
-        //String goal = "(x + (x * y))^(x)' = expr.";
-        String goal = "x = expr.";
-        //String goal = "x /\\ y = expr.";
+        //String goal = "x` ^ y` = expr.";
+        //String goal = "x = expr.";
+        String goal = "x /\\ y = expr.";
         System.out.println("goal: "+goal);
         ExprTree XeqExpr = parse(goal);
         
@@ -119,13 +119,13 @@ public class ExprGen {
                     if( eval != null )
                         continue;
 
-if(grown.root.children().size()==2)
-continue;
+//if(grown.root.children().size()==2)
+//continue;
                     String sig = grown.root.signature(grown.src);
                     if( !found.contains(sig) ) {
                         String output = sugarcoat(LexerToken.toString(grown.src, 0, grown.src.size()));
-if( !output.contains("y`") || !output.contains("'") )
-continue;
+//if( !output.contains("y`") || !output.contains("'") )
+//continue;
                         System.out.println("*** found *** ");
                         System.out.println(output);
                         found.add(sig);
@@ -241,9 +241,10 @@ continue;
             else
                 throw new RuntimeException("Unexpected Case");
         }
-        if( "^".equals(rgtOper) && "v".equals(oper) ||
+        /* x ^ (x ^ y)
+         * if( "^".equals(rgtOper) && "v".equals(oper) ||
             "^".equals(oper) && "v".equals(rgtOper) 
-        ) {
+        )*/ {
             String lftText = LexerToken.toString(src, lft.from, lft.to);
             if( lftText.equals(LexerToken.toString(src, rgtLft.from, rgtLft.to)) ||
                 lftText.equals(LexerToken.toString(src, rgtRgt.from, rgtRgt.to))

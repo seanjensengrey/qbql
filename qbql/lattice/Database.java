@@ -31,12 +31,12 @@ public class Database {
         LexerToken.isPercentLineComment = true;
     }
 
-    final static String databaseFile = "Figure1.db"; 
-    final static String programFile = "Figure1.prg"; 
+    //final static String databaseFile = "Figure1.db"; 
+    //final static String programFile = "Figure1.prg"; 
     //final static String databaseFile = "Wittgenstein.db"; 
     //final static String programFile = "Wittgenstein.assertions"; 
-    //final static String databaseFile = "Sims.db"; 
-    //final static String programFile = "Sims.assertions"; 
+    final static String databaseFile = "Sims.db"; 
+    final static String programFile = "Sims.assertions"; 
     //final static String databaseFile = "Aggregate.db"; 
     //final static String programFile = "Aggregate.prg"; 
     private static final String path = "/qbql/lattice/";
@@ -96,11 +96,34 @@ public class Database {
         Relation hdrXmY = new Relation(headerXmY.toArray(new String[0]));
         Relation hdrYmX = new Relation(headerYmX.toArray(new String[0]));
         
-        Relation bind = Relation.innerUnion(x, y); 
+        //Relation bind = Relation.innerUnion(x, y); 
         Relation xjy = Relation.join(x, y);
               
         Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
-        Relation X = Relation.innerUnion(x,hdrXmY);
+        if( type == setIX )
+            return Relation.innerUnion(ret,xjy);
+                
+        Relation X = Relation.innerUnion(R11,hdrXmY);
+        Relation Y = Relation.innerUnion(R11,hdrYmX);
+        
+        Relation hdrYX = Relation.innerUnion(Relation.join(R00,x),Relation.join(R00,y));
+        for( Tuple xi : X.content ) {
+            Relation singleX = new Relation(X.colNames);
+            singleX.content.add(xi);
+            Relation lft = Relation.innerUnion(Relation.join(singleX,x),hdrYX); 
+            for( Tuple yi : Y.content ) {
+                Relation singleY = new Relation(Y.colNames);
+                singleY.content.add(yi);
+                Relation rgt = Relation.innerUnion(Relation.join(singleY,y),hdrYX);
+                if( type == divideL && Relation.le(lft, rgt) 
+                 || type == divideR && Relation.ge(lft, rgt)   
+                 || type == setEQ && Relation.le(lft, rgt) && Relation.ge(lft, rgt)
+                )
+                    ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
+            }
+        }
+
+        /*Relation X = Relation.innerUnion(x,hdrXmY);
         Relation Y = Relation.innerUnion(y,hdrYmX);
         if( type == forAll )
             ret = Relation.join(X,Y);
@@ -108,25 +131,24 @@ public class Database {
             Relation singleValue = new Relation(bind.colNames);
             singleValue.content.add(b);
             Relation summand = Relation.innerUnion(
-                Relation.join(xjy, singleValue),
-                Relation.join(
-                    Relation.join(
-                        X,
+                Relation.join(xjy, singleValue)
+                ,Relation.join(
+                    //Relation.join(
+                        //X,
                         complement(Relation.innerUnion(Relation.join(x, singleValue),hdrXmY))
-                    ),
-                    Relation.join(
-                        Y,
+                    //)
+                    ,
+                    //Relation.join(
+                        //Y,
                         complement(Relation.innerUnion(Relation.join(y, singleValue),hdrYmX))
-                    )
+                    //)
                 )
             );
-            if( type == exists )
-                ret = Relation.innerUnion(ret, summand);
-            else if( type == forAll )
+            if( type == forAll )
                 ret = Relation.join(ret, summand);
             else
                 throw new Exception("Unknown quantifier type");
-        }
+        }*/
         
         return ret;
     }
@@ -289,10 +311,14 @@ public class Database {
             return complement(x);
         if( node.contains(inverse) ) 
             return inverse(x);
-        if( node.contains(exists) ) 
-            return quantifier(x,y,exists);
-        if( node.contains(forAll) ) 
-            return quantifier(x,y,forAll);
+        if( node.contains(setIX) ) 
+            return quantifier(x,y,setIX);
+        if( node.contains(setEQ) ) 
+            return quantifier(x,y,setEQ);
+        if( node.contains(divideL) ) 
+            return quantifier(x,y,divideL);
+        if( node.contains(divideR) ) 
+            return quantifier(x,y,divideR);
         return null;
     }
     
@@ -636,8 +662,10 @@ public class Database {
     static int innerUnion;
     static int outerUnion;
     static int unison;
-    static int exists;
-    static int forAll;
+    static int setIX;
+    static int setEQ;
+    static int divideL;
+    static int divideR;
     static int complement;
     static int inverse;
     static int equivalence;
@@ -681,8 +709,10 @@ public class Database {
             innerUnion = cyk.symbolIndexes.get("innerUnion");
             outerUnion = cyk.symbolIndexes.get("outerUnion");
             unison = cyk.symbolIndexes.get("unison");
-            exists = cyk.symbolIndexes.get("exists");
-            forAll = cyk.symbolIndexes.get("forAll");
+            setIX = cyk.symbolIndexes.get("setIX");
+            setEQ = cyk.symbolIndexes.get("setEQ");
+            divideL = cyk.symbolIndexes.get("divideL");
+            divideR = cyk.symbolIndexes.get("divideR");
             complement = cyk.symbolIndexes.get("complement");
             inverse = cyk.symbolIndexes.get("inverse");
             equivalence = cyk.symbolIndexes.get("'~'");
