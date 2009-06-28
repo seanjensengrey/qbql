@@ -64,10 +64,10 @@ public class ExprGen {
         //grafts.add(new Substitution("y",parse("(x + y)")));
      
         
-        //String goal = "((x)`)` = expr.";
-        //String goal = "x` ^ y` = expr.";
+        //String goal = "x*y = expr.";
+        //String goal = "x` ^ x' = expr.";
         //String goal = "x = expr.";
-        String goal = "x /\\ y = expr.";
+        String goal = "x |/ y = expr.";
         System.out.println("goal: "+goal);
         ExprTree XeqExpr = parse(goal);
         
@@ -130,7 +130,7 @@ public class ExprGen {
                         System.out.println(output);
                         found.add(sig);
                     }
-                    //return;
+                    return;
                 }
             del(accumulated,current);
             current = null;

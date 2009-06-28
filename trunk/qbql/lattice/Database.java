@@ -97,11 +97,9 @@ public class Database {
         Relation hdrYmX = new Relation(headerYmX.toArray(new String[0]));
         
         //Relation bind = Relation.innerUnion(x, y); 
-        Relation xjy = Relation.join(x, y);
-              
         Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
         if( type == setIX )
-            return Relation.innerUnion(ret,xjy);
+            return Relation.innerUnion(ret,Relation.join(x, y));
                 
         Relation X = Relation.innerUnion(R11,hdrXmY);
         Relation Y = Relation.innerUnion(R11,hdrYmX);
@@ -115,9 +113,11 @@ public class Database {
                 Relation singleY = new Relation(Y.colNames);
                 singleY.content.add(yi);
                 Relation rgt = Relation.innerUnion(Relation.join(singleY,y),hdrYX);
-                if( type == divideL && Relation.le(lft, rgt) 
-                 || type == divideR && Relation.ge(lft, rgt)   
-                 || type == setEQ && Relation.le(lft, rgt) && Relation.ge(lft, rgt)
+                if( type == LleR && Relation.le(lft, rgt) 
+                 || type == RleL && Relation.ge(lft, rgt)   
+                 || type == LleRc && Relation.le(lft, complement(rgt)) 
+                 || type == RleLc && Relation.ge(complement(lft), rgt)   
+                 || type == setEQ && lft.equals(rgt)
                 )
                     ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
             }
@@ -282,7 +282,7 @@ public class Database {
         boolean parenGroup = false;
         for( ParseNode child : node.children() ) {
             if( parenGroup )
-                return eval(child, src);
+                return compute(child, src);
             else if( child.contains(openParen) )
                 parenGroup = true;
             else if( child.contains(relation) 
@@ -315,10 +315,14 @@ public class Database {
             return quantifier(x,y,setIX);
         if( node.contains(setEQ) ) 
             return quantifier(x,y,setEQ);
-        if( node.contains(divideL) ) 
-            return quantifier(x,y,divideL);
-        if( node.contains(divideR) ) 
-            return quantifier(x,y,divideR);
+        if( node.contains(LleR) ) 
+            return quantifier(x,y,LleR);
+        if( node.contains(RleL) ) 
+            return quantifier(x,y,RleL);
+        if( node.contains(LleRc) ) 
+            return quantifier(x,y,LleRc);
+        if( node.contains(RleLc) ) 
+            return quantifier(x,y,RleLc);
         return null;
     }
     
@@ -664,8 +668,10 @@ public class Database {
     static int unison;
     static int setIX;
     static int setEQ;
-    static int divideL;
-    static int divideR;
+    static int LleR;
+    static int RleL;
+    static int LleRc;
+    static int RleLc;
     static int complement;
     static int inverse;
     static int equivalence;
@@ -711,8 +717,10 @@ public class Database {
             unison = cyk.symbolIndexes.get("unison");
             setIX = cyk.symbolIndexes.get("setIX");
             setEQ = cyk.symbolIndexes.get("setEQ");
-            divideL = cyk.symbolIndexes.get("divideL");
-            divideR = cyk.symbolIndexes.get("divideR");
+            LleR = cyk.symbolIndexes.get("LleR");
+            RleL = cyk.symbolIndexes.get("RleL");
+            LleRc = cyk.symbolIndexes.get("LleR'");
+            RleLc = cyk.symbolIndexes.get("RleL'");
             complement = cyk.symbolIndexes.get("complement");
             inverse = cyk.symbolIndexes.get("inverse");
             equivalence = cyk.symbolIndexes.get("'~'");

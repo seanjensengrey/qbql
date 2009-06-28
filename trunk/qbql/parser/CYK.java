@@ -72,7 +72,7 @@ public class CYK {
             //"x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";
             //"( ( ( ( x v y ) ) ' v ( x ^ y ) ) ^ ( x v y ) )"
             //"( ( x v y ) ^ ( ( x ^ y ) v ( ( x v y ) ) ' ) )"
-            "x |\\ y;"
+            "([x])';"
                     //Util.readFile("c:/...")
         ;
         long t1 = System.currentTimeMillis();
