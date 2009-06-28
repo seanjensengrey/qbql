@@ -361,8 +361,10 @@ public class Relation {
         ret.add(new RuleTuple("unison", new String[] {"expr","'@'","expr"}));
         ret.add(new RuleTuple("setIX", new String[] {"expr","'\\'","'/'","expr"}));
         ret.add(new RuleTuple("setEQ", new String[] {"expr","'/'","'\\'","expr"}));
-        ret.add(new RuleTuple("divideL", new String[] {"expr","'/'","'|'","expr"}));
-        ret.add(new RuleTuple("divideR", new String[] {"expr","'|'","'\\'","expr"}));
+        ret.add(new RuleTuple("LleR", new String[] {"expr","'/'","'|'","expr"}));
+        ret.add(new RuleTuple("RleL", new String[] {"expr","'|'","'\\'","expr"}));
+        ret.add(new RuleTuple("LleR'", new String[] {"expr","'\\'","'|'","expr"}));
+        ret.add(new RuleTuple("RleL'", new String[] {"expr","'|'","'/'","expr"}));
         ret.add(new RuleTuple("complement", new String[] {"identifier","'''"}));  
         ret.add(new RuleTuple("complement", new String[] {"parExpr","'''"}));
         ret.add(new RuleTuple("inverse", new String[] {"identifier","'`'"}));  
@@ -373,8 +375,10 @@ public class Relation {
         ret.add(new RuleTuple("expr", new String[] {"outerUnion"}));
         ret.add(new RuleTuple("expr", new String[] {"setIX"}));
         ret.add(new RuleTuple("expr", new String[] {"setEQ"}));
-        ret.add(new RuleTuple("expr", new String[] {"divideL"}));
-        ret.add(new RuleTuple("expr", new String[] {"divideR"}));
+        ret.add(new RuleTuple("expr", new String[] {"LleR"}));
+        ret.add(new RuleTuple("expr", new String[] {"RleL"}));
+        ret.add(new RuleTuple("expr", new String[] {"LleR'"}));
+        ret.add(new RuleTuple("expr", new String[] {"RleL'"}));
         ret.add(new RuleTuple("expr", new String[] {"unison"}));
         ret.add(new RuleTuple("expr", new String[] {"parExpr"}));
         ret.add(new RuleTuple("expr", new String[] {"complement"}));

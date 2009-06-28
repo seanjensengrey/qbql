@@ -28,11 +28,7 @@ x ^ (y v z) = (x ^ y) v (x ^ z) v ((x ^ (y v z)) ^ ((x ^ y) v (x ^ z))').
 
 
 --false: (x /\ y) /\ z = x /\ (y /\ z).
-
 --false: x /\ (x /\ y) = x /\ y.
-
-x ^ y = x /\ y <-> (x v y)^R00 = R00. 
-
 
 x * (x * y) = x * y.
 
@@ -146,13 +142,37 @@ x+y = (R00 ^ (x ^ y)) v (R11 ^ y) v (x ^ R11).
 x*y = (x ^ y ^ R11) v ((x v y) ^ R00).
 
 
---x*y = (x' v y')' v (x` ^ y`)`.
+--false:x*y = (x' v y')' v (x` ^ y`)`.
 x+y = (x' ^ y')' ^ (x` v y`)`.
 x+y = (x' ^ y')' ^ (x v y).
+x*y = (x' v y')' v (x ^ y).
 
-x v (R11 /\ (R11 ^ (x /\ y)')) = R00 v R11.
-*/
+
 x = (x ^ (y')`) v (x ^ y).
 x` ^ y`    = (x * y)` + (x` * y`).
 (x` ^ y`)` = (x * y) v (x` * y`)`.
 (x' ^ y')' = (x + y) + (x' + y')'.
+
+
+%false: x \/ y = (x * y`) ^ (x` * y).
+x \/ y = (x ^ y) * (x` + y`).
+x \/ y = (x ^ y) * (x` ^ y`).
+x \/ y = (x ^ y) * (x v y)`. 
+
+x /| y = ( (x v y)` * (x ^ y') )'.
+x |\ y = ( (x v y)` * (x'^ y) )'.
+x /\ y = ( (x v y)` * ((x'^ y) v (x ^ y')) )'.
+
+x = y <-> x /\ y = R01.
+x = y ^ R01 <-> x /\ y = R01.
+x ^ y = x \/ y <-> (x v y)^R00 = R00. 
+*/
+x \/ x=x v R00.
+x |\ x = x /\ x.
+
+(x |/ y) ^ (x \| y) = (x \/ y)'.
+
+x \| y = ( (x v y)` * (x ^ y) )'.
+
+
+
