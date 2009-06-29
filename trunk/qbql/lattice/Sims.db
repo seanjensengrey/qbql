@@ -101,7 +101,7 @@ Certified = {
 Requirements = {
   <job=appl,skill=java>,
   <job=appl,skill=sql>,
-  <job=web, skill=java>,
+  --<job=web, skill=java>,
   <job=web, skill=html>,
   <job=teaching, skill=java>
 };

@@ -58,10 +58,12 @@ public class ExprGen {
         grafts.add(new Substitution("y",complementY));
         grafts.add(new Substitution("x",inverseX));
         grafts.add(new Substitution("y",inverseY));
-        grafts.add(new Substitution("x",star));
-        grafts.add(new Substitution("y",star));
+        //grafts.add(new Substitution("x",star));
+        //grafts.add(new Substitution("y",star));
         //grafts.add(new Substitution("x",parse("(x + y)")));
         //grafts.add(new Substitution("y",parse("(x + y)")));
+        grafts.add(new Substitution("x",parse("(x \\| y)")));
+        grafts.add(new Substitution("y",parse("(x \\| y)")));
      
         
         //String goal = "x*y = expr.";
@@ -239,12 +241,15 @@ public class ExprGen {
             } else if( rgtRgt == null )                             
                 rgtRgt = child;
             else
-                throw new RuntimeException("Unexpected Case");
+                //throw new RuntimeException("Unexpected Case");
+                return false;
         }
-        /* x ^ (x ^ y)
-         * if( "^".equals(rgtOper) && "v".equals(oper) ||
+        // x ^ (x ^ y)
+        if( "^".equals(rgtOper) && "v".equals(oper) ||
+            "^".equals(rgtOper) && "^".equals(oper) ||
+            "v".equals(rgtOper) && "v".equals(oper) ||
             "^".equals(oper) && "v".equals(rgtOper) 
-        )*/ {
+        ) {
             String lftText = LexerToken.toString(src, lft.from, lft.to);
             if( lftText.equals(LexerToken.toString(src, rgtLft.from, rgtLft.to)) ||
                 lftText.equals(LexerToken.toString(src, rgtRgt.from, rgtRgt.to))
