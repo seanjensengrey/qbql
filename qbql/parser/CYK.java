@@ -72,14 +72,14 @@ public class CYK {
             //"x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";
             //"( ( ( ( x v y ) ) ' v ( x ^ y ) ) ^ ( x v y ) )"
             //"( ( x v y ) ^ ( ( x ^ y ) v ( ( x v y ) ) ' ) )"
-            "([x])';"
+            "x \\|/ y"
                     //Util.readFile("c:/...")
         ;
         long t1 = System.currentTimeMillis();
         List<LexerToken> src =  LexerToken.parse(input);
         long t2 = System.currentTimeMillis();
         System.out.println("Lexer time = "+(t2-t1)); 
-        //LexerToken.print(src);
+        LexerToken.print(src);
 
         long h = Runtime.getRuntime().totalMemory();
         long hf = Runtime.getRuntime().freeMemory();

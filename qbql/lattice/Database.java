@@ -31,12 +31,12 @@ public class Database {
         LexerToken.isPercentLineComment = true;
     }
 
-    //final static String databaseFile = "Figure1.db"; 
-    //final static String programFile = "Figure1.prg"; 
+    final static String databaseFile = "Figure1.db"; 
+    final static String programFile = "Figure1.prg"; 
     //final static String databaseFile = "Wittgenstein.db"; 
     //final static String programFile = "Wittgenstein.assertions"; 
-    final static String databaseFile = "Sims.db"; 
-    final static String programFile = "Sims.assertions"; 
+    //final static String databaseFile = "Sims.db"; 
+    //final static String programFile = "Sims.assertions"; 
     //final static String databaseFile = "Aggregate.db"; 
     //final static String programFile = "Aggregate.prg"; 
     private static final String path = "/qbql/lattice/";
@@ -113,10 +113,10 @@ public class Database {
                 Relation singleY = new Relation(Y.colNames);
                 singleY.content.add(yi);
                 Relation rgt = Relation.innerUnion(Relation.join(singleY,y),hdrYX);
-                if( type == LleR && Relation.le(lft, rgt) 
-                 || type == RleL && Relation.ge(lft, rgt)   
-                 || type == LleRc && Relation.le(lft, complement(rgt)) 
-                 || type == RleLc && Relation.ge(complement(lft), rgt)   
+                if( type == contain && Relation.le(lft, rgt) 
+                 || type == transpCont && Relation.ge(lft, rgt)   
+                 || type == disjoint && Relation.le(lft, complement(rgt)) 
+                 || type == big && Relation.ge(lft, complement(rgt))   
                  || type == setEQ && lft.equals(rgt)
                 )
                     ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
@@ -315,14 +315,14 @@ public class Database {
             return quantifier(x,y,setIX);
         if( node.contains(setEQ) ) 
             return quantifier(x,y,setEQ);
-        if( node.contains(LleR) ) 
-            return quantifier(x,y,LleR);
-        if( node.contains(RleL) ) 
-            return quantifier(x,y,RleL);
-        if( node.contains(LleRc) ) 
-            return quantifier(x,y,LleRc);
-        if( node.contains(RleLc) ) 
-            return quantifier(x,y,RleLc);
+        if( node.contains(contain) ) 
+            return quantifier(x,y,contain);
+        if( node.contains(transpCont) ) 
+            return quantifier(x,y,transpCont);
+        if( node.contains(disjoint) ) 
+            return quantifier(x,y,disjoint);
+        if( node.contains(big) ) 
+            return quantifier(x,y,big);
         return null;
     }
     
@@ -668,10 +668,10 @@ public class Database {
     static int unison;
     static int setIX;
     static int setEQ;
-    static int LleR;
-    static int RleL;
-    static int LleRc;
-    static int RleLc;
+    static int contain;
+    static int transpCont;
+    static int disjoint;
+    static int big;
     static int complement;
     static int inverse;
     static int equivalence;
@@ -717,10 +717,10 @@ public class Database {
             unison = cyk.symbolIndexes.get("unison");
             setIX = cyk.symbolIndexes.get("setIX");
             setEQ = cyk.symbolIndexes.get("setEQ");
-            LleR = cyk.symbolIndexes.get("LleR");
-            RleL = cyk.symbolIndexes.get("RleL");
-            LleRc = cyk.symbolIndexes.get("LleR'");
-            RleLc = cyk.symbolIndexes.get("RleL'");
+            contain = cyk.symbolIndexes.get("contain");
+            transpCont = cyk.symbolIndexes.get("transpCont");
+            disjoint = cyk.symbolIndexes.get("disjoint");
+            big = cyk.symbolIndexes.get("big");
             complement = cyk.symbolIndexes.get("complement");
             inverse = cyk.symbolIndexes.get("inverse");
             equivalence = cyk.symbolIndexes.get("'~'");

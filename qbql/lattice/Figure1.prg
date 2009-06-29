@@ -27,9 +27,6 @@ x ^ (y v z) = (x ^ y) v (x ^ z) v ((x ^ (y v z)) ^ ((x ^ y) v (x ^ z))').
 --(x ^ y) v (x ^ z) = (x ^ (y + z)) v (((x ^ y) v (x ^ z)) ^ R00).
 
 
---false: (x /\ y) /\ z = x /\ (y /\ z).
---false: x /\ (x /\ y) = x /\ y.
-
 x * (x * y) = x * y.
 
 --false:x * (y * z) = y * (x * z).
@@ -111,11 +108,6 @@ x < y -> (x`)` < (y`)`. % `` is closure
 x v R00 = R01 & y v R00 = R01 -> y`*x = (y^R00)` v x.
 (x`*y)^(y`*x) = (x v (y^R00)`) ^ (y v (x^R00)`).
 
-x /\ y = ((x`*y)+(y`*x)) ^ 
-(
- ((x`*y)+(y`*x)) *
- ((x'^y)v(y'^x))
-)'.
 
 x ^ (y v z) > (x ^ y) v (x ^ z).
 
@@ -154,25 +146,41 @@ x` ^ y`    = (x * y)` + (x` * y`).
 (x' ^ y')' = (x + y) + (x' + y')'.
 
 
-%false: x \/ y = (x * y`) ^ (x` * y).
-x \/ y = (x ^ y) * (x` + y`).
-x \/ y = (x ^ y) * (x` ^ y`).
-x \/ y = (x ^ y) * (x v y)`. 
+
+% redefined set equality join; no longer valid: 
+x /|\ y = ((x`*y)+(y`*x)) ^ 
+(
+ ((x`*y)+(y`*x)) *
+ ((x'^y)v(y'^x))
+)'.
+*/
+
+%false: x \|/ y = (x * y`) ^ (x` * y).
+x \|/ y = (x ^ y) * (x` + y`).
+x \|/ y = (x ^ y) * (x` ^ y`).
+x \|/ y = (x ^ y) * (x v y)`. 
 
 x /| y = ( (x v y)` * (x ^ y') )'.
 x |\ y = ( (x v y)` * (x'^ y) )'.
-x /\ y = ( (x v y)` * ((x'^ y) v (x ^ y')) )'.
+x /|\ y = (x /| y) ^ (x |\ y).
+x /|\ y = ( (x v y)` * ((x'^ y) v (x ^ y')) )'.
 
-x = y <-> x /\ y = R01.
-x = y ^ R01 <-> x /\ y = R01.
-x ^ y = x \/ y <-> (x v y)^R00 = R00. 
-*/
-x \/ x=x v R00.
-x |\ x = x /\ x.
+x = y <-> x /|\ y = R01.
+x = y ^ R01 <-> x /|\ y = R01.
 
-(x |/ y) ^ (x \| y) = (x \/ y)'.
+(x /\ y) = (x \|/ y)'.
 
-x \| y = ( (x v y)` * (x ^ y) )'.
+x = y' <-> (x \/ y)^(x /\ y) = R01.
 
+x /\ y = ( (x v y)` * (x ^ y) )'.
 
+x \/ y = x' /\ y'.
+
+/*-->*/ x \/ y = ( (x' v y')` * (x' ^ y') )'.
+
+x /\ y = y /\ x.
+
+x \/ y = y \/ x.
+
+x /| y = y |\ x.
 
