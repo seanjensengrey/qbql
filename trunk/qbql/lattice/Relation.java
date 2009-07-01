@@ -364,6 +364,7 @@ public class Relation {
         ret.add(new RuleTuple("contain", new String[] {"expr","'/'","'|'","expr"}));
         ret.add(new RuleTuple("transpCont", new String[] {"expr","'|'","'\\'","expr"}));
         ret.add(new RuleTuple("disjoint", new String[] {"expr","'/'","'\\'","expr"}));
+        ret.add(new RuleTuple("almostDisj", new String[] {"expr","'/'","'1'","'\\'","expr"}));
         ret.add(new RuleTuple("big", new String[] {"expr","'\\'","'/'","expr"}));
         ret.add(new RuleTuple("complement", new String[] {"identifier","'''"}));  
         ret.add(new RuleTuple("complement", new String[] {"parExpr","'''"}));
@@ -378,6 +379,7 @@ public class Relation {
         ret.add(new RuleTuple("expr", new String[] {"contain"}));
         ret.add(new RuleTuple("expr", new String[] {"transpCont"}));
         ret.add(new RuleTuple("expr", new String[] {"disjoint"}));
+        ret.add(new RuleTuple("expr", new String[] {"almostDisj"}));
         ret.add(new RuleTuple("expr", new String[] {"big"}));
         ret.add(new RuleTuple("expr", new String[] {"unison"}));
         ret.add(new RuleTuple("expr", new String[] {"parExpr"}));

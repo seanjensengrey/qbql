@@ -116,6 +116,7 @@ public class Database {
                 if( type == contain && Relation.le(lft, rgt) 
                  || type == transpCont && Relation.ge(lft, rgt)   
                  || type == disjoint && Relation.le(lft, complement(rgt)) 
+                 || type == almostDisj && Relation.join(lft, rgt).content.size()==1 
                  || type == big && Relation.ge(lft, complement(rgt))   
                  || type == setEQ && lft.equals(rgt)
                 )
@@ -321,6 +322,8 @@ public class Database {
             return quantifier(x,y,transpCont);
         if( node.contains(disjoint) ) 
             return quantifier(x,y,disjoint);
+        if( node.contains(almostDisj) ) 
+            return quantifier(x,y,almostDisj);
         if( node.contains(big) ) 
             return quantifier(x,y,big);
         return null;
@@ -671,6 +674,7 @@ public class Database {
     static int contain;
     static int transpCont;
     static int disjoint;
+    static int almostDisj;
     static int big;
     static int complement;
     static int inverse;
@@ -720,6 +724,7 @@ public class Database {
             contain = cyk.symbolIndexes.get("contain");
             transpCont = cyk.symbolIndexes.get("transpCont");
             disjoint = cyk.symbolIndexes.get("disjoint");
+            almostDisj = cyk.symbolIndexes.get("almostDisj");
             big = cyk.symbolIndexes.get("big");
             complement = cyk.symbolIndexes.get("complement");
             inverse = cyk.symbolIndexes.get("inverse");
