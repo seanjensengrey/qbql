@@ -110,6 +110,3 @@ Requirements2 = {
   <job=entry,skill=java>
 };
 
-Requirements3 = {
-  <job=web,skill=sql>
-};
