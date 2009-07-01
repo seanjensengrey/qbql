@@ -184,22 +184,25 @@ x \/ y = y \/ x.
 
 x /| y = y |\ x.
 
-*/
-
+-- FD example:  
 r = [p  q]
      0  a
---     0  c
+     --0  c
      1  a
      2  b
 ;
-
-x = r v [p];
+x = r v [p]; 
 y = r v [q];
+*/
 
-(r v (x^y ^ R00));
-(r v (x^y ^ R00)) /1\ y;
-
-
-(x^R00) v r = x & (y^R00) v r = y & r ^ R00 < x^y ^ R00 -> 
-(r v (x^y ^ R00)) /1\ y = x.
-
+x < y & x = r v (x^R00) & y = r v (y^R00) ->  
+(r * (x ^ y)) /1\ (x` v y) = x.
+[___________1____________];
+x = r v (x^R00) & y = r v (y^R00) & z = r v (z^R00) &  
+(r * (x ^ y)) /1\ (x` v y) = x ->
+(r * (x^z^y)) /1\ ((x^z)` v (y^z) ) = (x^z)*r.
+[___________2____________];
+x = r v (x^R00) & y = r v (y^R00) & z = r v (z^R00) &
+(r * (x ^ y)) /1\ (x` v y) = x &
+(r * (y ^ z)) /1\ (y` v z) = y ->
+(r * (x ^ z)) /1\ (x` v z) = x.
