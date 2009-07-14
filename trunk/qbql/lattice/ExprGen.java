@@ -58,18 +58,18 @@ public class ExprGen {
         grafts.add(new Substitution("y",complementY));
         grafts.add(new Substitution("x",inverseX));
         grafts.add(new Substitution("y",inverseY));
-        //grafts.add(new Substitution("x",star));
-        //grafts.add(new Substitution("y",star));
+        grafts.add(new Substitution("x",star));
+        grafts.add(new Substitution("y",star));
         //grafts.add(new Substitution("x",parse("(x + y)")));
         //grafts.add(new Substitution("y",parse("(x + y)")));
-        grafts.add(new Substitution("x",parse("(x \\| y)")));
-        grafts.add(new Substitution("y",parse("(x \\| y)")));
+        grafts.add(new Substitution("x",parse("(x /\\ y)")));
+        grafts.add(new Substitution("y",parse("(x /\\ y)")));
      
         
         //String goal = "x*y = expr.";
         //String goal = "x` ^ x' = expr.";
         //String goal = "x = expr.";
-        String goal = "x |/ y = expr.";
+        String goal = "x /1\\ y = expr.";
         System.out.println("goal: "+goal);
         ExprTree XeqExpr = parse(goal);
         

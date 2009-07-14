@@ -392,8 +392,9 @@ public class Relation {
         ret.add(new RuleTuple("boolean", new String[] {"expr","'>'","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"boolean","'&'","boolean"}));
         ret.add(new RuleTuple("boolean", new String[] {"boolean","'|'","boolean"}));
-        ret.add(new RuleTuple("boolean", new String[] {"'-'","boolean"}));
-        ret.add(new RuleTuple("boolean", new String[] {"'('","boolean","')'"}));
+        ret.add(new RuleTuple("boolean", new String[] {"'-'","parBool"}));
+        ret.add(new RuleTuple("boolean", new String[] {"parBool"}));
+        ret.add(new RuleTuple("parBool", new String[] {"'('","boolean","')'"}));
         ret.add(new RuleTuple("implication", new String[] {"boolean","'-'","'>'","boolean"}));
         ret.add(new RuleTuple("implication", new String[] {"boolean","'<'","'-'","boolean"}));
         ret.add(new RuleTuple("implication", new String[] {"boolean","'<'","'-'","'>'","boolean"}));

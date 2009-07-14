@@ -94,12 +94,14 @@ x ^ R00 = R00 -> x = R00 | x = R00'.
 
 R00'=R11`.
 
-x' v x` = R01. 
 
 
 x' + x` = R11.
 
 x ^ (x`)' = R10.
+x' v x` = R01. 
+(x')` v x = R01.
+(x`)' v x = R01.
 
 (x`)` > x.
 x < y -> (x`)` < (y`)`. % `` is closure
@@ -184,6 +186,19 @@ x \/ y = y \/ x.
 
 x /| y = y |\ x.
 
+[_reflexivity_];
+x < y & x = r v (x^R00) & y = r v (y^R00) ->  
+(r * (x ^ y)) /1\ (x` v y) = x.
+[_augmentation_];
+x = r v (x^R00) & y = r v (y^R00) & z = r v (z^R00) &  
+(r * (x ^ y)) /1\ (x` v y) = x ->
+(r * (x^z^y)) /1\ ((x^z)` v (y^z) ) = (x^z)*r.
+[_transitivity_];
+x = r v (x^R00) & y = r v (y^R00) & z = r v (z^R00) &
+(r * (x ^ y)) /1\ (x` v y) = x &
+(r * (y ^ z)) /1\ (y` v z) = y ->
+(r * (x ^ z)) /1\ (x` v z) = x.
+
 -- FD example:  
 r = [p  q]
      0  a
@@ -193,16 +208,60 @@ r = [p  q]
 ;
 x = r v [p]; 
 y = r v [q];
-*/
 
-x < y & x = r v (x^R00) & y = r v (y^R00) ->  
-(r * (x ^ y)) /1\ (x` v y) = x.
-[___________1____________];
-x = r v (x^R00) & y = r v (y^R00) & z = r v (z^R00) &  
-(r * (x ^ y)) /1\ (x` v y) = x ->
-(r * (x^z^y)) /1\ ((x^z)` v (y^z) ) = (x^z)*r.
-[___________2____________];
-x = r v (x^R00) & y = r v (y^R00) & z = r v (z^R00) &
-(r * (x ^ y)) /1\ (x` v y) = x &
-(r * (y ^ z)) /1\ (y` v z) = y ->
-(r * (x ^ z)) /1\ (x` v z) = x.
+
+--x = r v (x^R00) & y = r v (y^R00) &
+r < x & r < y &
+(r * (x ^ y)) /1\ (x` v y) = x -> r = (r * (x ^ y)) ^ (r * (x ^ y`)).
+
+r = [p  q  r  s  t]
+;
+y = [p]
+     1
+;
+x = [p]
+     1
+;
+(r * (x ^ y));
+(x` v y);
+(r * (x ^ y)) /1\ (x` v y);
+
+--r < x & r < y ->
+--(r * (x ^ y)) /1\ (x` v y) = x.
+
+x = [p  q]
+     0  a
+     0  c
+     1  a
+     2  b
+;
+
+y = [q  r] 
+     a  0 
+     a  1
+;
+
+xy = x^y;
+
+xy \/ y;
+xy /\ y;
+xy /1\ y;
+xy /|\ y;
+xy |\ y;
+xy /| y;
+xy \|/ y;
+
+x < R00 ->
+x * (y * z) = (x * y) * z.
+
+(R00 ^ (x v y) = R00 ^ (x v z)) ->
+x ^ (y * z) = (x ^ y) * (x ^ z).
+
+x * (x + y) = x.
+x + (x * y) > x.
+x ^ (x * y) < x.
+x < R00 | y < R00 ->
+x + (x * y) = x.
+x < R00 | R11 < y ->
+x ^ (x * y) = x.
+*/
