@@ -202,7 +202,7 @@ x = r v (x^R00) & y = r v (y^R00) & z = r v (z^R00) &
 -- FD example:  
 r = [p  q]
      0  a
-     --0  c
+   --0  c
      1  a
      2  b
 ;
