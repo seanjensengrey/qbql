@@ -19,7 +19,20 @@ import qbql.util.Util;
 
 public class Database {
 
-    Map<String,Relation> lattice = new TreeMap<String,Relation>();
+    private Map<String,Relation> lattice = new TreeMap<String,Relation>();
+    public Relation relation( String name ) {
+        return lattice.get(name);
+    }
+    public void addRelation( String name, Relation relvar ) {
+       lattice.put(name, relvar);
+    }       
+    public void removeRelation( String name ) {
+        lattice.remove(name);
+    }       
+    public String[] relNames() {
+        return lattice.keySet().toArray(new String[0]);
+    }       
+    
     static Relation R00 = new Relation(new String[]{});
     Relation R11;
     static Relation R01 = new Relation(new String[]{});
@@ -27,8 +40,6 @@ public class Database {
 
     static {
         R01.addTuple(new TreeMap<String,String>());
-
-        LexerToken.isPercentLineComment = true;
     }
 
     final static String databaseFile = "Figure1.db"; 
@@ -40,38 +51,10 @@ public class Database {
     //final static String databaseFile = "Aggregate.db"; 
     //final static String programFile = "Aggregate.prg"; 
     private static final String path = "/qbql/lattice/";
-    public Database() throws Exception {				
-        String database = Util.readFile(getClass(),path+databaseFile);
-
-        List<LexerToken> src =  LexerToken.parse(database);
-        Matrix matrix = cyk.initArray1(src);
-        int size = matrix.size();
-        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = cyk.forest(size, matrix);
-
-        if( root.topLevel != null ) {
-            System.out.println("*** Parse Error in database file ***");
-            CYK.printErrors(database, src, root);
-            throw new Exception("Parse Error");
-        }
-
-        lattice.put("R00",R00);	
-        lattice.put("R01",R01);
-
-        database(root,src);
-
-        R10 = buildR10();
-        R11 = buildR11();
-        lattice.put("R10",R10);
-        lattice.put("R11",R11);
-
-        // relations that requre complement can be built only after R10 and R11 are defined
-        try {
-            lattice.put("UJADJBC'",complement(lattice.get("UJADJBC")));
-        } catch( Exception e ) { // NPE if databaseFile is not Figure1.db
-        }
-
+        
+    public Database() {				
+        addRelation("R00",Database.R00); 
+        addRelation("R01",Database.R01);
     }
 
     Relation outerUnion( Relation x, Relation y ) {
@@ -98,7 +81,7 @@ public class Database {
         
         //Relation bind = Relation.innerUnion(x, y); 
         Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
-        if( type == setIX )
+        if( type == Grammar.setIX )
             return Relation.innerUnion(ret,Relation.join(x, y));
                 
         Relation X = Relation.innerUnion(R11,hdrXmY);
@@ -113,12 +96,12 @@ public class Database {
                 Relation singleY = new Relation(Y.colNames);
                 singleY.content.add(yi);
                 Relation rgt = Relation.innerUnion(Relation.join(singleY,y),hdrYX);
-                if( type == contain && Relation.le(lft, rgt) 
-                 || type == transpCont && Relation.ge(lft, rgt)   
-                 || type == disjoint && Relation.le(lft, complement(rgt)) 
-                 || type == almostDisj && Relation.join(lft, rgt).content.size()==1 
-                 || type == big && Relation.ge(lft, complement(rgt))   
-                 || type == setEQ && lft.equals(rgt)
+                if( type == Grammar.contain && Relation.le(lft, rgt) 
+                 || type == Grammar.transpCont && Relation.ge(lft, rgt)   
+                 || type == Grammar.disjoint && Relation.le(lft, complement(rgt)) 
+                 || type == Grammar.almostDisj && Relation.join(lft, rgt).content.size()==1 
+                 || type == Grammar.big && Relation.ge(lft, complement(rgt))   
+                 || type == Grammar.setEQ && lft.equals(rgt)
                 )
                     ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
             }
@@ -197,14 +180,15 @@ public class Database {
             return Relation.innerUnion(new Relation(header),R11);
     }
     
-    Relation buildR10() {
+    void buildR10() {
         Relation ret = new Relation(new String[]{});
         for( Relation r : lattice.values() )
             ret = Relation.join(ret, r);
-        return ret;	
+        R10 = ret;
+        lattice.put("R10",ret);
     }
 
-    Relation buildR11() {
+    void buildR11() {
         Map<String, Relation> domains = new HashMap<String, Relation>();
         for( String col : R10.colNames )
             domains.put(col, new Relation(new String[]{col}));
@@ -247,7 +231,8 @@ public class Database {
             
         } while( next(indexes,doms) );
         
-        return ret;
+        R11 = ret;
+        lattice.put("R11",ret);
     }
     private boolean next( Map<String, Integer> state, Map<String, String[]> doms ) {
         for( String pos: state.keySet() ) {
@@ -261,516 +246,15 @@ public class Database {
         return false;
     }
 
-    /*public Relation eval( String input ) throws Exception {
-        List<LexerToken> src =  LexerToken.parse(input);
-        Matrix matrix = cyk.initArray1(src);
-        int size = matrix.size();
-        TreeMap<Integer,Integer> skipRanges = null;//new TreeMap<Integer,Integer>();
-        cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = cyk.forest(size, matrix);
-        return eval(root,src);
-    }*/
-    private Relation eval( ParseNode node, List<LexerToken> src ) throws Exception {
-        if( node.from + 1 == node.to ) {
-            Relation ret = lattice.get(src.get(node.from).content);
-            if( ret == null )
-                throw new Exception("There is no relation "+src.get(node.from).content+" in the database");
-            return ret;
-        }
-
-        Relation x = null;
-        Relation y = null;
-        boolean parenGroup = false;
-        for( ParseNode child : node.children() ) {
-            if( parenGroup )
-                return compute(child, src);
-            else if( child.contains(openParen) )
-                parenGroup = true;
-            else if( child.contains(relation) 
-                  || child.contains(expr) 
-                  || child.contains(identifier) 
-                  || child.contains(parExpr) 
-                  || child.contains(attribute) // produced by ExprGen 
-            ) {
-                if( x == null )
-                    x = compute(child,src);
-                else
-                    y = compute(child,src);
-            } 
-        }
-        if( node.contains(join) ) 
-            return Relation.join(x,y);
-        if( node.contains(innerJoin) ) 
-            return Relation.innerJoin(x,y);
-        if( node.contains(outerUnion) ) 
-            return outerUnion(x,y);
-        if( node.contains(innerUnion) ) 
-            return Relation.innerUnion(x,y);
-        if( node.contains(unison) ) 
-            return Relation.unison(x,y);
-        if( node.contains(complement) ) 
-            return complement(x);
-        if( node.contains(inverse) ) 
-            return inverse(x);
-        if( node.contains(setIX) ) 
-            return quantifier(x,y,setIX);
-        if( node.contains(setEQ) ) 
-            return quantifier(x,y,setEQ);
-        if( node.contains(contain) ) 
-            return quantifier(x,y,contain);
-        if( node.contains(transpCont) ) 
-            return quantifier(x,y,transpCont);
-        if( node.contains(disjoint) ) 
-            return quantifier(x,y,disjoint);
-        if( node.contains(almostDisj) ) 
-            return quantifier(x,y,almostDisj);
-        if( node.contains(big) ) 
-            return quantifier(x,y,big);
-        return null;
-    }
-    
-    public boolean bool( ParseNode root, List<LexerToken> src ) throws Exception {
-        for( ParseNode child : root.children() ) 
-            if( child.contains(expr) )
-                return boolExpr(root, src);
-            else 
-                return logical(root, src);
-        throw new Exception("Impossible exception, no children??"+root.content(src));
-    }
-
-    public boolean logical( ParseNode root, List<LexerToken> src ) throws Exception {
-        Boolean left = null;
-        Boolean right = null;
-        int oper = -1;
-        for( ParseNode child : root.children() ) {
-            if( left == null ) {
-                if( child.contains(minus) ) {
-                    oper = minus;
-                    left = true;
-                } else if( child.contains(openParen) ) {
-                        oper = openParen;
-                        left = true;
-                } else 
-                    left = bool(child,src);
-            } else if( child.contains(amp) ) 
-                oper = amp;
-            else if( child.contains(bar) ) 
-                oper = bar;
-            else {                               
-                right = bool(child,src);
-                break;    // e.g.   "(" "x = y" ")"
-                          // break after ^^^^^
-            }
-        }
-        if( oper == amp )
-            return left & right;
-        else if( oper == bar )
-            return left | right;
-        else if( oper == minus )
-            return ! right;
-        else if( oper == openParen )
-            return right;
-        throw new Exception("Unknown boolean operation "+oper);
-    }
-        
-    public boolean boolExpr( ParseNode root, List<LexerToken> src ) throws Exception {
-        int oper = -1;
-        Relation left = null;
-        Relation right = null;
-        boolean not = false;
-        for( ParseNode child : root.children() ) {
-            if( left == null )
-                left = compute(child,src);
-            else if( child.contains(excl) )
-                not = true;
-            else if( child.contains(equality) )
-                oper = equality;
-            else if( child.contains(lt) )
-                oper = lt;
-            else if( child.contains(gt) )
-                oper = gt;
-            else if( child.contains(equivalence) )
-                oper = equivalence;
-            else 				
-                right = compute(child,src);
-        }
-        if( oper == equality )
-            return not ? !left.equals(right) : left.equals(right);
-        if( oper == lt )
-            return Relation.le(left,right);
-        if( oper == gt )
-            return Relation.ge(left,right);
-        if( oper == equivalence )
-            return Relation.equivalent(left,right);
-
-        throw new Exception("Impossible case");		
-    }
-    
-    public ParseNode implication( ParseNode root, List<LexerToken> src ) throws Exception {
-        ParseNode left = null;
-        ParseNode right = null;
-        boolean impl = false;
-        boolean bimpl = false;
-        for( ParseNode child : root.children() ) {
-            if( left == null ) {
-                left = child;
-            } else if( child.contains(gt)||child.contains(minus)||child.contains(lt) ) {
-                if( child.contains(gt) )
-                    impl = true;
-                if( child.contains(lt) )
-                    bimpl = true;
-            } else 				
-                right = child;
-        }		
-        if( impl && !bimpl && boolImpl(left,right,src) ) 
-            return null;
-        else if( !impl && bimpl && boolImpl(right,left,src) ) 
-            return null;
-        else if( impl && bimpl && boolImpl(left,right,src) && boolImpl(right,left,src) ) 
-            return null;
-        else
-            return root;
-    }
-    private boolean boolImpl( ParseNode left,ParseNode right, List<LexerToken> src ) throws Exception {
-        boolean l = bool(left,src);
-        if( !l ) // optimization: early termination
-            return true;
-        return bool(right,src);
-    }
-
-    private boolean next( int[] state, int limit ) {
-        for( int pos = 0; pos < state.length; pos++ ) {
-            if( state[pos] < limit-1 ) {
-                state[pos]++;
-                return true;
-            }
-            state[pos] = 0;				
-        }
-        return false;
-    }
-
-    public ParseNode assertion( ParseNode root, List<LexerToken> src, boolean outputVariables ) throws Exception {
-        ParseNode ret = null;
-        Set<String> variables = new HashSet<String>();
-        String[] tables = lattice.keySet().toArray(new String[0]);
-
-        for( ParseNode descendant : root.descendants() ) {
-            String id = descendant.content(src);
-            if( descendant.from+1 == descendant.to 
-                    && (descendant.contains(expr) || descendant.contains(identifier))
-                    && lattice.get(id) == null ) 
-                variables.add(id);
-        }
-
-        int[] indexes = new int[variables.size()];
-        for( int i = 0; i < indexes.length; i++ )
-            indexes[i] = 0;
-        do {
-            int var = 0;
-            for( String variable : variables ) {
-                lattice.put(variable, lattice.get(tables[indexes[var++]]));
-            }
-
-
-            for( ParseNode child : root.children() ) {
-                if( child.contains(bool) ) {
-                    if( !bool(child,src) ) {
-                        for( String variable : variables )
-                            if( outputVariables )
-                                System.out.println(variable+" = "
-                                                   +lattice.get(variable).toString(variable.length()+3, false)
-                                                   +";");
-                        ret = child;
-                        for( String variable : variables )
-                            lattice.remove(variable);
-                        return ret;
-                    }
-                } else if( child.contains(implication) ) {
-                    ret = implication(child,src);
-                    if( ret != null ) {
-                        for( String variable : variables )
-                            if( outputVariables )
-                                System.out.println(variable+" = "
-                                                   +lattice.get(variable).toString(variable.length()+3, false)
-                                                   +";");
-                        for( String variable : variables )
-                            lattice.remove(variable);
-                        return ret;
-                    }
-                } 
-            }
-        } while( next(indexes,tables.length) );
-
-        for( String variable : variables )
-            lattice.remove(variable);
-        return ret;
-    }
-
-    public ParseNode query( ParseNode root, List<LexerToken> src ) throws Exception {
-        for( ParseNode child : root.children() ) {
-            if( child.contains(expr) ) {
-                System.out.println(child.content(src)+"="+compute(child,src).toString(child.content(src).length()+1, false)+";");
-                return null;
-            } 
-        }
-        throw new Exception("No expr in statement?");
-    }
-    /**
-     * @param root
-     * @param src
-     * @return node that violates assertion
-     * @throws Exception
-     */
-    public ParseNode program( ParseNode root, List<LexerToken> src ) throws Exception {
-        if( root.contains(assertion) )
-            return assertion(root,src,true);
-        if( root.contains(query) )
-            return query(root,src);
-        if( root.contains(assignment) ) {
-            createRelation(root,src);
-            return null;
-        }
-        ParseNode ret = null;
-        for( ParseNode child : root.children() ) {
-            ret = program(child,src);	
-            if( ret != null )
-                return ret;
-        }
-        return ret;
-    }
-
-
-    public void database( ParseNode root, List<LexerToken> src ) throws Exception {
-        if( root.contains(assignment) )
-            createRelation(root,src);
-        else
-            for( ParseNode child : root.children() ) {				
-                if( child.contains(assignment) )
-                    createRelation(child,src);
-                else 
-                    database(child,src);
-            }
-    }
-    public void createRelation( ParseNode root, List<LexerToken> src ) throws Exception {
-        String left = null;
-        Relation right = null;
-        for( ParseNode child : root.children() ) {
-            if( left == null )
-                left = child.content(src);
-            else if( child.contains(equality) )
-                ;
-            else { 				
-                right = compute(child,src);
-                break;
-            }
-        }
-        lattice.put(left, right);
-    }
-    public Relation compute( ParseNode root, List<LexerToken> src ) throws Exception {
-        if( root.contains(relation) ) {
-            for( ParseNode child : root.children() ) {
-                if( child.contains(tuples) )
-                    return tuples(child,src);
-            }
-        } else if( root.contains(table) ) {
-            Relation ret = null;
-            for( ParseNode child : root.children() ) {
-                if( child.contains(header) )                    
-                    ret = new Relation(strings(child,src).toArray(new String[0]));
-                else if( child.contains(content) ) {
-                    addContent(ret,child,src);
-                    return ret;
-                }                 
-            } 
-            return ret;
-        } else
-            return eval(root,src);
-        throw new Exception("Unknown case");
-    }
-    public Relation tuples( ParseNode root, List<LexerToken> src ) throws Exception {
-        Set<String> attrs = new TreeSet<String>();
-        for( ParseNode descendant: root.descendants() )
-            if( descendant.contains(attribute) )
-                attrs.add(descendant.content(src));
-        Relation ret = new Relation(attrs.toArray(new String[0]));
-
-        addTuples(ret,root,src);		
-        return ret;
-    }
-    private void addTuples( Relation ret, ParseNode root, List<LexerToken> src ) throws Exception {
-        if( root.contains(tuple) ) 
-            ret.addTuple(tuple(root,src));
-        else for( ParseNode child : root.children() )
-            if( child.contains(tuple) )
-                ret.addTuple(tuple(child,src));
-            else if( child.contains(tuples) )
-                addTuples(ret,child,src);
-    }
-    private Map<String,String> tuple( ParseNode root, List<LexerToken> src ) throws Exception {
-        for( ParseNode child : root.children() ) {
-            if( child.contains(values) ) {
-                Map<String,String> tuple = new TreeMap<String,String>(); 
-                values(tuple, child,src);
-                return tuple;
-            }
-        }
-        throw new Exception("Unknown case");
-    }
-    private void values( Map<String,String> tuple, ParseNode root, List<LexerToken> src ) {
-        if( root.contains(namedValue) )
-            value(tuple,root,src);
-        else for( ParseNode child : root.children() )
-            if( child.contains(namedValue) )
-                value(tuple,child,src);
-            else if( child.contains(values) )
-                values(tuple,child,src);
-    }
-    public void value( Map<String,String> tuple, ParseNode root, List<LexerToken> src ) {
-        String left = null;
-        String right = null;
-        for( ParseNode child : root.children() ) {
-            if( left == null )
-                left = child.content(src);
-            else if( child.contains(equality) )
-                ;
-            else 				
-                right = child.content(src);
-        }
-        tuple.put(left, right);
-    }
-    
-    private List<String> strings( ParseNode root, List<LexerToken> src ) throws Exception {
-        List<String> ret = new LinkedList<String>();
-        if( root.from + 1 == root.to && 
-            (src.get(root.from).type == Token.IDENTIFIER || src.get(root.from).type == Token.DIGITS )
-        )
-            ret.add(root.content(src));
-        else
-            for( ParseNode child : root.children() )
-                ret.addAll(strings(child, src));
-        return ret;
-    }
-    private void addContent( Relation ret, ParseNode root, List<LexerToken> src ) throws Exception {
-        int i = 0;
-        String[] t = new String[ret.colNames.length];
-        for( String elem : strings(root, src) ) {
-            t[i%ret.colNames.length] = elem;
-            if( i%ret.colNames.length == ret.colNames.length-1 ) {
-                ret.content.add(new Tuple(t));
-                t = new String[ret.colNames.length];
-            }
-            i++;
-        }
-    }
-
-    static CYK cyk;
-    static int join;
-    static int innerJoin;
-    static int innerUnion;
-    static int outerUnion;
-    static int unison;
-    static int setIX;
-    static int setEQ;
-    static int contain;
-    static int transpCont;
-    static int disjoint;
-    static int almostDisj;
-    static int big;
-    static int complement;
-    static int inverse;
-    static int equivalence;
-    static int equality;
-    static int minus;
-    static int expr;
-    static int parExpr;
-    static int openParen;
-    static int bool;
-    static int implication;
-    static int lt;
-    static int gt;
-    static int amp;
-    static int bar;
-    static int excl;
-    static int assertion;
-    static int query;
-    static int identifier;
-
-    static int assignment;
-    static int relation;
-    static int table;
-    static int tuples;
-    static int tuple;
-    static int header;
-    static int content;
-    static int attribute;
-    static int values;
-    static int namedValue;
-    static int comma;
-    private static final String bnf = "grammar.serializedBNF";
-    static {
-        try {
-            cyk = new CYK(RuleTuple.getRules(path+bnf)) {
-                public int[] atomicSymbols() {
-                    return new int[] {assertion};
-                }
-            };
-            join = cyk.symbolIndexes.get("join");
-            innerJoin = cyk.symbolIndexes.get("innerJoin");
-            innerUnion = cyk.symbolIndexes.get("innerUnion");
-            outerUnion = cyk.symbolIndexes.get("outerUnion");
-            unison = cyk.symbolIndexes.get("unison");
-            setIX = cyk.symbolIndexes.get("setIX");
-            setEQ = cyk.symbolIndexes.get("setEQ");
-            contain = cyk.symbolIndexes.get("contain");
-            transpCont = cyk.symbolIndexes.get("transpCont");
-            disjoint = cyk.symbolIndexes.get("disjoint");
-            almostDisj = cyk.symbolIndexes.get("almostDisj");
-            big = cyk.symbolIndexes.get("big");
-            complement = cyk.symbolIndexes.get("complement");
-            inverse = cyk.symbolIndexes.get("inverse");
-            equivalence = cyk.symbolIndexes.get("'~'");
-            equality = cyk.symbolIndexes.get("'='");
-            minus = cyk.symbolIndexes.get("'-'");
-            lt = cyk.symbolIndexes.get("'<'");
-            gt = cyk.symbolIndexes.get("'>'");
-            amp = cyk.symbolIndexes.get("'&'");
-            bar = cyk.symbolIndexes.get("'|'");
-            excl = cyk.symbolIndexes.get("'!'");
-            expr = cyk.symbolIndexes.get("expr");
-            parExpr = cyk.symbolIndexes.get("parExpr");
-            openParen = cyk.symbolIndexes.get("'('");
-            bool = cyk.symbolIndexes.get("boolean");
-            implication = cyk.symbolIndexes.get("implication");
-            assertion = cyk.symbolIndexes.get("assertion");
-            query = cyk.symbolIndexes.get("query");
-            identifier = cyk.symbolIndexes.get("identifier");
-
-            assignment = cyk.symbolIndexes.get("assignment");
-            relation = cyk.symbolIndexes.get("relation");
-            table = cyk.symbolIndexes.get("table");
-            tuples = cyk.symbolIndexes.get("tuples");
-            tuple = cyk.symbolIndexes.get("tuple");
-            header = cyk.symbolIndexes.get("header");
-            content = cyk.symbolIndexes.get("content");
-            attribute = cyk.symbolIndexes.get("attribute");
-            values = cyk.symbolIndexes.get("values");
-            namedValue = cyk.symbolIndexes.get("namedValue");
-            //System.out.println(cyk.allSymbols[20]);
-        } catch( Exception e ) {
-            e.printStackTrace();
-        }
-    }
-
-
     public static void main( String[] args ) throws Exception {
         String prg = Util.readFile(Database.class,path+programFile);
 
         List<LexerToken> src =  LexerToken.parse(prg);
-        Matrix matrix = cyk.initArray1(src);
+        Matrix matrix = Grammar.cyk.initArray1(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = cyk.forest(size, matrix);
+        Grammar.cyk.closure(matrix, 0, size+1, skipRanges, -1);
+        ParseNode root = Grammar.cyk.forest(size, matrix);
 
         if( root.topLevel != null ) {
             System.out.println("*** Parse Error in assertions file ***");
@@ -778,9 +262,9 @@ public class Database {
             return;
         }
 
-        Database model = new Database();
+        Grammar program = new Grammar(src);
         long t1 = System.currentTimeMillis();
-        ParseNode exception = model.program(root,src);
+        ParseNode exception = program.program(root);
         long t2 = System.currentTimeMillis();
         System.out.println("Time = "+(t2-t1)); 
         if( exception != null ) {
@@ -789,4 +273,5 @@ public class Database {
             return;
         }
     }
+
 }

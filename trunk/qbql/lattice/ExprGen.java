@@ -75,7 +75,7 @@ public class ExprGen {
         
         Set<String> found = new HashSet<String>();
         
-        Database model = new Database();
+        Grammar g = new Grammar(null);
         int exprPos = XeqExpr.src.size()-2;    
         final long startTime = System.currentTimeMillis();
         long evalTime = 0;
@@ -116,7 +116,8 @@ public class ExprGen {
                                             
                     ExprTree identity = XeqExpr.grow(exprPos, grown);
                     final long t2 = System.currentTimeMillis();
-                    ParseNode eval = model.assertion(identity.root, identity.src, false);
+                    g.src = identity.src;
+                    ParseNode eval = g.assertion(identity.root, false);
                     evalTime += System.currentTimeMillis()-t2;
                     if( eval != null )
                         continue;
@@ -179,7 +180,7 @@ public class ExprGen {
             for( ParseNode child : children ) {
                 if( lft == null ) {
                     lft = child;
-                    if( lft.contains(Database.openParen) )
+                    if( lft.contains(Grammar.openParen) )
                         isParen = true;
                 } else if( oper == null ) {
                     if( isParen )
@@ -222,7 +223,7 @@ public class ExprGen {
         for( ParseNode child : children ) {
             if( paren == null ) {
                 paren = child;
-                if( !paren.contains(Database.openParen) )
+                if( !paren.contains(Grammar.openParen) )
                     throw new RuntimeException("Unexpected Case");
             } else {
                 children = child.children();
@@ -265,13 +266,13 @@ public class ExprGen {
              || current.src.get(pos).content.equals("R11") )
                 return true;
             ParseNode parent = current.root.parent(pos, pos+1);
-            if( parent == null || parent.contains(Database.expr) )
+            if( parent == null || parent.contains(Grammar.expr) )
                 return false;
             ParseNode grandparent = current.root.parent(parent.from, parent.to);
             if( grandparent == null )
                 return false;
-            if( (grandparent.contains(Database.complement) 
-               ||grandparent.contains(Database.inverse))
+            if( (grandparent.contains(Grammar.complement) 
+               ||grandparent.contains(Grammar.inverse))
             ) {
                 if( parent.from+3!=parent.to )
                     throw new RuntimeException("parent.from+3!=parent.to");
@@ -285,13 +286,13 @@ public class ExprGen {
              || current.src.get(pos).content.equals("R11") )
                     return true;
             ParseNode parent = current.root.parent(pos, pos+1);
-            if( parent == null || parent.contains(Database.expr) )
+            if( parent == null || parent.contains(Grammar.expr) )
                 return false;
             ParseNode grandparent = current.root.parent(parent.from, parent.to);
             if( grandparent == null )
                 return false;
-            if( (grandparent.contains(Database.complement) 
-                    ||grandparent.contains(Database.inverse))
+            if( (grandparent.contains(Grammar.complement) 
+                    ||grandparent.contains(Grammar.inverse))
             ) {
                 if( parent.from+3!=parent.to )
                     throw new RuntimeException("parent.from+3!=parent.to");
@@ -304,7 +305,7 @@ public class ExprGen {
             ParseNode parent = current.root.parent(pos, pos+1);
             if( parent == null )
                 return false;
-            if( (parent.contains(Database.join) || parent.contains(Database.innerUnion)|| parent.contains(Database.innerJoin)) 
+            if( (parent.contains(Grammar.join) || parent.contains(Grammar.innerUnion)|| parent.contains(Grammar.innerJoin)) 
               && parent.from+3==parent.to ) {
                 if( parent.from==pos ) {
                     String var = current.src.get(parent.to-1).content;
@@ -320,7 +321,7 @@ public class ExprGen {
             ParseNode grandparent = current.root.parent(parent.from, parent.to);
             if( grandparent == null )
                 return false;
-            if( (grandparent.contains(Database.complement)) || (grandparent.contains(Database.inverse)) ) {
+            if( (grandparent.contains(Grammar.complement)) || (grandparent.contains(Grammar.inverse)) ) {
                 if( parent.from+3!=parent.to )
                     throw new RuntimeException("parent.from+3!=parent.to");
                 //String var = current.src.get(pos).content;
@@ -333,11 +334,11 @@ public class ExprGen {
 
     private static ExprTree parse( String input ) throws Exception {
         List<LexerToken> src =  LexerToken.parse(input);
-        Matrix matrix = Database.cyk.initArray1(src);
+        Matrix matrix = Grammar.cyk.initArray1(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        Database.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = Database.cyk.forest(size, matrix);
+        Grammar.cyk.closure(matrix, 0, size+1, skipRanges, -1);
+        ParseNode root = Grammar.cyk.forest(size, matrix);
         if( root.topLevel != null )
             throw new Exception("root.topLevel!=null" );
         return new ExprTree(root,src);
@@ -382,9 +383,9 @@ class ExprTree {
     }    
     private static void addChildren( List<Integer> leaves, ParseNode node, List<LexerToken> src ) {
         if( node.from+1 == node.to &&
-                (node.content().contains(Database.identifier)
-                ||node.content().contains(Database.expr)
-                ||node.content().contains(Database.attribute)) 
+                (node.content().contains(Grammar.identifier)
+                ||node.content().contains(Grammar.expr)
+                ||node.content().contains(Grammar.attribute)) 
             ) {
             if( ! node.content(src).startsWith("R") )
                 leaves.add(node.from);
