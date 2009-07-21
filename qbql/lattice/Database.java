@@ -43,7 +43,9 @@ public class Database {
     }
 
     final static String databaseFile = "Figure1.db"; 
-    final static String programFile = "Figure1.prg"; 
+    //final static String programFile = "Figure1.prg"; 
+    final static String programFile = "Partition.prg"; 
+    
     //final static String databaseFile = "Wittgenstein.db"; 
     //final static String programFile = "Wittgenstein.assertions"; 
     //final static String databaseFile = "Sims.db"; 

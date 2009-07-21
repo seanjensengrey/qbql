@@ -31,7 +31,7 @@ public class Grammar {
     private static final String location = "c:/qbql_trunk"+path+fname;
     private static Set<RuleTuple> latticeRules() {
         Set<RuleTuple> ret = new TreeSet<RuleTuple>();
-        // LATTICE part
+        // Pointfree LATTICE part
         ret.add(new RuleTuple("expr", new String[] {"identifier"}));
         ret.add(new RuleTuple("parExpr", new String[] {"'('","expr","')'"}));
         ret.add(new RuleTuple("join", new String[] {"expr","'^'","expr"}));
@@ -84,9 +84,15 @@ public class Grammar {
         ret.add(new RuleTuple("program", new String[] {"assignment"}));
         ret.add(new RuleTuple("program", new String[] {"query"}));
         ret.add(new RuleTuple("program", new String[] {"assertion"}));
-        ret.add(new RuleTuple("program", new String[] {"program","program"}));
-
-        // Set Theoretic part
+        ret.add(new RuleTuple("program", new String[] {"program","program"}));       
+        // Partitions and Functional Dependencies
+        ret.add(new RuleTuple("partition", new String[] {"expr","'#'","expr"}));
+        ret.add(new RuleTuple("query", new String[] {"partition","';'"}));
+        ret.add(new RuleTuple("boolean", new String[] {"partition","'<'","partition"}));
+        ret.add(new RuleTuple("boolean", new String[] {"partition","'>'","partition"}));
+        //ret.add(new RuleTuple("partition", new String[] {"partition","'^'","partition"}));
+        //ret.add(new RuleTuple("partition", new String[] {"partition","'v'","partition"}));
+        // Pointwise
         ret.add(new RuleTuple("attribute", new String[] {"identifier"}));
         ret.add(new RuleTuple("value", new String[] {"digits"}));
         ret.add(new RuleTuple("value", new String[] {"identifier"}));
@@ -109,6 +115,7 @@ public class Grammar {
         ret.add(new RuleTuple("expr", new String[] {"table"}));
         ret.add(new RuleTuple("expr", new String[] {"partition"}));
         ret.add(new RuleTuple("assignment", new String[] {"identifier","'='","expr","';'"})); // if defined in terms of lattice operations
+        ret.add(new RuleTuple("assignment", new String[] {"identifier","'='","partition","';'"})); 
         ret.add(new RuleTuple("database", new String[] {"assignment"}));
         ret.add(new RuleTuple("database", new String[] {"database","assignment"}));
         return ret;
@@ -133,8 +140,10 @@ public class Grammar {
     static int inverse;
     static int equivalence;
     static int equality;
+    static int num;
     static int minus;
     static int expr;
+    static int partition;
     static int parExpr;
     static int openParen;
     static int bool;
@@ -189,9 +198,11 @@ public class Grammar {
             lt = cyk.symbolIndexes.get("'<'");
             gt = cyk.symbolIndexes.get("'>'");
             amp = cyk.symbolIndexes.get("'&'");
+            num = cyk.symbolIndexes.get("'#'");
             bar = cyk.symbolIndexes.get("'|'");
             excl = cyk.symbolIndexes.get("'!'");
             expr = cyk.symbolIndexes.get("expr");
+            partition = cyk.symbolIndexes.get("partition");
             parExpr = cyk.symbolIndexes.get("parExpr");
             openParen = cyk.symbolIndexes.get("'('");
             bool = cyk.symbolIndexes.get("boolean");
@@ -219,7 +230,7 @@ public class Grammar {
     //--------------------------------------------------------------------------
     
     public List<LexerToken> src;
-    private Database database = new Database();
+    public Database database = new Database();
     public Grammar( List<LexerToken> program ) throws Exception {
         String dbSource = Util.readFile(getClass(),path+Database.databaseFile); 
 
@@ -263,7 +274,7 @@ public class Grammar {
         boolean parenGroup = false;
         for( ParseNode child : node.children() ) {
             if( parenGroup )
-                return compute(child);
+                return expr(child);
             else if( child.contains(openParen) )
                 parenGroup = true;
             else if( child.contains(relation) 
@@ -273,9 +284,9 @@ public class Grammar {
                     || child.contains(attribute) // produced by ExprGen 
             ) {
                 if( x == null )
-                    x = compute(child);
+                    x = expr(child);
                 else
-                    y = compute(child);
+                    y = expr(child);
             } 
         }
         if( node.contains(join) ) 
@@ -312,7 +323,7 @@ public class Grammar {
     public boolean bool( ParseNode root ) throws Exception {
         for( ParseNode child : root.children() ) 
             if( child.contains(expr) )
-                return boolExpr(root);
+                return atomicProposition(root);
             else 
                 return logical(root);
         throw new Exception("Impossible exception, no children??"+root.content(src));
@@ -353,14 +364,46 @@ public class Grammar {
         throw new Exception("Unknown boolean operation "+oper);
     }
 
-    public boolean boolExpr( ParseNode root ) throws Exception {
+    public boolean atomicProposition( ParseNode root ) throws Exception {
+        for( ParseNode child : root.children() ) {
+            if( child.contains(partition) )
+                return partitionProposition(root);
+            else if( child.contains(expr) )
+                return relationalProposition(root);
+            break;
+        }
+        throw new Exception("VT: neither relational not partitional proposition");
+    }
+    private boolean partitionProposition( ParseNode root ) throws Exception {
+        int oper = -1;
+        Partition left = null;
+        Partition right = null;
+        boolean not = false;
+        for( ParseNode child : root.children() ) {
+            if( left == null )
+                left = partition(child);
+            else if( child.contains(lt) )
+                oper = lt;
+            else if( child.contains(gt) )
+                oper = gt;
+            else
+                right = partition(child);
+        }
+        if( oper == lt )
+            return Partition.le(left,right);
+        if( oper == gt )
+            return Partition.ge(left,right);
+
+        throw new Exception("Impossible case");             
+    }
+    public boolean relationalProposition( ParseNode root ) throws Exception {
         int oper = -1;
         Relation left = null;
         Relation right = null;
         boolean not = false;
         for( ParseNode child : root.children() ) {
             if( left == null )
-                left = compute(child);
+                left = expr(child);
             else if( child.contains(excl) )
                 not = true;
             else if( child.contains(equality) )
@@ -372,7 +415,7 @@ public class Grammar {
             else if( child.contains(equivalence) )
                 oper = equivalence;
             else                            
-                right = compute(child);
+                right = expr(child);
         }
         if( oper == equality )
             return not ? !left.equals(right) : left.equals(right);
@@ -477,12 +520,15 @@ public class Grammar {
 
     public ParseNode query( ParseNode root ) throws Exception {
         for( ParseNode child : root.children() ) {
-            if( child.contains(expr) ) {
-                System.out.println(child.content(src)+"="+compute(child).toString(child.content(src).length()+1, false)+";");
+            if( child.contains(partition) ) {
+                System.out.println(child.content(src)+"="+partition(child).toString()+";");
+                return null;
+            } else if( child.contains(expr) ) {
+                System.out.println(child.content(src)+"="+expr(child).toString(child.content(src).length()+1, false)+";");
                 return null;
             } 
         }
-        throw new Exception("No expr in statement?");
+        throw new Exception("No expr/partition in statement?");
     }
     /**
      * @param root
@@ -529,13 +575,13 @@ public class Grammar {
             else if( child.contains(equality) )
                 ;
             else {                          
-                right = compute(child);
+                right = expr(child);
                 break;
             }
         }
         database.addRelation(left, right);
     }
-    public Relation compute( ParseNode root ) throws Exception {
+    public Relation expr( ParseNode root ) throws Exception {
         if( root.contains(relation) ) {
             for( ParseNode child : root.children() ) {
                 if( child.contains(tuples) )
@@ -556,6 +602,21 @@ public class Grammar {
             return eval(root);
         throw new Exception("Unknown case");
     }
+    public Partition partition( ParseNode root ) throws Exception {
+        Relation left = null;
+        Relation right = null;
+        for( ParseNode child : root.children() ) {
+            if( left == null )
+                left = expr(child);
+            else if( child.contains(num) )
+                ;
+            else                            
+                right = expr(child);
+        }
+        return new Partition(left,right);
+    }
+
+    
     public Relation tuples( ParseNode root ) throws Exception {
         Set<String> attrs = new TreeSet<String>();
         for( ParseNode descendant: root.descendants() )
