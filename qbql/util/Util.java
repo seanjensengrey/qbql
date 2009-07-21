@@ -74,4 +74,18 @@ public abstract class Util {
         return p-0x10001;
     }
 
+    /*
+     * State vector iterator
+     */
+    public static boolean next( int[] state, int limit ) {
+        for( int pos = 0; pos < state.length; pos++ ) {
+            if( state[pos] < limit-1 ) {
+                state[pos]++;
+                return true;
+            }
+            state[pos] = 0;                             
+        }
+        return false;
+    }
+
 }

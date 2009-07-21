@@ -8,7 +8,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import qbql.parser.LexerToken;
+import qbql.parser.ParseNode;
 import qbql.parser.RuleTuple;
+import qbql.parser.Token;
 import qbql.util.Permutations;
 import qbql.util.Util;
 
@@ -316,7 +319,7 @@ public class Relation {
         }
         return false;
     }
-
+    
     // rename is in-place operation.
     // therefore auxiliary methods to restore relation header after each rename
     private static String[] cloneColumnNames( Relation src ) {
