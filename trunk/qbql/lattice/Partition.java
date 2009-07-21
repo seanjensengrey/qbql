@@ -2,16 +2,76 @@ package qbql.lattice;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
+import qbql.parser.LexerToken;
+import qbql.parser.Matrix;
+import qbql.parser.ParseNode;
 import qbql.util.Util;
 
 public class Partition implements Comparable<Partition> {
     private Set<Block> blocks = new TreeSet<Block>();
     
+    public Partition() {}
     
+    public Partition( int[] indexes ) {
+        Map<Integer,Block> numberedBlocks = new HashMap<Integer,Block>();
+        for( int i = 0; i < indexes.length; i++ ) {
+            Integer partNo = indexes[i];
+            Block block = numberedBlocks.get(partNo);
+            if( block == null ) {
+                block = new Block();
+                numberedBlocks.put(partNo, block);
+            }
+            block.add(i);
+        } 
+        blocks.addAll(numberedBlocks.values());
+    }
+    
+    public Partition( Relation relvar, Relation attributes ) {
+        //Relation projection = Relation.innerUnion(relvar, attributes);
+        Map<Tuple, Integer> indexes = new HashMap<Tuple, Integer>(); 
+        for( Tuple t1 : relvar.content )
+            for( Tuple t2 : relvar.content ) {
+                boolean equals = true;
+                for( String attr : attributes.colNames ) {
+                    Integer pos = relvar.header.get(attr);
+                    if( pos == null )
+                        continue;
+                    if( !t1.data[pos].equals(t2.data[pos]) ) {
+                        equals = false;
+                        break;
+                    }
+                }
+                if( equals ) {
+                    Integer index = indexes.get(t1);
+                    if( index == null ) {
+                        index = indexes.size();
+                        indexes.put(t1, index);
+                    }
+                    indexes.put(t2, index);
+                }
+            }
+                           
+        Map<Integer,Block> numberedBlocks = new HashMap<Integer,Block>();
+        for( Tuple elem : indexes.keySet() ) {
+            Integer partNo = indexes.get(elem);
+            Block block = numberedBlocks.get(partNo);
+            if( block == null ) {
+                block = new Block();
+                numberedBlocks.put(partNo, block);
+            }
+            block.add(elem);
+        } 
+        blocks.addAll(numberedBlocks.values());
+    }
+    
+    
+
     public static Partition intersect( Partition x, Partition y ) {
         Partition ret = new Partition();
         for( Block bx : x.blocks )
@@ -61,24 +121,11 @@ public class Partition implements Comparable<Partition> {
     public static boolean le( Partition x, Partition y ) {
         return y.compareTo(union(x,y))==0;
     }
+    public static boolean ge( Partition x, Partition y ) {
+        return x.compareTo(union(x,y))==0;
+    }
     public static boolean comparable( Partition x, Partition y ) {
         return le(x,y) || le(y,x);
-    }
-
-    public static Partition construct( int[] indexes ) {
-        Map<Integer,Block> numberedBlocks = new HashMap<Integer,Block>();
-        for( int i = 0; i < indexes.length; i++ ) {
-            Integer partNo = indexes[i];
-            Block block = numberedBlocks.get(partNo);
-            if( block == null ) {
-                block = new Block();
-                numberedBlocks.put(partNo, block);
-            }
-            block.add(i);
-        } 
-        Partition ret = new Partition();
-        ret.blocks.addAll(numberedBlocks.values());
-        return ret;
     }
     
     private String label = null;
@@ -107,7 +154,7 @@ public class Partition implements Comparable<Partition> {
     }
     
     private static class Block implements Comparable<Block> {
-        TreeSet<Integer> content = new TreeSet<Integer>();
+        TreeSet content = new TreeSet();
 
         public int compareTo( Block b ) {
             return toString().compareTo(b.toString());
@@ -121,9 +168,9 @@ public class Partition implements Comparable<Partition> {
         }
 
         public static boolean isDisjoint( Block bx, Block by ) {
-            for( int i : bx.content )
-                for( int j : by.content )
-                    if( i == j )
+            for( Object i : bx.content )
+                for( Object j : by.content )
+                    if( i.equals(j) )
                         return false;
             return true;
         }
@@ -135,14 +182,14 @@ public class Partition implements Comparable<Partition> {
             return ret;
         }
         
-        public void add( int i ) {
+        public void add( Object i ) {
             content.add(i);
         }
 
         public String toString() {
             StringBuilder ret = new StringBuilder();
-            for( int i : content )
-                ret.append(" "+i);
+            for( Object i : content )
+                ret.append(" "+i.toString());
             return ret.toString();
         }
     }
@@ -153,7 +200,7 @@ public class Partition implements Comparable<Partition> {
         for( int i = 0; i < indexes.length; i++ )
             indexes[i] = 0;
         do {
-            ret.add(construct(indexes));
+            ret.add(new Partition(indexes));
         } while( Util.next(indexes,numElem) );
         return ret;
     }
@@ -266,11 +313,15 @@ public class Partition implements Comparable<Partition> {
         
         /*for( Partition p : generate(5) ) {
             System.out.println(p.toString());           
-        }*/
+        }*/ 
         
-        //Database model = new Database();
-        //Relation A = model.lattice.get("A");
-        //Relation B = model.lattice.get("B");
-        generate();       
+        //generate(); 
+        
+        Grammar program = new Grammar(null);
+        
+        Relation B = program.database.relation("B");
+        Relation _A = program.database.relation("_A");
+        System.out.println((new Partition(B,_A)).toString());
+        
     }
 }
