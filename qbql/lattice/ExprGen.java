@@ -305,7 +305,7 @@ public class ExprGen {
             ParseNode parent = current.root.parent(pos, pos+1);
             if( parent == null )
                 return false;
-            if( (parent.contains(Grammar.join) || parent.contains(Grammar.innerUnion)|| parent.contains(Grammar.innerJoin)) 
+            if( (parent.contains(Grammar.naturalJoin) || parent.contains(Grammar.innerUnion)|| parent.contains(Grammar.innerJoin)) 
               && parent.from+3==parent.to ) {
                 if( parent.from==pos ) {
                     String var = current.src.get(parent.to-1).content;
