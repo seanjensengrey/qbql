@@ -90,8 +90,10 @@ public class Grammar {
         ret.add(new RuleTuple("query", new String[] {"partition","';'"}));
         ret.add(new RuleTuple("boolean", new String[] {"partition","'<'","partition"}));
         ret.add(new RuleTuple("boolean", new String[] {"partition","'>'","partition"}));
-        //ret.add(new RuleTuple("partition", new String[] {"partition","'^'","partition"}));
-        //ret.add(new RuleTuple("partition", new String[] {"partition","'v'","partition"}));
+        ret.add(new RuleTuple("boolean", new String[] {"partition","'='","partition"}));
+        ret.add(new RuleTuple("partition", new String[] {"partition","'^'","partition"}));
+        ret.add(new RuleTuple("partition", new String[] {"partition","'v'","partition"}));
+        ret.add(new RuleTuple("partition", new String[] {"'('","partition","')'"}));
         // Pointwise
         ret.add(new RuleTuple("attribute", new String[] {"identifier"}));
         ret.add(new RuleTuple("value", new String[] {"digits"}));
@@ -113,7 +115,6 @@ public class Grammar {
         ret.add(new RuleTuple("partition", new String[] {"partition","'|'","content"}));
         ret.add(new RuleTuple("expr", new String[] {"relation"}));
         ret.add(new RuleTuple("expr", new String[] {"table"}));
-        ret.add(new RuleTuple("expr", new String[] {"partition"}));
         ret.add(new RuleTuple("assignment", new String[] {"identifier","'='","expr","';'"})); // if defined in terms of lattice operations
         ret.add(new RuleTuple("assignment", new String[] {"identifier","'='","partition","';'"})); 
         ret.add(new RuleTuple("database", new String[] {"assignment"}));
@@ -124,7 +125,7 @@ public class Grammar {
     //// READ RULES
     
     static CYK cyk;
-    static int join;
+    static int naturalJoin;
     static int innerJoin;
     static int innerUnion;
     static int outerUnion;
@@ -138,6 +139,8 @@ public class Grammar {
     static int big;
     static int complement;
     static int inverse;
+    static int join;
+    static int meet;
     static int equivalence;
     static int equality;
     static int num;
@@ -178,7 +181,7 @@ public class Grammar {
                     return new int[] {assertion};
                 }
             };
-            join = cyk.symbolIndexes.get("join");
+            naturalJoin = cyk.symbolIndexes.get("join");
             innerJoin = cyk.symbolIndexes.get("innerJoin");
             innerUnion = cyk.symbolIndexes.get("innerUnion");
             outerUnion = cyk.symbolIndexes.get("outerUnion");
@@ -192,6 +195,8 @@ public class Grammar {
             big = cyk.symbolIndexes.get("big");
             complement = cyk.symbolIndexes.get("complement");
             inverse = cyk.symbolIndexes.get("inverse");
+            join = cyk.symbolIndexes.get("'v'");
+            meet = cyk.symbolIndexes.get("'^'");
             equivalence = cyk.symbolIndexes.get("'~'");
             equality = cyk.symbolIndexes.get("'='");
             minus = cyk.symbolIndexes.get("'-'");
@@ -261,68 +266,9 @@ public class Grammar {
         this.src = program;
     }
 
-    private Relation eval( ParseNode node ) throws Exception {
-        if( node.from + 1 == node.to ) {
-            Relation ret = database.relation(src.get(node.from).content);
-            if( ret == null )
-                throw new Exception("There is no relation "+src.get(node.from).content+" in the database");
-            return ret;
-        }
-
-        Relation x = null;
-        Relation y = null;
-        boolean parenGroup = false;
-        for( ParseNode child : node.children() ) {
-            if( parenGroup )
-                return expr(child);
-            else if( child.contains(openParen) )
-                parenGroup = true;
-            else if( child.contains(relation) 
-                    || child.contains(expr) 
-                    || child.contains(identifier) 
-                    || child.contains(parExpr) 
-                    || child.contains(attribute) // produced by ExprGen 
-            ) {
-                if( x == null )
-                    x = expr(child);
-                else
-                    y = expr(child);
-            } 
-        }
-        if( node.contains(join) ) 
-            return Relation.join(x,y);
-        if( node.contains(innerJoin) ) 
-            return Relation.innerJoin(x,y);
-        if( node.contains(outerUnion) ) 
-            return database.outerUnion(x,y);
-        if( node.contains(innerUnion) ) 
-            return Relation.innerUnion(x,y);
-        if( node.contains(unison) ) 
-            return Relation.unison(x,y);
-        if( node.contains(complement) ) 
-            return database.complement(x);
-        if( node.contains(inverse) ) 
-            return database.inverse(x);
-        if( node.contains(setIX) ) 
-            return database.quantifier(x,y,setIX);
-        if( node.contains(setEQ) ) 
-            return database.quantifier(x,y,setEQ);
-        if( node.contains(contain) ) 
-            return database.quantifier(x,y,contain);
-        if( node.contains(transpCont) ) 
-            return database.quantifier(x,y,transpCont);
-        if( node.contains(disjoint) ) 
-            return database.quantifier(x,y,disjoint);
-        if( node.contains(almostDisj) ) 
-            return database.quantifier(x,y,almostDisj);
-        if( node.contains(big) ) 
-            return database.quantifier(x,y,big);
-        return null;
-    }
-
     public boolean bool( ParseNode root ) throws Exception {
         for( ParseNode child : root.children() ) 
-            if( child.contains(expr) )
+            if( child.contains(expr) || child.contains(partition) )
                 return atomicProposition(root);
             else 
                 return logical(root);
@@ -378,7 +324,6 @@ public class Grammar {
         int oper = -1;
         Partition left = null;
         Partition right = null;
-        boolean not = false;
         for( ParseNode child : root.children() ) {
             if( left == null )
                 left = partition(child);
@@ -386,6 +331,8 @@ public class Grammar {
                 oper = lt;
             else if( child.contains(gt) )
                 oper = gt;
+            else if( child.contains(equality) )
+                oper = equality;
             else
                 right = partition(child);
         }
@@ -393,6 +340,8 @@ public class Grammar {
             return Partition.le(left,right);
         if( oper == gt )
             return Partition.ge(left,right);
+        if( oper == equality )
+            return left.equals(right);
 
         throw new Exception("Impossible case");             
     }
@@ -445,16 +394,16 @@ public class Grammar {
             } else                          
                 right = child;
         }           
-        if( impl && !bimpl && boolImpl(left,right) ) 
+        if( impl && !bimpl && impl(left,right) ) 
             return null;
-        else if( !impl && bimpl && boolImpl(right,left) ) 
+        else if( !impl && bimpl && impl(right,left) ) 
             return null;
-        else if( impl && bimpl && boolImpl(left,right) && boolImpl(right,left) ) 
+        else if( impl && bimpl && impl(left,right) && impl(right,left) ) 
             return null;
         else
             return root;
     }
-    private boolean boolImpl( ParseNode left,ParseNode right ) throws Exception {
+    private boolean impl( ParseNode left,ParseNode right ) throws Exception {
         boolean l = bool(left);
         if( !l ) // optimization: early termination
             return true;
@@ -598,11 +547,178 @@ public class Grammar {
                 }                 
             } 
             return ret;
-        } else
-            return eval(root);
+        } else if( root.contains(naturalJoin) ) 
+            return binaryOper(root,naturalJoin);
+        else if( root.contains(innerJoin) ) 
+            return binaryOper(root,innerJoin);
+        else if( root.contains(outerUnion) ) 
+            return binaryOper(root,outerUnion);
+        else if( root.contains(innerUnion) ) 
+            return binaryOper(root,innerUnion);
+        //if( root.contains(unison) ) 
+            //return Relation.unison(x,y);
+        else if( root.contains(complement) ) 
+            return unaryOper(root,complement);
+        else if( root.contains(inverse) ) 
+            return unaryOper(root,inverse);
+        else if( root.contains(setIX) ) 
+            return binaryOper(root,setIX);
+        else if( root.contains(setEQ) ) 
+            return binaryOper(root,setEQ);
+        else if( root.contains(contain) ) 
+            return binaryOper(root,contain);
+        else if( root.contains(transpCont) ) 
+            return binaryOper(root,transpCont);
+        else if( root.contains(disjoint) ) 
+            return binaryOper(root,disjoint);
+        else if( root.contains(almostDisj) ) 
+            return binaryOper(root,almostDisj);
+        else if( root.contains(big) ) 
+            return binaryOper(root,big);
+        
+        else if( root.contains(parExpr) ) 
+            return parExpr(root);
+        
+        else if( root.contains(identifier) || root.from+1 == root.to ) 
+            return database.relation(src.get(root.from).content);
+                    
         throw new Exception("Unknown case");
     }
+    
+    public Relation binaryOper( ParseNode root, int oper ) throws Exception  {
+        Relation left = null;
+        Relation right = null;
+        for( ParseNode child : root.children() ) {
+            if( left == null )
+                left = expr(child);
+            else if( child.contains(num) )
+                ;
+            else                            
+                right = expr(child);
+        }
+        if( oper == naturalJoin )
+            return Relation.join(left,right);
+        else if( oper == innerJoin )
+            return Relation.innerJoin(left,right);
+        else if( oper == innerUnion )
+            return Relation.innerUnion(left,right);
+        else if( oper == innerJoin )
+            return database.outerUnion(left,right);
+        else if( oper == setEQ ) 
+            return database.quantifier(left,right,setEQ);
+        else if( oper == setIX ) 
+            return database.quantifier(left,right,setIX);
+        else if( oper == contain ) 
+            return database.quantifier(left,right,contain);
+        else if( oper == transpCont ) 
+            return database.quantifier(left,right,transpCont);
+        else if( oper == disjoint ) 
+            return database.quantifier(left,right,disjoint);
+        else if( oper == almostDisj ) 
+            return database.quantifier(left,right,almostDisj);
+        else if( oper == big ) 
+            return database.quantifier(left,right,big);
+        throw new Exception("Unknown case");
+    }
+    public Relation unaryOper( ParseNode root, int oper ) throws Exception  {
+        for( ParseNode child : root.children() ) {
+            Relation rel = expr(child);
+            if( oper == complement )
+                return database.complement(rel);
+            else if( oper == inverse )
+                return database.inverse(rel);
+        }
+        throw new Exception("Unknown case");
+    }
+        
+    private Relation parExpr( ParseNode root ) throws Exception {
+        boolean parenthesis = false;
+        for( ParseNode child : root.children() ) {
+            if( child.contains(openParen) ) {
+                parenthesis = true;
+                continue;
+            }
+            if( parenthesis ) 
+                return expr(child);           
+        }
+        throw new Exception("No parenthesis found");
+    }
+
+        
+   /*     
+        else {
+            if( root.from + 1 == root.to ) {
+                Relation ret = database.relation(src.get(root.from).content);
+                if( ret == null )
+                    throw new Exception("There is no relation "+src.get(root.from).content+" in the database");
+                return ret;
+            }
+            
+            Relation x = null;
+            Relation y = null;
+            boolean parenGroup = false;
+            for( ParseNode child : root.children() ) {
+                if( parenGroup )
+                    return expr(child);
+                else if( child.contains(openParen) )
+                    parenGroup = true;
+                else if( child.contains(relation) 
+                        || child.contains(expr) 
+                        || child.contains(identifier) 
+                        || child.contains(parExpr) 
+                        || child.contains(attribute) // produced by ExprGen 
+                ) {
+                    if( x == null )
+                        x = expr(child);
+                    else
+                        y = expr(child);
+                } 
+            }
+            return null;
+        }
+        throw new Exception("Unknown case");
+    }
+    */
+    
     public Partition partition( ParseNode root ) throws Exception {
+        boolean parenthesis = false;
+        for( ParseNode child : root.children() ) {
+            if( child.contains(openParen) ) {
+                parenthesis = true;
+                continue;
+            }
+            if( parenthesis ) 
+                return partition(child);
+            if( child.contains(partition) )
+                return partPart(root);
+            else if( child.contains(expr) )
+                return relPart(root);
+            break;
+        }
+        throw new Exception("Unknown case");
+    }
+    private Partition partPart( ParseNode root ) throws Exception {
+        Partition left = null;
+        Partition right = null;
+        int oper = -1;
+        for( ParseNode child : root.children() ) {
+            if( left == null )
+                left = partition(child);
+            else if( child.contains(join) )
+                oper = join;
+            else if( child.contains(meet) )
+                oper = meet;
+            else                            
+                right = partition(child);
+        }
+        if( oper == join )
+            return Partition.union(left,right);
+        if( oper == meet )
+            return Partition.intersect(left,right);
+
+        throw new Exception("Impossible case");             
+    }
+    private Partition relPart( ParseNode root ) throws Exception {
         Relation left = null;
         Relation right = null;
         for( ParseNode child : root.children() ) {
