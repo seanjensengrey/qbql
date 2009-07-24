@@ -63,7 +63,7 @@ Watch out for *pitfalls*. Predefined relation constants `R00`, `R01` are databas
 
 The name of the database definition text file is hard coded in the beginning of `Database.java` file. 
 
-== Assertions ==
+== Assertions/Program ==
  
 You define _assertions_ as equations 
 
@@ -100,4 +100,44 @@ Now you are set. Just run the Database.main() and watch the console output. If t
 
 `All Assertions are OK`
 
-otherwise it would print out the offending assertion and the values of the variables.
+otherwise it would print out the offending assertion and the values of the variables. This variables assigment can be literally copied and pasted into back to the assertion/program file, and you can also split the invalid assertion into smaller pieces to evaluate them individulally. Let's check the inner join associativity
+
+{{{
+x * (y * z) = y * (x * z).
+}}}
+
+in Figure1.db example. Paste this assertion into Figure1.prg, and witness the output:
+
+{{{
+z = [q]
+     c
+;
+y = [p  q]
+     1  a
+     1  b
+     2  a
+;
+x = [p]
+     1
+;
+}}}   
+
+Then, replace the assertion with the following program:
+
+{{{
+z = [q]
+     c
+;
+y = [p  q]
+     1  a
+     1  b
+     2  a
+;
+x = [p]
+     1
+;
+y * z;
+x * z;
+x * (y * z);
+y * (x * z);
+}}}   
