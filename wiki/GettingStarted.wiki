@@ -16,7 +16,7 @@ relation_var = {<attribute1=value1, attribute2=value2,...>,<attribute1=value3, a
 or in arguably more conventional database notation
  
 {{{
-relation_var = [ attribute1 attribute2 ...] value1, value2, ...;
+relation_var = [ attribute1 attribute2 ...] value1 value2 ...;
 }}}
 
 There are no tuples in conventional notation, only value position modulo number of attributes matters. For example, the fragment
