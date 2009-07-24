@@ -16,7 +16,7 @@ relation_var = {<attribute1=value1, attribute2=value2,...>,<attribute1=value3, a
 or in arguably more conventional database notation
  
 {{{
-relation_var = `[`attribute1 attribute2 ...`]` value1, value2, ...;
+relation_var = [ attribute1 attribute2 ...] value1, value2, ...;
 }}}
 
 There are no tuples in conventional notation, only value position modulo number of attributes matters. For example, the fragment
@@ -53,9 +53,11 @@ Large=[size]
 
 in conventional notation defines two relations named `Blocks` and `Large` from `Wittgenstein.db` for a database of geometric shapes borrowed from [http://ggww2.stanford.edu/GUS/lpl/ Language, Proof, and Logic] textbook.
 
-isis matched Conventional notation 
-build a relation from the existing ones by applying [http://arxiv.org/abs/0807.3795 relational lattice] operations. 
-There is no special syntax for empty relation. Create non empty relation with a dummy tuple and join it with `R00`.
+After definining several relations, you may build new relations from the existing ones by applying [http://arxiv.org/abs/0807.3795 relational lattice] operations. The files with the `.db` extension are database definition files:
+* `Wittgenstein.db` - a small introductory database of geometric shapes borrowed from LPL textbook
+* `Figure1.db` - relational lattice instance from the Figure 1 http://arxiv1.library.cornell.edu/pdf/0807.3795
+* `Sims.db` - less abstract database of people mainly used for researching set joins.
+* `Aggregate.db` - database dedicated to studying aggregates containing the familiar EMP and DEPT tables from oracle database. (Currently it fails to initialize due to the size of the universal relation R11). 
 
 Watch out for *pitfalls*. Predefined relation constants `R00`, `R01` are database independent and, therefore are calculated before database creation. `R10` and `R11`, however, are infinite relations, which makes them impossible to implement as sets of tuples. Yet, for any given database instance there are finite incarnations of `R10`, `R11` which satisfy all RL axioms. Consequently, `R10` and `R11` are not defined until the very last base relation is added to the database. In other words, you can use `R00`, `R01` in relational expression within database definition file, but not `R10` and `R11`. Likewise, outer union and complement leverage the `R11` definition and, therefore, can't be used in the database definition file.  
 
@@ -65,31 +67,30 @@ The name of the database definition text file is hard coded in the beginning of 
  
 You define _assertions_ as equations 
 
-`expr = expr.`
-
-`expr = expr.`
-
-`...`
+{{{
+expr1 = expr2.
+expr3 = expr4.
+...
+}}}
 
 in a text file as well. Each expression is either a relational variable, or terms built with operations of join `^`, inner union `v`, outer union `+`, inner join `*`, and negation `'` applied to relations. See QbqlGrammar for the details.
 
 For example, the `Wittgenstein.assertions` file 
 
-`(Blocks ^ D) v Size = Large.`
-
-`(Blocks ^ A) v Size = Small.`
-
-`(((A ^ Left) v Comparison) ^ (D ^ Right)) v R00 = R01.` 
+{{{
+(Blocks ^ D) v Size = Large.
+(Blocks ^ A) v Size = Small.
+(((A ^ Left) v Comparison) ^ (D ^ Right)) v R00 = R01.
+}}} 
 
    
 claims the following propositions
 
-`D is a Large Block`
-
-`A is a Small Block`
-
-`A is smaller than D`
-
+{{{
+"D is a Large Block"
+"A is a Small Block"
+"A is smaller than D"
+}}}
 
 The name of the assertions text file is hard coded in the beginning of `Database.java`.
 
