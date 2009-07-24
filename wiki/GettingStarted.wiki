@@ -9,55 +9,47 @@ QBQL is written in java. Therefore, until QBQL elevates to more sophisticated in
 
 To create a _database_ you need to describe it in a text file. The syntax for QbqlGrammar consists of two parts. You either specify the relation in set-theoretic notation explicitly
 
-{{{relation_var = {<attribute1=value1, attribute2=value2,...>,<attribute1=value3, attribute2=value4, ...>, ...};}}}
+{{{
+relation_var = {<attribute1=value1, attribute2=value2,...>,<attribute1=value3, attribute2=value4, ...>, ...};
+}}}
 
 or in arguably more conventional database notation
  
-{{{relation_var = `[`attribute1 attribute2 ...`]` value1, value2, ...;}}}
+{{{
+relation_var = `[`attribute1 attribute2 ...`]` value1, value2, ...;
+}}}
 
 There are no tuples in conventional notation, only value position modulo number of attributes matters. For example, the fragment
 
-`Blocks = {`
+{{{
+Blocks = {
+  <name=a,shape=tet,size=small>,
+  <name=b,shape=cube,size=small>,
+  <name=c,shape=cube,size=medium>,
+  <name=d,shape=cube,size=large>,
+  <name=e,shape=dodec,size=large>,
+  <name=f,shape=tet,size=large>
+};
 
-`  <name=a,shape=tet,size=small>,`
-
-`  <name=b,shape=cube,size=small>,`
-
-`  <name=c,shape=cube,size=medium>,`
-
-`  <name=d,shape=cube,size=large>,`
-
-`  <name=e,shape=dodec,size=large>,`
-
-`  <name=f,shape=tet,size=large>`
-
-`};`
-
-`Large = {<size=large>};`
+Large = {<size=large>};
+}}}
 
 in set notation or, equivalently
 
-`Blocks=[name  shape  size]`
+{{{
+Blocks=[name  shape  size]
+        a     tet    small
+        b     cube   small
+        c     cube   medium
+        d     cube   large
+        e     dodec  large
+        f     tet    large
+;
 
-`        a     tet    small`
-
-`        b     cube   small`
-
-`        c     cube   medium`
-
-`        d     cube   large`
-
-`        e     dodec  large`
-
-`        f     tet    large`
-
-`;`
-
-`Large=[size]`
-
-`       large`
-
-`;`
+Large=[size]
+       large
+;
+}}}
 
 in conventional notation defines two relations named `Blocks` and `Large` from `Wittgenstein.db` for a database of geometric shapes borrowed from [http://ggww2.stanford.edu/GUS/lpl/ Language, Proof, and Logic] textbook.
 
