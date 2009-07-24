@@ -106,7 +106,7 @@ otherwise it would print out the offending assertion and the values of the varia
 x * (y * z) = y * (x * z).
 }}}
 
-in Figure1.db example. Paste this assertion into Figure1.prg, and witness the output:
+in `Figure1.db` example. Paste this assertion into `Figure1.prg`, and witness the output:
 
 {{{
 z = [q]
