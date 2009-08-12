@@ -72,7 +72,8 @@ public class CYK {
             //"x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";
             //"( ( ( ( x v y ) ) ' v ( x ^ y ) ) ^ ( x v y ) )"
             //"( ( x v y ) ^ ( ( x ^ y ) v ( ( x v y ) ) ' ) )"
-            Util.readFile("c:/qbql_trunk/qbql/lattice/Partition.prg")
+            "(r^R00)v[s t]=R00"
+            //Util.readFile("c:/qbql_trunk/qbql/lattice/Partition.prg")
         ;
         long t1 = System.currentTimeMillis();
         List<LexerToken> src =  LexerToken.parse(input);

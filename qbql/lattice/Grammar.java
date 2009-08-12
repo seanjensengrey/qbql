@@ -419,6 +419,7 @@ public class Grammar {
             String id = descendant.content(src);
             if( descendant.from+1 == descendant.to 
                     && (descendant.contains(expr) || descendant.contains(identifier))
+                    && !root.parent(descendant.from, descendant.to).contains(header)
                     && database.relation(id) == null ) 
                 variables.add(id);
         }
@@ -555,8 +556,8 @@ public class Grammar {
             return binaryOper(root,outerUnion);
         else if( root.contains(innerUnion) ) 
             return binaryOper(root,innerUnion);
-        //if( root.contains(unison) ) 
-            //return Relation.unison(x,y);
+        else if( root.contains(unison) ) 
+            return binaryOper(root,unison);
         else if( root.contains(complement) ) 
             return unaryOper(root,complement);
         else if( root.contains(inverse) ) 
@@ -602,7 +603,7 @@ public class Grammar {
             return Relation.innerJoin(left,right);
         else if( oper == innerUnion )
             return Relation.innerUnion(left,right);
-        else if( oper == innerJoin )
+        else if( oper == outerUnion )
             return database.outerUnion(left,right);
         else if( oper == setEQ ) 
             return database.quantifier(left,right,setEQ);
@@ -618,6 +619,8 @@ public class Grammar {
             return database.quantifier(left,right,almostDisj);
         else if( oper == big ) 
             return database.quantifier(left,right,big);
+        else if( oper == unison ) 
+            return Relation.unison(left,right);
         throw new Exception("Unknown case");
     }
     public Relation unaryOper( ParseNode root, int oper ) throws Exception  {
@@ -729,7 +732,7 @@ public class Grammar {
             else                            
                 right = expr(child);
         }
-        return new Partition(left,right);
+        return new Partition(left,right,database);
     }
 
     
