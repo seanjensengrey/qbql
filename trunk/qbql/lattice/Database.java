@@ -44,12 +44,13 @@ public class Database {
 
     final static String databaseFile = "Figure1.db"; 
     //final static String programFile = "Figure1.prg"; 
-    final static String programFile = "Partition.prg"; 
+    //final static String programFile = "Partition.prg"; 
+    final static String programFile = "Equality.prg"; 
     
-    //final static String databaseFile = "Wittgenstein.db"; 
-    //final static String programFile = "Wittgenstein.assertions"; 
     //final static String databaseFile = "Sims.db"; 
     //final static String programFile = "Sims.assertions"; 
+    //final static String databaseFile = "Wittgenstein.db"; 
+    //final static String programFile = "Wittgenstein.assertions"; 
     //final static String databaseFile = "Aggregate.db"; 
     //final static String programFile = "Aggregate.prg"; 
     private static final String path = "/qbql/lattice/";

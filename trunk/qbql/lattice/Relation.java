@@ -210,7 +210,7 @@ public class Relation {
         if( x.colNames.length != y.colNames.length )
             return ret;
         
-        // fix x@x = R00 v R11 
+        // fix x@x = R01 
         if( ret.colNames.length == 0 && x.content.size() == 0 && y.content.size() == 0 ) {
             ret.content.add(new Tuple(new String[]{}));
             return ret;
