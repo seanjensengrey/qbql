@@ -107,36 +107,14 @@ public class Database {
                  || type == Grammar.setEQ && lft.equals(rgt)
                 )
                     ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
-            }
-        }
+                /*if( type == Grammar.unison && lft.equals(rgt) ) {
+                    if( x.colNames.length != y.colNames.length )
+                        return ret;
 
-        /*Relation X = Relation.innerUnion(x,hdrXmY);
-        Relation Y = Relation.innerUnion(y,hdrYmX);
-        if( type == forAll )
-            ret = Relation.join(X,Y);
-        for( Tuple b : bind.content ) {
-            Relation singleValue = new Relation(bind.colNames);
-            singleValue.content.add(b);
-            Relation summand = Relation.innerUnion(
-                Relation.join(xjy, singleValue)
-                ,Relation.join(
-                    //Relation.join(
-                        //X,
-                        complement(Relation.innerUnion(Relation.join(x, singleValue),hdrXmY))
-                    //)
-                    ,
-                    //Relation.join(
-                        //Y,
-                        complement(Relation.innerUnion(Relation.join(y, singleValue),hdrYmX))
-                    //)
-                )
-            );
-            if( type == forAll )
-                ret = Relation.join(ret, summand);
-            else
-                throw new Exception("Unknown quantifier type");
-        }*/
-        
+                    ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
+                }*/
+            }
+        }        
         return ret;
     }
     /**
@@ -236,7 +214,60 @@ public class Database {
         
         R11 = ret;
         lattice.put("R11",ret);
+    }    
+    
+    public boolean equivalent( Relation x, Relation y ) {
+        if( x == y )
+            return true;
+        if( x.content.size() != y.content.size() )
+            return false;
+        
+        if( !submissive(x,y) )
+            return false;
+        return submissive(y,x);
     }
+    
+    private boolean submissive( Relation x, Relation y ) {
+        
+        if( y.colNames.length == 0 ) { // indexing is broken this case
+            if( y.equals(R00) )
+                return x.content.size() == 0;
+            else
+                return Relation.innerUnion(x,R11).equals(x);
+        }
+            
+        int[] indexes = new int[x.colNames.length];
+        for( int i = 0; i < indexes.length; i++ )
+            indexes[i] = 0;
+        do {
+            boolean matchedAllRows = true;
+            for ( Tuple tx: x.content ) { 
+                boolean matchedX = false;
+                for ( Tuple ty: y.content ) {
+                    boolean mismatchedField = false;
+                    for( int i = 0; i < indexes.length; i++ ) {
+                        if( !tx.data[i].equals(ty.data[indexes[i]]) ) {
+                            mismatchedField = true;
+                            break;
+                        }
+                    }
+                    if( mismatchedField )
+                        continue;
+                    matchedX = true;
+                    break;
+                }
+                if( !matchedX ) {
+                    matchedAllRows = false;
+                    break;
+                }
+            }
+            if( matchedAllRows )
+                return true;
+        } while ( Util.next(indexes,y.colNames.length) );
+
+        return false;
+    }
+    
     private boolean next( Map<String, Integer> state, Map<String, String[]> doms ) {
         for( String pos: state.keySet() ) {
             int rownum = state.get(pos);

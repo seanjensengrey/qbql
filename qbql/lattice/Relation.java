@@ -2,6 +2,7 @@ package qbql.lattice;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -293,29 +294,6 @@ public class Relation {
                 list.removeFirst();
                 return true;
             }
-        }
-        return false;
-    }
-    public static boolean equivalent( Relation x, Relation y ) {
-        if( x == y )
-            return true;
-        if( x.colNames.length != y.colNames.length )
-            return false;
-        if( x.content.size() != y.content.size() )
-            return false;
-        Map<String, Integer> origHdr = cloneHeader(x);
-        String[] origColNames = cloneColumnNames(x);
-        
-        List<Map<String,String>> permutations = Permutations.permute(x.colNames,y.colNames);
-        for( Map<String,String> m : permutations ) {
-            x.rename(m);
-            if( x.equals(y) ) {
-                x.header = origHdr;
-                x.colNames = origColNames;
-                return true;
-            }
-            x.header = origHdr;
-            x.colNames = origColNames;
         }
         return false;
     }

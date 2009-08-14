@@ -52,6 +52,14 @@ V_ = [p q];
 W = {<s=c,t=0>,<s=a,t=0>,<s=a,t=1>}; % V ~ W.
 W_ = [s t];
 
+W1=[p  s  t]
+    0  a  0
+    1  a  1
+    0  c  0
+; % V ~ W1.
+
+
+
 SV = S ^ V;
 S1V = S1 ^ V;
 SUV = SV ^ U;

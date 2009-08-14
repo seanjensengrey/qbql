@@ -9,15 +9,6 @@ import java.net.URL;
 import qbql.lattice.Relation;
 
 public abstract class Util {
-    public static void main(String[] args) throws Exception {
-        /*Set<RuleTuple> rules = ParserEngine.extractRules();
-		Set<String> keywords = ParserEngine.getKeywords(rules);
-		for( String s : keywords )
-			System.out.println("| "+s);  // (authorized)
-         */
-        int p = decrPair(pair(16,57));
-        System.out.println("x= "+X(p)+", y= "+Y(p));  // (authorized)
-    }
 
     public static String readFile( String file ) throws Exception {
         return readFile(new FileInputStream(file));
@@ -87,5 +78,20 @@ public abstract class Util {
         }
         return false;
     }
+
+    public static void main( String[] args ) throws Exception {
+        String[] src = {"a", "b", "c"};
+        String[] target = {"x", "y"};
+        int[] indexes = new int[src.length];
+        for( int i = 0; i < indexes.length; i++ )
+            indexes[i] = 0;
+        do {
+            for( int i = 0; i < indexes.length; i++ ) {
+                System.out.print((i!=0?",":"")+src[i]+"->"+target[indexes[i]]);
+            }
+            System.out.println();
+        } while ( next(indexes,target.length) );
+    }
+
 
 }
