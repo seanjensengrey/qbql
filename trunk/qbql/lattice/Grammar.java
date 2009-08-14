@@ -373,7 +373,7 @@ public class Grammar {
             if( oper == gt )
                 return Relation.ge(left,right);
             if( oper == equivalence )
-                return Relation.equivalent(left,right);
+                return database.equivalent(left,right);
 
             throw new Exception("Impossible case");             
     }
