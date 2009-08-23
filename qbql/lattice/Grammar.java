@@ -1,5 +1,6 @@
 package qbql.lattice;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,14 +32,15 @@ public class Grammar {
     private static final String location = "c:/qbql_trunk"+path+fname;
     private static Set<RuleTuple> latticeRules() {
         Set<RuleTuple> ret = new TreeSet<RuleTuple>();
-        // Pointfree LATTICE part
+        // Lattices:
         ret.add(new RuleTuple("expr", new String[] {"identifier"}));
         ret.add(new RuleTuple("parExpr", new String[] {"'('","expr","')'"}));
         ret.add(new RuleTuple("join", new String[] {"expr","'^'","expr"}));
         ret.add(new RuleTuple("innerJoin", new String[] {"expr","'*'","expr"}));
         ret.add(new RuleTuple("innerUnion", new String[] {"expr","'v'","expr"}));
         ret.add(new RuleTuple("outerUnion", new String[] {"expr","'+'","expr"}));
-        ret.add(new RuleTuple("unison", new String[] {"expr","'@'","expr"}));
+        ret.add(new RuleTuple("unnamedJoin", new String[] {"expr","'^'","'~'","expr"}));
+        ret.add(new RuleTuple("unnamedMeet", new String[] {"expr","'v'","'~'","expr"}));
         ret.add(new RuleTuple("setIX", new String[] {"expr","'\\'","'|'","'/'","expr"}));
         ret.add(new RuleTuple("setEQ", new String[] {"expr","'/'","'|'","'\\'","expr"}));
         ret.add(new RuleTuple("contain", new String[] {"expr","'/'","'|'","expr"}));
@@ -54,6 +56,8 @@ public class Grammar {
         ret.add(new RuleTuple("expr", new String[] {"innerJoin"}));
         ret.add(new RuleTuple("expr", new String[] {"innerUnion"}));
         ret.add(new RuleTuple("expr", new String[] {"outerUnion"}));
+        ret.add(new RuleTuple("expr", new String[] {"unnamedJoin"}));
+        ret.add(new RuleTuple("expr", new String[] {"unnamedMeet"}));
         ret.add(new RuleTuple("expr", new String[] {"setIX"}));
         ret.add(new RuleTuple("expr", new String[] {"setEQ"}));
         ret.add(new RuleTuple("expr", new String[] {"contain"}));
@@ -61,13 +65,14 @@ public class Grammar {
         ret.add(new RuleTuple("expr", new String[] {"disjoint"}));
         ret.add(new RuleTuple("expr", new String[] {"almostDisj"}));
         ret.add(new RuleTuple("expr", new String[] {"big"}));
-        ret.add(new RuleTuple("expr", new String[] {"unison"}));
         ret.add(new RuleTuple("expr", new String[] {"parExpr"}));
         ret.add(new RuleTuple("expr", new String[] {"complement"}));
         ret.add(new RuleTuple("expr", new String[] {"inverse"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'='","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'!'","'='","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'~'","expr"}));
+        ret.add(new RuleTuple("boolean", new String[] {"expr","'<'","'~'","expr"}));
+        ret.add(new RuleTuple("boolean", new String[] {"expr","'>'","'~'","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'<'","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"expr","'>'","expr"}));
         ret.add(new RuleTuple("boolean", new String[] {"boolean","'&'","boolean"}));
@@ -108,13 +113,16 @@ public class Grammar {
         ret.add(new RuleTuple("table", new String[] {"'['","header","']'","content"}));
         ret.add(new RuleTuple("table", new String[] {"'['","header","']'"}));
         ret.add(new RuleTuple("header", new String[] {"header","identifier"}));
+        ret.add(new RuleTuple("header", new String[] {"header","','","identifier"}));
         ret.add(new RuleTuple("header", new String[] {"identifier"}));
+        ret.add(new RuleTuple("renamedRel", new String[] {"identifier","'('","header","')'"}));
         ret.add(new RuleTuple("content", new String[] {"content","value"}));
         ret.add(new RuleTuple("content", new String[] {"value"}));
         ret.add(new RuleTuple("partition", new String[] {"content"}));
         ret.add(new RuleTuple("partition", new String[] {"partition","'|'","content"}));
         ret.add(new RuleTuple("expr", new String[] {"relation"}));
         ret.add(new RuleTuple("expr", new String[] {"table"}));
+        ret.add(new RuleTuple("expr", new String[] {"renamedRel"}));
         ret.add(new RuleTuple("assignment", new String[] {"identifier","'='","expr","';'"})); // if defined in terms of lattice operations
         ret.add(new RuleTuple("assignment", new String[] {"identifier","'='","partition","';'"})); 
         ret.add(new RuleTuple("database", new String[] {"assignment"}));
@@ -124,12 +132,13 @@ public class Grammar {
     
     //// READ RULES
     
-    static CYK cyk;
+    public static CYK cyk;
     static int naturalJoin;
     static int innerJoin;
     static int innerUnion;
     static int outerUnion;
-    static int unison;
+    static int unnamedJoin;
+    static int unnamedMeet;
     static int setIX;
     static int setEQ;
     static int contain;
@@ -163,6 +172,7 @@ public class Grammar {
     static int assignment;
     static int relation;
     static int table;
+    static int renamedRel;
     static int tuples;
     static int tuple;
     static int header;
@@ -178,14 +188,15 @@ public class Grammar {
         try {
             cyk = new CYK(RuleTuple.getRules(path+bnf)) {
                 public int[] atomicSymbols() {
-                    return new int[] {assertion};
+                    return new int[] {assertion,assignment,query};
                 }
             };
             naturalJoin = cyk.symbolIndexes.get("join");
             innerJoin = cyk.symbolIndexes.get("innerJoin");
             innerUnion = cyk.symbolIndexes.get("innerUnion");
             outerUnion = cyk.symbolIndexes.get("outerUnion");
-            unison = cyk.symbolIndexes.get("unison");
+            unnamedJoin = cyk.symbolIndexes.get("unnamedJoin");
+            unnamedMeet = cyk.symbolIndexes.get("unnamedMeet");
             setIX = cyk.symbolIndexes.get("setIX");
             setEQ = cyk.symbolIndexes.get("setEQ");
             contain = cyk.symbolIndexes.get("contain");
@@ -219,6 +230,7 @@ public class Grammar {
             assignment = cyk.symbolIndexes.get("assignment");
             relation = cyk.symbolIndexes.get("relation");
             table = cyk.symbolIndexes.get("table");
+            renamedRel= cyk.symbolIndexes.get("renamedRel");
             tuples = cyk.symbolIndexes.get("tuples");
             tuple = cyk.symbolIndexes.get("tuple");
             header = cyk.symbolIndexes.get("header");
@@ -361,19 +373,27 @@ public class Grammar {
                 oper = lt;
             else if( child.contains(gt) )
                 oper = gt;
+            else if( oper == lt && child.contains(equivalence) )
+                oper = -lt;
+            else if( oper == gt && child.contains(equivalence) )
+                oper = -gt;
             else if( child.contains(equivalence) )
                 oper = equivalence;
             else                            
                 right = expr(child);
         }
-        if( oper == equality )
+        if( oper == lt )
+            return Relation.le(left,right);
+        else if( oper == gt )
+            return Relation.ge(left,right);
+        else if( oper == -lt )
+            return database.submissive(left,right);
+        else if( oper == -gt )
+            return database.submissive(right,left);
+        else if( oper == equivalence )
+            return database.equivalent(left,right);
+        else if( oper == equality )
             return not ? !left.equals(right) : left.equals(right);
-            if( oper == lt )
-                return Relation.le(left,right);
-            if( oper == gt )
-                return Relation.ge(left,right);
-            if( oper == equivalence )
-                return database.equivalent(left,right);
 
             throw new Exception("Impossible case");             
     }
@@ -430,6 +450,7 @@ public class Grammar {
         do {
             int var = 0;
             for( String variable : variables ) {
+//System.out.println(variable+"="+tables[indexes[var]]);
                 database.addRelation(variable, database.relation(tables[indexes[var++]]));
             }
 
@@ -548,6 +569,22 @@ public class Grammar {
                 }                 
             } 
             return ret;
+        } else if( root.contains(renamedRel) ) {
+            String relName = null;
+            List<String> columns = null;
+            for( ParseNode child : root.children() ) {
+                if( child.contains(header) )
+                    columns = strings(child);
+                else if( child.contains(identifier) ) 
+                    relName = child.content(src);
+            }
+            Relation ret = Relation.join(database.relation(relName),Database.R01); // clone
+            if( columns.size() != ret.colNames.length )
+                throw new RuntimeException();
+            for( int i = 0; i < ret.colNames.length; i++ ) {
+                ret.renameInPlace(ret.colNames[i], columns.get(i));
+            }
+            return ret;
         } else if( root.contains(naturalJoin) ) 
             return binaryOper(root,naturalJoin);
         else if( root.contains(innerJoin) ) 
@@ -556,8 +593,10 @@ public class Grammar {
             return binaryOper(root,outerUnion);
         else if( root.contains(innerUnion) ) 
             return binaryOper(root,innerUnion);
-        else if( root.contains(unison) ) 
-            return binaryOper(root,unison);
+        else if( root.contains(unnamedJoin) ) 
+            return binaryOper(root,unnamedJoin);
+        else if( root.contains(unnamedMeet) ) 
+            return binaryOper(root,unnamedMeet);
         else if( root.contains(complement) ) 
             return unaryOper(root,complement);
         else if( root.contains(inverse) ) 
@@ -605,6 +644,10 @@ public class Grammar {
             return Relation.innerUnion(left,right);
         else if( oper == outerUnion )
             return database.outerUnion(left,right);
+        else if( oper == unnamedJoin )
+            return database.unnamedJoin(left,right);
+        else if( oper == unnamedMeet )
+            return database.unnamedMeet(left,right);
         else if( oper == setEQ ) 
             return database.quantifier(left,right,setEQ);
         else if( oper == setIX ) 
@@ -619,8 +662,6 @@ public class Grammar {
             return database.quantifier(left,right,almostDisj);
         else if( oper == big ) 
             return database.quantifier(left,right,big);
-        else if( oper == unison ) 
-            return Relation.unison(left,right);
         throw new Exception("Unknown case");
     }
     public Relation unaryOper( ParseNode root, int oper ) throws Exception  {
@@ -647,42 +688,7 @@ public class Grammar {
         throw new Exception("No parenthesis found");
     }
 
-        
-   /*     
-        else {
-            if( root.from + 1 == root.to ) {
-                Relation ret = database.relation(src.get(root.from).content);
-                if( ret == null )
-                    throw new Exception("There is no relation "+src.get(root.from).content+" in the database");
-                return ret;
-            }
             
-            Relation x = null;
-            Relation y = null;
-            boolean parenGroup = false;
-            for( ParseNode child : root.children() ) {
-                if( parenGroup )
-                    return expr(child);
-                else if( child.contains(openParen) )
-                    parenGroup = true;
-                else if( child.contains(relation) 
-                        || child.contains(expr) 
-                        || child.contains(identifier) 
-                        || child.contains(parExpr) 
-                        || child.contains(attribute) // produced by ExprGen 
-                ) {
-                    if( x == null )
-                        x = expr(child);
-                    else
-                        y = expr(child);
-                } 
-            }
-            return null;
-        }
-        throw new Exception("Unknown case");
-    }
-    */
-    
     public Partition partition( ParseNode root ) throws Exception {
         boolean parenthesis = false;
         for( ParseNode child : root.children() ) {
