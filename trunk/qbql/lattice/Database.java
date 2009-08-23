@@ -2,6 +2,7 @@ package qbql.lattice;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -215,6 +216,17 @@ public class Database {
         R11 = ret;
         lattice.put("R11",ret);
     }    
+    private boolean next( Map<String, Integer> state, Map<String, String[]> doms ) {
+        for( String pos: state.keySet() ) {
+            int rownum = state.get(pos);
+            if( rownum < doms.get(pos).length-1 ) {
+                state.put(pos, rownum+1);
+                return true;
+            }
+            state.put(pos, 0);
+        }
+        return false;
+    }
     
     public boolean equivalent( Relation x, Relation y ) {
         if( x == y )
@@ -225,12 +237,12 @@ public class Database {
         if( !submissive(x,y) )
             return false;
         return submissive(y,x);
-    }
+    } 
     
-    private boolean submissive( Relation x, Relation y ) {
+    public boolean submissive( Relation x, Relation y ) {
         
         if( y.colNames.length == 0 ) { // indexing is broken this case
-            if( y.equals(R00) )
+            if( y.content.size() == 0  )
                 return x.content.size() == 0;
             else
                 return Relation.innerUnion(x,R11).equals(x);
@@ -267,19 +279,85 @@ public class Database {
 
         return false;
     }
-    
-    private boolean next( Map<String, Integer> state, Map<String, String[]> doms ) {
-        for( String pos: state.keySet() ) {
-            int rownum = state.get(pos);
-            if( rownum < doms.get(pos).length-1 ) {
-                state.put(pos, rownum+1);
-                return true;
+        
+    public Relation unnamedJoin( Relation x, Relation y ) {
+        
+        class Candidate {
+            int[] indexes;
+            Relation ret;
+            public Candidate( Relation x, Relation y ) {
+                indexes = new int[y.colNames.length];
+                for( int i = 0; i < indexes.length; i++ )
+                    indexes[i] = -1;
+                ret = Relation.join(x,Relation.renameCols(x, y, indexes));
             }
-            state.put(pos, 0);
+            private Candidate( int[] indexes, Relation ret ) {
+                this.indexes = indexes;
+                this.ret = ret;
+            }
+            void spawn( Relation x, Relation y, int i, int j, 
+                        List<Candidate> additions, List<Candidate> removals ) {
+                int[] incr = new int[indexes.length];
+                for( int k = 0; k < incr.length; k++ ) {
+                    incr[k] = indexes[k];
+                }
+                incr[j] = i;
+                Relation join = Relation.join(x,Relation.renameCols(x, y, incr));
+                if( submissive(join,ret) 
+                 && submissive(x,join) 
+                 && submissive(y,join) 
+                ) { 
+                    boolean exists = false;
+                    for( Candidate c: additions ) {
+                        if( c.ret.equals(join) )
+                            exists = true;
+                    }
+                    if( !exists )
+                        additions.add( new Candidate(incr,join));
+                    exists = false;
+                    for( Candidate c: removals ) {
+                        if( c.ret.equals(ret) )
+                            exists = true;
+                    }
+                    if( !exists )
+                        removals.add(this);
+                }               
+            }
         }
-        return false;
+        
+        //if( x.equals(R11) && y.equals(R11) ) // performance shortcut
+            //return R11;
+        
+        List<Candidate> candidates = new LinkedList<Candidate>();
+        candidates.add(new Candidate(x,y));
+
+        for( int j = 0; j < y.colNames.length; j++ ) {
+//System.out.println("j="+j);
+            List<Candidate> additions = new LinkedList<Candidate>();
+            List<Candidate> removals = new LinkedList<Candidate>();
+            for( int i = 0; i < x.colNames.length; i++ ) {
+//System.out.println("i="+i);
+//if( j==2 && i==0 )
+//System.out.println("*****");    
+                if( !Relation.match(x,y,i,j) )
+                    continue;
+                for( Candidate src : candidates ) 
+                    src.spawn(x, y, i, j, additions, removals);
+            }
+            candidates.removeAll(removals);
+            candidates.addAll(additions); 
+        }
+        
+        Relation ret = null;
+        for( Candidate c : candidates )
+            if( ret == null || submissive(c.ret, ret) )
+                ret = c.ret;
+        return ret;
     }
 
+    public static Relation unnamedMeet( Relation x, Relation y ) {
+        throw new RuntimeException("Not impl");
+    }
     public static void main( String[] args ) throws Exception {
         String prg = Util.readFile(Database.class,path+programFile);
 

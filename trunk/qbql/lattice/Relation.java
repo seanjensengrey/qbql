@@ -29,32 +29,45 @@ public class Relation {
         }		
     }
     
-    private void rename( String from, String to ) {
-        header.remove(from);
-        for( int i = 0; i < colNames.length; i++ )
-            if( colNames[i].equals(from) ) {
-                colNames[i] = to;
-                header.put(to, i);
-                return;
+    void renameInPlace( String from, String to ) {
+        if( from.equals(to) )
+            return;
+        int colFrom = header.get(from);
+        Integer colTo = header.get(to);
+        if( colTo == null ) {
+            colNames[colFrom] = to;
+            header.remove(from);
+            header.put(to, colFrom);            
+        } else {
+            Map<String,Integer> newHeader = new HashMap<String,Integer>();
+            String[] newColNames = new String[colNames.length-1];
+            Set<Tuple> newContent = new HashSet<Tuple>();
+            for( int i = 0; i < colNames.length; i++ ) 
+                if( i < colFrom ) {
+                    newColNames[i] = colNames[i];
+                    newHeader.put(colNames[i], i);
+                } else if( colFrom < i ) {
+                    newColNames[i-1] = colNames[i];
+                    newHeader.put(colNames[i], i-1);
+                }
+            
+            for( Tuple t : content ) {
+                if( !t.data[colFrom].equals(t.data[colTo]) )
+                    continue;
+                String[] newT = new String[newColNames.length];
+                for( int i = 0; i < colNames.length; i++ ) 
+                    if( i < colFrom ) {
+                        newT[i] = t.data[i];
+                    } else if( colFrom < i ) {
+                        newT[i-1] = t.data[i];
+                    }
+                newContent.add(new Tuple(newT));
             }
-    }
-    /*public void rename( String[] from, String[] to ) {
-        for( int i = 0; i < from.length; i++ )
-            rename(from[i],to[i]);
-    }*/
-    public void rename( Map<String,String> m ) {
-        // clone header and colNames
-        Map<String,Integer> hdr = new HashMap<String,Integer>();
-        String[] cols = new String[colNames.length];
-        for( int i = 0; i < colNames.length; i++ ) {
-            cols[i]=colNames[i];
-            hdr.put(colNames[i],i);
+            
+            header = newHeader;
+            colNames = newColNames;
+            content = newContent;
         }
-        header = hdr;
-        colNames = cols;
-        
-        for( String from : m.keySet() )
-            rename(from,m.get(from));
     }
 
     public void addTuple( Map<String,String> content ) {
@@ -192,67 +205,6 @@ public class Relation {
         return ret;
     }
 
-    public static Relation unison( Relation x, Relation y ) throws Exception {
-        Set<String> header = new TreeSet<String>();
-        header.addAll(x.header.keySet());
-        header.removeAll(y.header.keySet());            
-        Set<String> header1 = new TreeSet<String>();
-        header1.addAll(y.header.keySet());
-        header1.removeAll(x.header.keySet());
-        header.addAll(header1);
-              
-        // fix x@R01 = x.
-        /*if( x.colNames.length == 0 && x.content.size() > 0 ) 
-            return y;
-        if( y.colNames.length == 0 && y.content.size() > 0 ) 
-            return x;*/
-        
-        Relation ret = new Relation(header.toArray(new String[0]));
-        if( x.colNames.length != y.colNames.length )
-            return ret;
-        
-        // fix x@x = R01 
-        if( ret.colNames.length == 0 && x.content.size() == 0 && y.content.size() == 0 ) {
-            ret.content.add(new Tuple(new String[]{}));
-            return ret;
-        }
-        
-        Map<String, Integer> origHdr = cloneHeader(x);
-        String[] origColNames = cloneColumnNames(x);
-        
-        Set<Tuple> tmp = new HashSet<Tuple>(); 
-        List<Map<String,String>> permutations = Permutations.permute(x.colNames,y.colNames);
-        for( Map<String,String> m : permutations ) {
-            x.header = origHdr;
-            x.colNames = origColNames;
-            x.rename(m);
-            for( Tuple tupleX: x.content )
-                for( Tuple tupleY: y.content )
-                    if( tupleX.equals(tupleY,x,y) ) {
-                        String[] data = new String[header.size()];
-                        for( String attr: ret.colNames ) {
-                            Integer posX = origHdr.get(attr);
-                            if( posX != null ) {
-                                data[ret.header.get(attr)] = tupleX.data[posX];
-                                continue;
-                            }
-                            Integer posY = y.header.get(attr);
-                            if( posY != null ) {
-                                data[ret.header.get(attr)] = tupleY.data[posY];
-                                continue;
-                            }
-                            throw new Exception("unexpected case");
-                        }
-                        tmp.add(new Tuple(data));
-                    }
-            if( tmp.size() > ret.content.size() )
-                ret.content = tmp;
-        }
-        x.header = origHdr;
-        x.colNames = origColNames;
-
-        return ret;
-    }
     
     /**
      * @param x
@@ -300,7 +252,7 @@ public class Relation {
     
     // rename is in-place operation.
     // therefore auxiliary methods to restore relation header after each rename
-    private static String[] cloneColumnNames( Relation src ) {
+    /*private static String[] cloneColumnNames( Relation src ) {
         String[] origColNames = new String[src.colNames.length];
         for( int i = 0; i < origColNames.length; i++ )
             origColNames[i] = src.colNames[i];
@@ -311,7 +263,7 @@ public class Relation {
         for( String key : src.header.keySet() )
             origHdr.put(key, src.header.get(key));
         return origHdr;
-    }
+    }*/
 
     public int hashCode() {
         StringBuffer ret = new StringBuffer();
@@ -326,5 +278,41 @@ public class Relation {
         return ret.toString().hashCode();
     }
 
+    private static boolean map( Relation x, Relation y, int colX, int colY ) {
+        boolean matchedAllRows = true;
+        for ( Tuple tx: x.content ) { 
+            boolean matchedX = false;
+            for ( Tuple ty: y.content ) {
+                if( !tx.data[colX].equals(ty.data[colY]) )
+                    continue;
+                matchedX = true;
+                break;
+            }
+            if( !matchedX ) {
+                matchedAllRows = false;
+                break;
+            }
+        }
+        if( matchedAllRows )
+            return true;
+        return false;
+    }
+    static boolean match( Relation x, Relation y, int colX, int colY ) {
+        return map(x,y, colX,colY) && map(y,x, colY,colX);
+    }
+
+    static Relation renameCols( Relation x, Relation y, int[] indexes ) {
+        Relation ret = join(y,Database.R01); // clone
+        for( int i = 0; i < ret.colNames.length; i++) 
+            if( indexes[i] < 0 ) 
+                ret.renameInPlace(y.colNames[i], y.colNames[i]+"1");
+        Map<String,String> rename = new HashMap<String,String>();
+        for( int i = 0; i < ret.colNames.length; i++) 
+            if( 0 <= indexes[i] ) 
+                rename.put(y.colNames[i], x.colNames[indexes[i]]);     
+        for( String from : rename.keySet() ) 
+            ret.renameInPlace(from, rename.get(from));
+        return ret;
+    }
 
 }
