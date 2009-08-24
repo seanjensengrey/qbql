@@ -135,7 +135,7 @@ public class Relation extends Predicate {
         Relation ret = new Relation(header.toArray(new String[0]));
         for( Tuple tupleX: x.content )
             for( Tuple tupleY: y.content ) {				
-                Object[] retTuple = new String[header.size()];
+                Object[] retTuple = new Object[header.size()];
                 for( String attr : ret.colNames ) {
                     Integer xAttr = x.header.get(attr);
                     Integer yAttr = y.header.get(attr);
