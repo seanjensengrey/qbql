@@ -1,9 +1,9 @@
 package qbql.lattice;
 
-class Tuple implements Comparable {
-    String[] data;
+public class Tuple implements Comparable {
+    public Object[] data;
 
-    public Tuple( String[] data ) {
+    public Tuple( Object[] data ) {
         super();
         this.data = data;
     }

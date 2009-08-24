@@ -10,16 +10,16 @@ import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.util.Util;
 
-public class Strings {
-    public static String cat_prefix( String source, int from ) {
+public class Cat {
+    public static String prefix_source_from( String source, int from ) {
         return source.substring(0,from);
     }
-    public static String cat_postfix( String source, int from ) {
+    public static String postfix_source_from( String source, int from ) {
         return source.substring(from);
     }
     
     public static void main( String[] args ) throws Exception {
-        String prg = Util.readFile(Strings.class,"strings.prg");
+        String prg = Util.readFile(Cat.class,"strings.prg");
 
         List<LexerToken> src =  LexerToken.parse(prg);
         Matrix matrix = Grammar.cyk.initArray1(src);
@@ -34,7 +34,7 @@ public class Strings {
             return;
         }
 
-        Grammar program = new Grammar(src);
+        Grammar program = new Grammar(src,"");
         long t1 = System.currentTimeMillis();
         ParseNode exception = program.program(root);
         long t2 = System.currentTimeMillis();

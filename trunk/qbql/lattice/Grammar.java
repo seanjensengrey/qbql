@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import qbql.index.IndexedPredicate;
 import qbql.parser.CYK;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
@@ -248,9 +249,13 @@ public class Grammar {
     
     public List<LexerToken> src;
     public Database database = new Database();
-    public Grammar( List<LexerToken> program ) throws Exception {
-        String dbSource = Util.readFile(getClass(),path+Database.databaseFile); 
+    public Grammar( List<LexerToken> program, String dbSource ) throws Exception {
+        initDatabase(dbSource);
 
+        this.src = program;
+    }
+
+    private void initDatabase( String dbSource ) throws Exception {
         this.src =  LexerToken.parse(dbSource);
         Matrix matrix = Grammar.cyk.initArray1(src);
         int size = matrix.size();
@@ -274,8 +279,6 @@ public class Grammar {
             database.addRelation("UJADJBC'",database.complement(database.relation("UJADJBC")));
         } catch( Exception e ) { // NPE if databaseFile is not Figure1.db
         }
-
-        this.src = program;
     }
 
     public boolean bool( ParseNode root ) throws Exception {
@@ -359,8 +362,8 @@ public class Grammar {
     }
     public boolean relationalProposition( ParseNode root ) throws Exception {
         int oper = -1;
-        Relation left = null;
-        Relation right = null;
+        Predicate left = null;
+        Predicate right = null;
         boolean not = false;
         for( ParseNode child : root.children() ) {
             if( left == null )
@@ -383,15 +386,15 @@ public class Grammar {
                 right = expr(child);
         }
         if( oper == lt )
-            return Relation.le(left,right);
+            return Relation.le((Relation)left,(Relation)right);
         else if( oper == gt )
-            return Relation.ge(left,right);
+            return Relation.ge((Relation)left,(Relation)right);
         else if( oper == -lt )
-            return database.submissive(left,right);
+            return database.submissive((Relation)left,(Relation)right);
         else if( oper == -gt )
-            return database.submissive(right,left);
+            return database.submissive((Relation)right,(Relation)left);
         else if( oper == equivalence )
-            return database.equivalent(left,right);
+            return database.equivalent((Relation)left,(Relation)right);
         else if( oper == equality )
             return not ? !left.equals(right) : left.equals(right);
 
@@ -495,7 +498,7 @@ public class Grammar {
                 System.out.println(child.content(src)+"="+partition(child).toString()+";");
                 return null;
             } else if( child.contains(expr) ) {
-                System.out.println(child.content(src)+"="+expr(child).toString(child.content(src).length()+1, false)+";");
+                System.out.println(child.content(src)+"="+((Relation)expr(child)).toString(child.content(src).length()+1, false)+";");
                 return null;
             } 
         }
@@ -546,13 +549,13 @@ public class Grammar {
             else if( child.contains(equality) )
                 ;
             else {                          
-                right = expr(child);
+                right = (Relation)expr(child);
                 break;
             }
         }
         database.addRelation(left, right);
     }
-    public Relation expr( ParseNode root ) throws Exception {
+    public Predicate expr( ParseNode root ) throws Exception {
         if( root.contains(relation) ) {
             for( ParseNode child : root.children() ) {
                 if( child.contains(tuples) )
@@ -562,7 +565,7 @@ public class Grammar {
             Relation ret = null;
             for( ParseNode child : root.children() ) {
                 if( child.contains(header) )                    
-                    ret = new Relation(strings(child).toArray(new String[0]));
+                    ret = new Relation(values(child).toArray(new String[0]));
                 else if( child.contains(content) ) {
                     addContent(ret,child);
                     return ret;
@@ -619,54 +622,56 @@ public class Grammar {
         else if( root.contains(parExpr) ) 
             return parExpr(root);
         
-        else if( root.contains(identifier) || root.from+1 == root.to ) 
-            return database.relation(src.get(root.from).content);
+        else if( root.contains(identifier) || root.from+1 == root.to ) {
+            Relation ret = database.relation(src.get(root.from).content);
+            if( ret != null ) 
+                return ret;
+            return new IndexedPredicate(src.get(root.from).content);
+        }
                     
         throw new Exception("Unknown case");
     }
     
     public Relation binaryOper( ParseNode root, int oper ) throws Exception  {
-        Relation left = null;
-        Relation right = null;
+        Predicate left = null;
+        Predicate right = null;
         for( ParseNode child : root.children() ) {
-            if( left == null )
+            if( left == null && child.contains(expr) )
                 left = expr(child);
-            else if( child.contains(num) )
-                ;
-            else                            
+            else if( child.contains(expr) )                           
                 right = expr(child);
         }
         if( oper == naturalJoin )
             return Relation.join(left,right);
         else if( oper == innerJoin )
-            return Relation.innerJoin(left,right);
+            return Relation.innerJoin((Relation)left,(Relation)right);
         else if( oper == innerUnion )
-            return Relation.innerUnion(left,right);
+            return Relation.innerUnion((Relation)left,(Relation)right);
         else if( oper == outerUnion )
-            return database.outerUnion(left,right);
+            return database.outerUnion((Relation)left,(Relation)right);
         else if( oper == unnamedJoin )
-            return database.unnamedJoin(left,right);
+            return database.unnamedJoin((Relation)left,(Relation)right);
         else if( oper == unnamedMeet )
-            return database.unnamedMeet(left,right);
+            return database.unnamedMeet((Relation)left,(Relation)right);
         else if( oper == setEQ ) 
-            return database.quantifier(left,right,setEQ);
+            return database.quantifier((Relation)left,(Relation)right,setEQ);
         else if( oper == setIX ) 
-            return database.quantifier(left,right,setIX);
+            return database.quantifier((Relation)left,(Relation)right,setIX);
         else if( oper == contain ) 
-            return database.quantifier(left,right,contain);
+            return database.quantifier((Relation)left,(Relation)right,contain);
         else if( oper == transpCont ) 
-            return database.quantifier(left,right,transpCont);
+            return database.quantifier((Relation)left,(Relation)right,transpCont);
         else if( oper == disjoint ) 
-            return database.quantifier(left,right,disjoint);
+            return database.quantifier((Relation)left,(Relation)right,disjoint);
         else if( oper == almostDisj ) 
-            return database.quantifier(left,right,almostDisj);
+            return database.quantifier((Relation)left,(Relation)right,almostDisj);
         else if( oper == big ) 
-            return database.quantifier(left,right,big);
+            return database.quantifier((Relation)left,(Relation)right,big);
         throw new Exception("Unknown case");
     }
     public Relation unaryOper( ParseNode root, int oper ) throws Exception  {
         for( ParseNode child : root.children() ) {
-            Relation rel = expr(child);
+            Relation rel = (Relation)expr(child);
             if( oper == complement )
                 return database.complement(rel);
             else if( oper == inverse )
@@ -675,7 +680,7 @@ public class Grammar {
         throw new Exception("Unknown case");
     }
         
-    private Relation parExpr( ParseNode root ) throws Exception {
+    private Predicate parExpr( ParseNode root ) throws Exception {
         boolean parenthesis = false;
         for( ParseNode child : root.children() ) {
             if( child.contains(openParen) ) {
@@ -732,11 +737,11 @@ public class Grammar {
         Relation right = null;
         for( ParseNode child : root.children() ) {
             if( left == null )
-                left = expr(child);
+                left = (Relation)expr(child);
             else if( child.contains(num) )
                 ;
             else                            
-                right = expr(child);
+                right = (Relation)expr(child);
         }
         return new Partition(left,right,database);
     }
@@ -761,17 +766,17 @@ public class Grammar {
             else if( child.contains(tuples) )
                 addTuples(ret,child);
     }
-    private Map<String,String> tuple( ParseNode root ) throws Exception {
+    private Map<String,Object> tuple( ParseNode root ) throws Exception {
         for( ParseNode child : root.children() ) {
             if( child.contains(values) ) {
-                Map<String,String> tuple = new TreeMap<String,String>(); 
+                Map<String,Object> tuple = new TreeMap<String,Object>(); 
                 values(tuple, child);
                 return tuple;
             }
         }
         throw new Exception("Unknown case");
     }
-    private void values( Map<String,String> tuple, ParseNode root ) {
+    private void values( Map<String,Object> tuple, ParseNode root ) {
         if( root.contains(namedValue) )
             value(tuple,root);
         else for( ParseNode child : root.children() )
@@ -780,39 +785,56 @@ public class Grammar {
             else if( child.contains(values) )
                 values(tuple,child);
     }
-    public void value( Map<String,String> tuple, ParseNode root ) {
+    public void value( Map<String,Object> tuple, ParseNode root ) {
         String left = null;
-        String right = null;
+        Object right = null;
         for( ParseNode child : root.children() ) {
             if( left == null )
                 left = child.content(src);
             else if( child.contains(equality) )
                 ;
-            else                            
-                right = child.content(src);
+            else { 
+                String data = child.content(src);
+                try {
+                    right = Integer.parseInt(data);
+                } catch( NumberFormatException e ) {
+                    right = data;
+                }
+            }
         }
         tuple.put(left, right);
     }
 
     List<String> strings( ParseNode root ) throws Exception {
         List<String> ret = new LinkedList<String>();
-        if( root.from + 1 == root.to && 
-            (src.get(root.from).type == Token.IDENTIFIER || src.get(root.from).type == Token.DIGITS )
-        )
+        if( root.from + 1 == root.to && src.get(root.from).type == Token.IDENTIFIER )
             ret.add(root.content(src));
+        else if( root.from + 1 == root.to && src.get(root.from).type == Token.DIGITS )
+            throw new Exception("Got number while expected string");
         else
             for( ParseNode child : root.children() )
                 ret.addAll(strings(child));
         return ret;
     }   
+    List<Object> values( ParseNode root ) throws Exception {
+        List<Object> ret = new LinkedList<Object>();
+        if( root.from + 1 == root.to && src.get(root.from).type == Token.IDENTIFIER )
+            ret.add(root.content(src));
+        else if( root.from + 1 == root.to && src.get(root.from).type == Token.DIGITS )
+            ret.add(Integer.parseInt(root.content(src)));
+        else
+            for( ParseNode child : root.children() )
+                ret.addAll(values(child));
+        return ret;
+    }   
     void addContent( Relation ret, ParseNode root ) throws Exception {
         int i = 0;
-        String[] t = new String[ret.colNames.length];
-        for( String elem : strings(root) ) {
+        Object[] t = new Object[ret.colNames.length];
+        for( Object elem : values(root) ) {
             t[i%ret.colNames.length] = elem;
             if( i%ret.colNames.length == ret.colNames.length-1 ) {
                 ret.content.add(new Tuple(t));
-                t = new String[ret.colNames.length];
+                t = new Object[ret.colNames.length];
             }
             i++;
         }

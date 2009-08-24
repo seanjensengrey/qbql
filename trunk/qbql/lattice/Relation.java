@@ -16,11 +16,9 @@ import qbql.parser.Token;
 import qbql.util.Permutations;
 import qbql.util.Util;
 
-public class Relation {
-    Map<String,Integer> header = new HashMap<String,Integer>();
-    String[] colNames;
+public class Relation extends Predicate {
 
-    Set<Tuple> content = new HashSet<Tuple>(); // TreeSet<Tuple>
+    public Set<Tuple> content = new HashSet<Tuple>(); // TreeSet<Tuple>
 
     public Relation( String[] columns ) {
         colNames = columns;
@@ -54,7 +52,7 @@ public class Relation {
             for( Tuple t : content ) {
                 if( !t.data[colFrom].equals(t.data[colTo]) )
                     continue;
-                String[] newT = new String[newColNames.length];
+                Object[] newT = new String[newColNames.length];
                 for( int i = 0; i < colNames.length; i++ ) 
                     if( i < colFrom ) {
                         newT[i] = t.data[i];
@@ -70,8 +68,8 @@ public class Relation {
         }
     }
 
-    public void addTuple( Map<String,String> content ) {
-        String[] newTuple = new String[colNames.length];
+    public void addTuple( Map<String,Object> content ) {
+        Object[] newTuple = new String[colNames.length];
         Set<String> columns = content.keySet();
         for( String colName : columns )
             newTuple[header.get(colName)] = content.get(colName);
@@ -137,7 +135,7 @@ public class Relation {
         Relation ret = new Relation(header.toArray(new String[0]));
         for( Tuple tupleX: x.content )
             for( Tuple tupleY: y.content ) {				
-                String[] retTuple = new String[header.size()];
+                Object[] retTuple = new String[header.size()];
                 for( String attr : ret.colNames ) {
                     Integer xAttr = x.header.get(attr);
                     Integer yAttr = y.header.get(attr);
@@ -165,14 +163,14 @@ public class Relation {
         header.retainAll(y.header.keySet());		
         Relation ret = new Relation(header.toArray(new String[0]));
         for( Tuple tupleX: x.content ){
-            String[] retTuple = new String[header.size()];
+            Object[] retTuple = new String[header.size()];
             for( String attr : ret.colNames ) {
                 retTuple[ret.header.get(attr)] = tupleX.data[x.header.get(attr)];
             }
             ret.content.add(new Tuple(retTuple));
         }
         for( Tuple tupleY: y.content ){
-            String[] retTuple = new String[header.size()];
+            Object[] retTuple = new String[header.size()];
             for( String attr : ret.colNames ) {
                 retTuple[ret.header.get(attr)] = tupleY.data[y.header.get(attr)];
             }
@@ -187,7 +185,7 @@ public class Relation {
         header.retainAll(y.header.keySet());		
         Relation ret = new Relation(header.toArray(new String[0]));
         for( Tuple tupleX: x.content ){
-            String[] retTuple = new String[header.size()];
+            Object[] retTuple = new String[header.size()];
             for( String attr : ret.colNames ) {
                 retTuple[ret.header.get(attr)] = tupleX.data[x.header.get(attr)];
             }
@@ -195,7 +193,7 @@ public class Relation {
         }
         Set<Tuple> content = new HashSet<Tuple>(); // TreeSet<Tuple>
         for( Tuple tupleY: y.content ){
-            String[] retTuple = new String[header.size()];
+            Object[] retTuple = new String[header.size()];
             for( String attr : ret.colNames ) {
                 retTuple[ret.header.get(attr)] = tupleY.data[y.header.get(attr)];
             }
