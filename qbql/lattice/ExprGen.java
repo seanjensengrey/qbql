@@ -75,7 +75,7 @@ public class ExprGen {
         
         Set<String> found = new HashSet<String>();
         
-        Grammar g = new Grammar(null);
+        Grammar g = new Grammar(null,Util.readFile(Database.class,Database.databaseFile));
         int exprPos = XeqExpr.src.size()-2;    
         final long startTime = System.currentTimeMillis();
         long evalTime = 0;

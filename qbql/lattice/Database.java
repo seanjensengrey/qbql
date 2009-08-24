@@ -40,7 +40,7 @@ public class Database {
     Relation R10;
 
     static {
-        R01.addTuple(new TreeMap<String,String>());
+        R01.addTuple(new TreeMap<String,Object>());
     }
 
     final static String databaseFile = "Figure1.db"; 
@@ -54,7 +54,6 @@ public class Database {
     //final static String programFile = "Wittgenstein.assertions"; 
     //final static String databaseFile = "Aggregate.db"; 
     //final static String programFile = "Aggregate.prg"; 
-    private static final String path = "/qbql/lattice/";
         
     public Database() {				
         addRelation("R00",Database.R00); 
@@ -178,7 +177,7 @@ public class Database {
         for( Relation rel : lattice.values() ) 
             for( Tuple t : rel.content )
                 for( int i = 0; i < t.data.length; i++ ) {
-                    Tuple newTuple = new Tuple(new String[]{t.data[i]});
+                    Tuple newTuple = new Tuple(new Object[]{t.data[i]});
                     domains.get(rel.colNames[i]).content.add(newTuple);
                 }
 
@@ -189,10 +188,10 @@ public class Database {
         return ret;
         */
         
-        Map<String, String[]> doms = new TreeMap<String, String[]>();
+        Map<String, Object[]> doms = new TreeMap<String, Object[]>();
         for( String r : domains.keySet() ) {
             Set<Tuple> tuples = domains.get(r).content;
-            String[] content = new String[tuples.size()];
+            Object[] content = new Object[tuples.size()];
             int i = 0;
             for( Tuple t : tuples )
                 content[i++] = t.data[0];
@@ -205,7 +204,7 @@ public class Database {
         for( String key : doms.keySet() )
             indexes.put(key, 0);
         do {
-            String[] t = new String[ret.colNames.length];
+            Object[] t = new String[ret.colNames.length];
             for( String key : doms.keySet() )
                 t[ ret.header.get(key) ] = doms.get(key)[ indexes.get(key) ];
             
@@ -216,7 +215,7 @@ public class Database {
         R11 = ret;
         lattice.put("R11",ret);
     }    
-    private boolean next( Map<String, Integer> state, Map<String, String[]> doms ) {
+    private boolean next( Map<String, Integer> state, Map<String, Object[]> doms ) {
         for( String pos: state.keySet() ) {
             int rownum = state.get(pos);
             if( rownum < doms.get(pos).length-1 ) {
@@ -359,7 +358,7 @@ public class Database {
         throw new RuntimeException("Not impl");
     }
     public static void main( String[] args ) throws Exception {
-        String prg = Util.readFile(Database.class,path+programFile);
+        String prg = Util.readFile(Database.class,programFile);
 
         List<LexerToken> src =  LexerToken.parse(prg);
         Matrix matrix = Grammar.cyk.initArray1(src);
@@ -374,7 +373,7 @@ public class Database {
             return;
         }
 
-        Grammar program = new Grammar(src);
+        Grammar program = new Grammar(src,Util.readFile(Database.class,databaseFile)); 
         long t1 = System.currentTimeMillis();
         ParseNode exception = program.program(root);
         long t2 = System.currentTimeMillis();
