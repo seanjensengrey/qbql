@@ -1,3 +1,6 @@
+Pets;
+Fed;
+
 /*
 Time v (Claire ^ At ^ Library) > Time v (Max ^ At ^ Home).
 
@@ -43,7 +46,8 @@ Certified /|\ Requirements;
 Certified \|/ Requirements;
 
 y v R11 = y & x ^ R00 < y ^ R00 ->  x /|\ y = x \|/ y.
-*/
+
 
 x^R00=x & y^R00=y & r#x < r#y  ->
 r = (r v (x^y)) ^ (r v (x^y`)).
+*/
