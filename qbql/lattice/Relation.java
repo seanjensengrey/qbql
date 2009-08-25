@@ -69,7 +69,7 @@ public class Relation extends Predicate {
     }
 
     public void addTuple( Map<String,Object> content ) {
-        Object[] newTuple = new String[colNames.length];
+        Object[] newTuple = new Object[colNames.length];
         Set<String> columns = content.keySet();
         for( String colName : columns )
             newTuple[header.get(colName)] = content.get(colName);
@@ -163,14 +163,14 @@ public class Relation extends Predicate {
         header.retainAll(y.header.keySet());		
         Relation ret = new Relation(header.toArray(new String[0]));
         for( Tuple tupleX: x.content ){
-            Object[] retTuple = new String[header.size()];
+            Object[] retTuple = new Object[header.size()];
             for( String attr : ret.colNames ) {
                 retTuple[ret.header.get(attr)] = tupleX.data[x.header.get(attr)];
             }
             ret.content.add(new Tuple(retTuple));
         }
         for( Tuple tupleY: y.content ){
-            Object[] retTuple = new String[header.size()];
+            Object[] retTuple = new Object[header.size()];
             for( String attr : ret.colNames ) {
                 retTuple[ret.header.get(attr)] = tupleY.data[y.header.get(attr)];
             }

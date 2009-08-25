@@ -43,13 +43,13 @@ public class Database {
         R01.addTuple(new TreeMap<String,Object>());
     }
 
-    final static String databaseFile = "Figure1.db"; 
+    //final static String databaseFile = "Figure1.db"; 
     //final static String programFile = "Figure1.prg"; 
     //final static String programFile = "Partition.prg"; 
-    final static String programFile = "Equality.prg"; 
+    //final static String programFile = "Equality.prg"; 
     
-    //final static String databaseFile = "Sims.db"; 
-    //final static String programFile = "Sims.assertions"; 
+    final static String databaseFile = "Sims.db"; 
+    final static String programFile = "Sims.assertions"; 
     //final static String databaseFile = "Wittgenstein.db"; 
     //final static String programFile = "Wittgenstein.assertions"; 
     //final static String databaseFile = "Aggregate.db"; 
@@ -204,7 +204,7 @@ public class Database {
         for( String key : doms.keySet() )
             indexes.put(key, 0);
         do {
-            Object[] t = new String[ret.colNames.length];
+            Object[] t = new Object[ret.colNames.length];
             for( String key : doms.keySet() )
                 t[ ret.header.get(key) ] = doms.get(key)[ indexes.get(key) ];
             
