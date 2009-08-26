@@ -43,13 +43,13 @@ public class Database {
         R01.addTuple(new TreeMap<String,Object>());
     }
 
-    //final static String databaseFile = "Figure1.db"; 
+    final static String databaseFile = "Figure1.db"; 
     //final static String programFile = "Figure1.prg"; 
     //final static String programFile = "Partition.prg"; 
-    //final static String programFile = "Equality.prg"; 
+    final static String programFile = "Equality.prg"; 
     
-    final static String databaseFile = "Sims.db"; 
-    final static String programFile = "Sims.assertions"; 
+    //final static String databaseFile = "Sims.db"; 
+    //final static String programFile = "Sims.assertions"; 
     //final static String databaseFile = "Wittgenstein.db"; 
     //final static String programFile = "Wittgenstein.assertions"; 
     //final static String databaseFile = "Aggregate.db"; 
@@ -82,10 +82,7 @@ public class Database {
         Relation hdrXmY = new Relation(headerXmY.toArray(new String[0]));
         Relation hdrYmX = new Relation(headerYmX.toArray(new String[0]));
         
-        //Relation bind = Relation.innerUnion(x, y); 
         Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
-        if( type == Grammar.setIX )
-            return Relation.innerUnion(ret,Relation.join(x, y));
                 
         Relation X = Relation.innerUnion(R11,hdrXmY);
         Relation Y = Relation.innerUnion(R11,hdrYmX);
@@ -359,7 +356,11 @@ public class Database {
     }
     public static void main( String[] args ) throws Exception {
         String prg = Util.readFile(Database.class,programFile);
-
+        String databaseSrc = Util.readFile(Database.class,databaseFile);
+        run(prg, databaseSrc);
+    }
+    
+    public static void run(String prg, String databaseSrc) throws Exception {
         List<LexerToken> src =  LexerToken.parse(prg);
         Matrix matrix = Grammar.cyk.initArray1(src);
         int size = matrix.size();
@@ -373,7 +374,7 @@ public class Database {
             return;
         }
 
-        Grammar program = new Grammar(src,Util.readFile(Database.class,databaseFile)); 
+        Grammar program = new Grammar(src,databaseSrc); 
         long t1 = System.currentTimeMillis();
         ParseNode exception = program.program(root);
         long t2 = System.currentTimeMillis();

@@ -24,4 +24,22 @@ public class Predicate {
         return IndexedPredicate.join((Relation)x,(IndexedPredicate)y);
     }
 
+    /*
+     * Set intersection join
+     */
+    public static Predicate setIX( Predicate x, Predicate y ) throws Exception {
+        if( x instanceof Relation && y instanceof Relation )
+            return Relation.setIX((Relation)x, (Relation)y);
+        
+        if( !(x instanceof Relation) && !(x instanceof EqualityPredicate) ) {
+            Predicate tmp = x;
+            x = y;
+            y = tmp;
+        }
+        if( (!(x instanceof Relation) && !(x instanceof EqualityPredicate)) 
+          || !(y instanceof EqualityPredicate) ) 
+            throw new RuntimeException("Not implemented");
+        
+        return EqualityPredicate.setIX(x,(EqualityPredicate)y);
+    }
 }
