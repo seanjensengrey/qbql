@@ -112,10 +112,15 @@ public class IndexedPredicate extends Predicate {
             for( String attr : ret.colNames ) {
                 Integer colRet = ret.header.get(attr);
                 Integer colX = x.header.get(attr);
-                if( colX == null ) {
+                Integer colY = y.header.get(attr);
+                if( colY != null ) {
                     Method m = y.method(attr);
-                    if( m == null )
-                        throw new Exception("Missing index");
+                    if( m == null ) {
+                        if( colX == null )
+                            throw new Exception("Missing index");
+                        retTuple[colRet] = tupleX.data[colX];
+                        continue;
+                    }
                     String fullName = m.getName();
                     Object[] args = new Object[m.getParameterTypes().length];
                     StringTokenizer st = new StringTokenizer(fullName, "_", false);
@@ -127,10 +132,17 @@ public class IndexedPredicate extends Predicate {
                             continue;
                         args[pos-1] = tupleX.data[x.header.get(y.newName(origName))];
                     }
-                    retTuple[colRet] = m.invoke(null, args);
+                    Object o = m.invoke(null, args);
+                    if( colX != null ) 
+                        if( !o.equals(tupleX.data[colX]) ) {
+                            retTuple = null;
+                            break;
+                        }
+                    retTuple[colRet] = o;
                 } else 
                     retTuple[colRet] = tupleX.data[colX];
             }
+            if( retTuple != null )
             ret.content.add(new Tuple(retTuple));
         }
         return ret;
