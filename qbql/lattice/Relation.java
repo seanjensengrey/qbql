@@ -21,10 +21,7 @@ public class Relation extends Predicate {
     public Set<Tuple> content = new HashSet<Tuple>(); // TreeSet<Tuple>
 
     public Relation( String[] columns ) {
-        colNames = columns;
-        for( int i = 0; i < columns.length; i++ ) {
-            header.put(colNames[i],i);
-        }		
+        super(columns);		
     }
     
     void renameInPlace( String from, String to ) {
@@ -37,7 +34,7 @@ public class Relation extends Predicate {
             header.remove(from);
             header.put(to, colFrom);            
         } else {
-            Map<String,Integer> newHeader = new HashMap<String,Integer>();
+            HashMap<String,Integer> newHeader = new HashMap<String,Integer>();
             String[] newColNames = new String[colNames.length-1];
             Set<Tuple> newContent = new HashSet<Tuple>();
             for( int i = 0; i < colNames.length; i++ ) 
@@ -84,9 +81,6 @@ public class Relation extends Predicate {
     }
 
 
-    public String toString() {
-        return toString(0, false);
-    }
     public String toString( int ident, boolean isSetNotation ) {
         if( colNames.length == 0 ) {
             if( content.size() == 0 )

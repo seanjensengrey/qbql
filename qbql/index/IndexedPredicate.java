@@ -7,13 +7,45 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import qbql.lattice.EqualityPredicate;
+import qbql.lattice.Grammar;
 import qbql.lattice.Predicate;
 import qbql.lattice.Relation;
 import qbql.lattice.Tuple;
+import qbql.util.Util;
 
 public class IndexedPredicate extends Predicate {
     
-    private Map<String,Method> indexes = new HashMap<String,Method>();
+    private HashMap<String,Method> indexes = new HashMap<String,Method>();
+    private HashMap<String,String> renamed = new HashMap<String,String>(); //new_name->old_name
+    private String oldName( String col ) {
+        String ret = renamed.get(col);
+        return (ret == null) ? col : ret;
+    }
+    private String newName( String col ) {
+        String ret = null;
+        for( String newName : renamed.keySet() )
+            if( col.equals(renamed.get(newName)) )
+                ret = newName;
+        return (ret == null) ? col : ret;
+    }
+    private Method method( String col ) {
+        return indexes.get(oldName(col));
+    }
+    
+    public void renameInPlace( String from, String to ) throws Exception {
+        if( from.equals(to) )
+            return;
+        int colFrom = header.get(from);
+        Integer colTo = header.get(to);
+        if( colTo == null ) {
+            colNames[colFrom] = to;
+            header.remove(from);
+            header.put(to, colFrom);
+            renamed.put(to, from);
+        } else
+            throw new Exception("Column collision");
+    }
 
     public IndexedPredicate( String name ) throws Exception {
         Set<String> tmp = new TreeSet<String>();
@@ -40,8 +72,37 @@ public class IndexedPredicate extends Predicate {
             }          
         }
     }
+    public IndexedPredicate( IndexedPredicate ip ) throws Exception {
+        super(ip.colNames);       
+        indexes = (HashMap<String, Method>) ip.indexes.clone();
+        renamed = (HashMap<String, String>) ip.renamed.clone();
+    }
 
+    IndexedPredicate lft = null;
+    IndexedPredicate rgt;
+    int oper;
+    public IndexedPredicate( IndexedPredicate lft, IndexedPredicate rgt, int oper ) {
+        super(
+              oper==Grammar.naturalJoin ?
+              Util.union(lft.colNames,rgt.colNames) :
+              Util.symmDiff(lft.colNames,rgt.colNames)
+        );       
+        Set<String> header = new TreeSet<String>();
+        header.addAll(lft.header.keySet());
+        header.addAll(rgt.header.keySet());               
+        this.lft = lft;
+        this.rgt = rgt;
+        this.oper = oper;
+    }
+    public static IndexedPredicate join( IndexedPredicate x, IndexedPredicate y ) throws Exception {
+        return new IndexedPredicate(x,y,Grammar.naturalJoin);
+    }
+    public static IndexedPredicate joinIX( IndexedPredicate x, IndexedPredicate y ) throws Exception {
+        return new IndexedPredicate(x,y,Grammar.setIX);
+    }
     public static Relation join( Relation x, IndexedPredicate y ) throws Exception {
+        if( y.lft != null )
+            return join(join(x,y.lft),y.rgt);
         Set<String> header = new TreeSet<String>();
         header.addAll(x.header.keySet());
         header.addAll(y.header.keySet());               
@@ -52,7 +113,7 @@ public class IndexedPredicate extends Predicate {
                 Integer colRet = ret.header.get(attr);
                 Integer colX = x.header.get(attr);
                 if( colX == null ) {
-                    Method m = y.indexes.get(attr);
+                    Method m = y.method(attr);
                     if( m == null )
                         throw new Exception("Missing index");
                     String fullName = m.getName();
@@ -61,10 +122,10 @@ public class IndexedPredicate extends Predicate {
                     int pos = -1;
                     while( st.hasMoreTokens() ) {
                         pos++;
-                        String token = st.nextToken();
+                        String origName = st.nextToken();
                         if( pos == 0 )
                             continue;
-                        args[pos-1] = tupleX.data[x.header.get(token)];
+                        args[pos-1] = tupleX.data[x.header.get(y.newName(origName))];
                     }
                     retTuple[colRet] = m.invoke(null, args);
                 } else 
@@ -73,6 +134,9 @@ public class IndexedPredicate extends Predicate {
             ret.content.add(new Tuple(retTuple));
         }
         return ret;
+    }
+    public static Relation joinIX( Relation x, IndexedPredicate y ) throws Exception {
+        throw new Exception("Not implemented");
     }
 
 }

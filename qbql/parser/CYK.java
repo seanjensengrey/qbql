@@ -798,7 +798,9 @@ public class CYK {
             }
             if( begin < src.get(node.from).begin )
                 begin = src.get(node.from).begin;
-            if( src.get(node.to).end < end )
+            if( src.size() <= node.to )
+                end = src.get(src.size()-1).end;
+            else if( src.get(node.to).end < end )
                 end = src.get(node.to).end;
             if( 1 <= iteration++ )
                 break;

@@ -20,44 +20,48 @@ import qbql.util.Util;
 
 public class Database {
 
-    private Map<String,Relation> lattice = new TreeMap<String,Relation>();
-    public Relation relation( String name ) {
+    private Map<String,Predicate> lattice = new TreeMap<String,Predicate>();
+    public Predicate predicate( String name ) {
         return lattice.get(name);
     }
-    public void addRelation( String name, Relation relvar ) {
+    public void addPredicate( String name, Predicate relvar ) {
        lattice.put(name, relvar);
     }       
-    public void removeRelation( String name ) {
+    public void removePredicate( String name ) {
         lattice.remove(name);
     }       
     public String[] relNames() {
-        return lattice.keySet().toArray(new String[0]);
+        Set<String> ret = new TreeSet<String>();
+        for( String pred : lattice.keySet() )
+            if( lattice.get(pred) instanceof Relation )
+                ret.add(pred);
+        return ret.toArray(new String[0]);
     }       
     
     static Relation R00 = new Relation(new String[]{});
     Relation R11;
     static Relation R01 = new Relation(new String[]{});
-    Relation R10;
+    Predicate R10;
 
     static {
         R01.addTuple(new TreeMap<String,Object>());
     }
 
-    final static String databaseFile = "Figure1.db"; 
+    //final static String databaseFile = "Figure1.db"; 
     //final static String programFile = "Figure1.prg"; 
     //final static String programFile = "Partition.prg"; 
-    final static String programFile = "Equality.prg"; 
+    //final static String programFile = "Equality.prg"; 
     
-    //final static String databaseFile = "Sims.db"; 
-    //final static String programFile = "Sims.assertions"; 
+    final static String databaseFile = "Sims.db"; 
+    final static String programFile = "Sims.assertions"; 
     //final static String databaseFile = "Wittgenstein.db"; 
     //final static String programFile = "Wittgenstein.assertions"; 
     //final static String databaseFile = "Aggregate.db"; 
     //final static String programFile = "Aggregate.prg"; 
         
     public Database() {				
-        addRelation("R00",Database.R00); 
-        addRelation("R01",Database.R01);
+        addPredicate("R00",Database.R00); 
+        addPredicate("R01",Database.R01);
     }
 
     Relation outerUnion( Relation x, Relation y ) {
@@ -158,10 +162,10 @@ public class Database {
             return Relation.innerUnion(new Relation(header),R11);
     }
     
-    void buildR10() {
-        Relation ret = new Relation(new String[]{});
-        for( Relation r : lattice.values() )
-            ret = Relation.join(ret, r);
+    void buildR10() throws Exception {
+        Predicate ret = new Relation(new String[]{});
+        for( Predicate r : lattice.values() )
+            ret = Predicate.join(ret, r);
         R10 = ret;
         lattice.put("R10",ret);
     }
@@ -171,12 +175,13 @@ public class Database {
         for( String col : R10.colNames )
             domains.put(col, new Relation(new String[]{col}));
 
-        for( Relation rel : lattice.values() ) 
-            for( Tuple t : rel.content )
-                for( int i = 0; i < t.data.length; i++ ) {
-                    Tuple newTuple = new Tuple(new Object[]{t.data[i]});
-                    domains.get(rel.colNames[i]).content.add(newTuple);
-                }
+        for( Predicate rel : lattice.values() )
+            if( rel instanceof Relation )
+                for( Tuple t : ((Relation)rel).content )
+                    for( int i = 0; i < t.data.length; i++ ) {
+                        Tuple newTuple = new Tuple(new Object[]{t.data[i]});
+                        domains.get(rel.colNames[i]).content.add(newTuple);
+                    }
 
         /* Bad performance for large db
         Relation ret = R01;

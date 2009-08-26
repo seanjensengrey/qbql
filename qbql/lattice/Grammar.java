@@ -134,13 +134,13 @@ public class Grammar {
     //// READ RULES
     
     public static CYK cyk;
-    static int naturalJoin;
+    public static int naturalJoin;
     static int innerJoin;
     static int innerUnion;
     static int outerUnion;
     static int unnamedJoin;
     static int unnamedMeet;
-    static int setIX;
+    public static int setIX;
     static int setEQ;
     static int contain;
     static int transpCont;
@@ -274,7 +274,7 @@ public class Grammar {
 
         // relations that requre complement can be built only after R10 and R11 are defined
         try {
-            database.addRelation("UJADJBC'",database.complement(database.relation("UJADJBC")));
+            database.addPredicate("UJADJBC'",database.complement((Relation)(database.predicate("UJADJBC"))));
         } catch( Exception e ) { // NPE if databaseFile is not Figure1.db
         }
     }
@@ -453,7 +453,7 @@ public class Grammar {
             int var = 0;
             for( String variable : variables ) {
 //System.out.println(variable+"="+tables[indexes[var]]);
-                database.addRelation(variable, database.relation(tables[indexes[var++]]));
+                database.addPredicate(variable, database.predicate(tables[indexes[var++]]));
             }
 
 
@@ -463,11 +463,11 @@ public class Grammar {
                         for( String variable : variables )
                             if( outputVariables )
                                 System.out.println(variable+" = "
-                                                   +database.relation(variable).toString(variable.length()+3, false)
+                                                   +database.predicate(variable).toString(variable.length()+3, false)
                                                    +";");
                         ret = child;
                         for( String variable : variables )
-                            database.removeRelation(variable);
+                            database.removePredicate(variable);
                         return ret;
                     }
                 } else if( child.contains(implication) ) {
@@ -476,10 +476,10 @@ public class Grammar {
                         for( String variable : variables )
                             if( outputVariables )
                                 System.out.println(variable+" = "
-                                                   +database.relation(variable).toString(variable.length()+3, false)
+                                                   +database.predicate(variable).toString(variable.length()+3, false)
                                                    +";");
                         for( String variable : variables )
-                            database.removeRelation(variable);
+                            database.removePredicate(variable);
                         return ret;
                     }
                 } 
@@ -487,7 +487,7 @@ public class Grammar {
         } while( Util.next(indexes,tables.length) );
 
         for( String variable : variables )
-            database.removeRelation(variable);
+            database.removePredicate(variable);
         return ret;
     }
 
@@ -515,7 +515,7 @@ public class Grammar {
         if( root.contains(query) )
             return query(root);
         if( root.contains(assignment) ) {
-            createRelation(root);
+            createPredicate(root);
             return null;
         }
         ParseNode ret = null;
@@ -530,29 +530,29 @@ public class Grammar {
 
     public void database( ParseNode root ) throws Exception {
         if( root.contains(assignment) )
-            createRelation(root);
+            createPredicate(root);
         else
             for( ParseNode child : root.children() ) {                              
                 if( child.contains(assignment) )
-                    createRelation(child);
+                    createPredicate(child);
                 else 
                     database(child);
             }
     }
-    public void createRelation( ParseNode root ) throws Exception {
+    public void createPredicate( ParseNode root ) throws Exception {
         String left = null;
-        Relation right = null;
+        Predicate right = null;
         for( ParseNode child : root.children() ) {
             if( left == null )
                 left = child.content(src);
             else if( child.contains(equality) )
                 ;
             else {                          
-                right = (Relation)expr(child);
+                right = expr(child);
                 break;
             }
         }
-        database.addRelation(left, right);
+        database.addPredicate(left, right);
     }
     public Predicate expr( ParseNode root ) throws Exception {
         if( root.contains(relation) ) {
@@ -635,7 +635,7 @@ public class Grammar {
     }
 
     private Predicate lookup( String name ) {
-        Relation ret = database.relation(name);
+        Predicate ret = database.predicate(name);
         if( ret != null ) 
             return ret;
         try {
