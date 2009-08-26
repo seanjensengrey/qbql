@@ -70,7 +70,7 @@ public class CYK {
         cyk.printSelectedChomskiRules("nion");          
         final String input =
             //"x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";
-            "x ^ [source] Hello World "
+            "[source from] Hello 3 \\|/ [from=f];"
             //"( ( x v y ) ^ ( ( x ^ y ) v ( ( x v y ) ) ' ) )"
             //"cat ^ [source] Hello World ^ [from] 3;"
             //Util.readFile("c:/qbql_trunk/qbql/lattice/Partition.prg")

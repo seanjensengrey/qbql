@@ -113,17 +113,17 @@ public class Grammar {
         ret.add(new RuleTuple("relation", new String[] {"'{'","tuples","'}'"}));
         ret.add(new RuleTuple("table", new String[] {"'['","header","']'","content"}));
         ret.add(new RuleTuple("table", new String[] {"'['","header","']'"}));
+        ret.add(new RuleTuple("table", new String[] {"'['","']'"}));
+        ret.add(new RuleTuple("table", new String[] {"'['","identifier","'='","identifier","']'"}));
         ret.add(new RuleTuple("header", new String[] {"header","identifier"}));
         ret.add(new RuleTuple("header", new String[] {"header","','","identifier"}));
         ret.add(new RuleTuple("header", new String[] {"identifier"}));
-        ret.add(new RuleTuple("renamedRel", new String[] {"identifier","'('","header","')'"}));
         ret.add(new RuleTuple("content", new String[] {"content","value"}));
         ret.add(new RuleTuple("content", new String[] {"value"}));
         ret.add(new RuleTuple("partition", new String[] {"content"}));
         ret.add(new RuleTuple("partition", new String[] {"partition","'|'","content"}));
         ret.add(new RuleTuple("expr", new String[] {"relation"}));
         ret.add(new RuleTuple("expr", new String[] {"table"}));
-        ret.add(new RuleTuple("expr", new String[] {"renamedRel"}));
         ret.add(new RuleTuple("assignment", new String[] {"identifier","'='","expr","';'"})); // if defined in terms of lattice operations
         ret.add(new RuleTuple("assignment", new String[] {"identifier","'='","partition","';'"})); 
         ret.add(new RuleTuple("database", new String[] {"assignment"}));
@@ -173,7 +173,6 @@ public class Grammar {
     static int assignment;
     static int relation;
     static int table;
-    static int renamedRel;
     static int tuples;
     static int tuple;
     static int header;
@@ -231,7 +230,6 @@ public class Grammar {
             assignment = cyk.symbolIndexes.get("assignment");
             relation = cyk.symbolIndexes.get("relation");
             table = cyk.symbolIndexes.get("table");
-            renamedRel= cyk.symbolIndexes.get("renamedRel");
             tuples = cyk.symbolIndexes.get("tuples");
             tuple = cyk.symbolIndexes.get("tuple");
             header = cyk.symbolIndexes.get("header");
@@ -443,7 +441,8 @@ public class Grammar {
             if( descendant.from+1 == descendant.to 
                     && (descendant.contains(expr) || descendant.contains(identifier))
                     && !root.parent(descendant.from, descendant.to).contains(header)
-                    && database.relation(id) == null ) 
+                    && !root.parent(descendant.from, descendant.to).contains(table)
+                    && lookup(id) == null ) 
                 variables.add(id);
         }
 
@@ -562,17 +561,22 @@ public class Grammar {
                     return tuples(child);
             }
         } else if( root.contains(table) ) {
-            Relation ret = null;
+            Relation ret = Database.R00;
+            String colX = null;
             for( ParseNode child : root.children() ) {
                 if( child.contains(header) )                    
                     ret = new Relation(values(child).toArray(new String[0]));
                 else if( child.contains(content) ) {
                     addContent(ret,child);
                     return ret;
-                }                 
+                } else if( child.contains(identifier) && colX == null ) 
+                    colX = child.content(src);
+                else if( child.contains(identifier) ) {
+                    return new EqualityPredicate(colX, child.content(src));
+                }
             } 
             return ret;
-        } else if( root.contains(renamedRel) ) {
+        } /*else if( root.contains(renamedRel) ) {
             String relName = null;
             List<String> columns = null;
             for( ParseNode child : root.children() ) {
@@ -581,14 +585,14 @@ public class Grammar {
                 else if( child.contains(identifier) ) 
                     relName = child.content(src);
             }
-            Relation ret = Relation.join(database.relation(relName),Database.R01); // clone
+            Relation ret = Relation.join(lookup(relName),Database.R01); // clone
             if( columns.size() != ret.colNames.length )
                 throw new RuntimeException();
             for( int i = 0; i < ret.colNames.length; i++ ) {
                 ret.renameInPlace(ret.colNames[i], columns.get(i));
             }
             return ret;
-        } else if( root.contains(naturalJoin) ) 
+        }*/ else if( root.contains(naturalJoin) ) 
             return binaryOper(root,naturalJoin);
         else if( root.contains(innerJoin) ) 
             return binaryOper(root,innerJoin);
@@ -623,16 +627,25 @@ public class Grammar {
             return parExpr(root);
         
         else if( root.contains(identifier) || root.from+1 == root.to ) {
-            Relation ret = database.relation(src.get(root.from).content);
-            if( ret != null ) 
-                return ret;
-            return new IndexedPredicate(src.get(root.from).content);
+            String name = src.get(root.from).content;
+            return lookup(name);
         }
                     
         throw new Exception("Unknown case");
     }
+
+    private Predicate lookup( String name ) {
+        Relation ret = database.relation(name);
+        if( ret != null ) 
+            return ret;
+        try {
+            return new IndexedPredicate(name);
+        } catch (Exception e) {
+            return null;
+        }
+    }
     
-    public Relation binaryOper( ParseNode root, int oper ) throws Exception  {
+    public Predicate binaryOper( ParseNode root, int oper ) throws Exception  {
         Predicate left = null;
         Predicate right = null;
         for( ParseNode child : root.children() ) {
@@ -656,7 +669,7 @@ public class Grammar {
         else if( oper == setEQ ) 
             return database.quantifier((Relation)left,(Relation)right,setEQ);
         else if( oper == setIX ) 
-            return database.quantifier((Relation)left,(Relation)right,setIX);
+            return Predicate.setIX(left,right);
         else if( oper == contain ) 
             return database.quantifier((Relation)left,(Relation)right,contain);
         else if( oper == transpCont ) 
