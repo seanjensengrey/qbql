@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.URL;
+import java.util.Set;
+import java.util.TreeSet;
 
 import qbql.lattice.Relation;
 
@@ -48,6 +50,26 @@ public abstract class Util {
             b.append(" "); 
         b.append(txt); 
         return b.toString();
+    }
+    
+    public static String[] union( String[] x, String[] y ) {
+        Set<String> ret = new TreeSet<String>();
+        for( String s : x )
+            ret.add(s);
+        for( String s : y )
+            ret.add(s);
+        return ret.toArray(new String[0]);
+    }
+    public static String[] symmDiff( String[] x, String[] y ) {
+        Set<String> ret = new TreeSet<String>();
+        for( String s : x )
+            ret.add(s);
+        for( String s : y )
+            if( ret.contains(s) )
+                ret.remove(s);
+            else
+                ret.add(s);
+        return ret.toArray(new String[0]);
     }
 
     // interval indexes

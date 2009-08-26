@@ -318,11 +318,6 @@ public class Partition implements Comparable<Partition> {
         
         //generate(); 
         
-        Grammar program = new Grammar(null,Util.readFile(Database.class,Database.databaseFile));
-        
-        Relation B = program.database.relation("B");
-        Relation _A = program.database.relation("_A");
-        //System.out.println((new Partition(B,_A)).toString());
         
     }
 }
