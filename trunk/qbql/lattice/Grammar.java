@@ -1,6 +1,7 @@
 package qbql.lattice;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,7 +11,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import qbql.index.IndexedPredicate;
+import qbql.parser.BNFGrammar;
 import qbql.parser.CYK;
+import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
@@ -20,115 +23,9 @@ import qbql.util.Util;
 
 public class Grammar {
 
-    //// WRITE RULES
-    
     public static void main( String[] args ) throws Exception {
         Set<RuleTuple> rules = latticeRules();
-        RuleTuple.memorizeRules(rules,location);
         RuleTuple.printRules(rules);
-    }
-    
-    private static final String fname = "grammar.serializedBNF";
-    private static final String path = "/qbql/lattice/";
-    private static final String location = "c:/qbql_trunk"+path+fname;
-    private static Set<RuleTuple> latticeRules() {
-        Set<RuleTuple> ret = new TreeSet<RuleTuple>();
-        // Lattices:
-        ret.add(new RuleTuple("expr", new String[] {"identifier"}));
-        ret.add(new RuleTuple("parExpr", new String[] {"'('","expr","')'"}));
-        ret.add(new RuleTuple("join", new String[] {"expr","'^'","expr"}));
-        ret.add(new RuleTuple("innerJoin", new String[] {"expr","'*'","expr"}));
-        ret.add(new RuleTuple("innerUnion", new String[] {"expr","'v'","expr"}));
-        ret.add(new RuleTuple("outerUnion", new String[] {"expr","'+'","expr"}));
-        ret.add(new RuleTuple("unnamedJoin", new String[] {"expr","'^'","'~'","expr"}));
-        ret.add(new RuleTuple("unnamedMeet", new String[] {"expr","'v'","'~'","expr"}));
-        ret.add(new RuleTuple("setIX", new String[] {"expr","'\\'","'|'","'/'","expr"}));
-        ret.add(new RuleTuple("setEQ", new String[] {"expr","'/'","'|'","'\\'","expr"}));
-        ret.add(new RuleTuple("contain", new String[] {"expr","'/'","'|'","expr"}));
-        ret.add(new RuleTuple("transpCont", new String[] {"expr","'|'","'\\'","expr"}));
-        ret.add(new RuleTuple("disjoint", new String[] {"expr","'/'","'\\'","expr"}));
-        ret.add(new RuleTuple("almostDisj", new String[] {"expr","'/'","'1'","'\\'","expr"}));
-        ret.add(new RuleTuple("big", new String[] {"expr","'\\'","'/'","expr"}));
-        ret.add(new RuleTuple("complement", new String[] {"identifier","'''"}));  
-        ret.add(new RuleTuple("complement", new String[] {"parExpr","'''"}));
-        ret.add(new RuleTuple("inverse", new String[] {"identifier","'`'"}));  
-        ret.add(new RuleTuple("inverse", new String[] {"parExpr","'`'"}));
-        ret.add(new RuleTuple("expr", new String[] {"join"}));
-        ret.add(new RuleTuple("expr", new String[] {"innerJoin"}));
-        ret.add(new RuleTuple("expr", new String[] {"innerUnion"}));
-        ret.add(new RuleTuple("expr", new String[] {"outerUnion"}));
-        ret.add(new RuleTuple("expr", new String[] {"unnamedJoin"}));
-        ret.add(new RuleTuple("expr", new String[] {"unnamedMeet"}));
-        ret.add(new RuleTuple("expr", new String[] {"setIX"}));
-        ret.add(new RuleTuple("expr", new String[] {"setEQ"}));
-        ret.add(new RuleTuple("expr", new String[] {"contain"}));
-        ret.add(new RuleTuple("expr", new String[] {"transpCont"}));
-        ret.add(new RuleTuple("expr", new String[] {"disjoint"}));
-        ret.add(new RuleTuple("expr", new String[] {"almostDisj"}));
-        ret.add(new RuleTuple("expr", new String[] {"big"}));
-        ret.add(new RuleTuple("expr", new String[] {"parExpr"}));
-        ret.add(new RuleTuple("expr", new String[] {"complement"}));
-        ret.add(new RuleTuple("expr", new String[] {"inverse"}));
-        ret.add(new RuleTuple("boolean", new String[] {"expr","'='","expr"}));
-        ret.add(new RuleTuple("boolean", new String[] {"expr","'!'","'='","expr"}));
-        ret.add(new RuleTuple("boolean", new String[] {"expr","'~'","expr"}));
-        ret.add(new RuleTuple("boolean", new String[] {"expr","'<'","'~'","expr"}));
-        ret.add(new RuleTuple("boolean", new String[] {"expr","'>'","'~'","expr"}));
-        ret.add(new RuleTuple("boolean", new String[] {"expr","'<'","expr"}));
-        ret.add(new RuleTuple("boolean", new String[] {"expr","'>'","expr"}));
-        ret.add(new RuleTuple("boolean", new String[] {"boolean","'&'","boolean"}));
-        ret.add(new RuleTuple("boolean", new String[] {"boolean","'|'","boolean"}));
-        ret.add(new RuleTuple("boolean", new String[] {"'-'","parBool"}));
-        ret.add(new RuleTuple("boolean", new String[] {"parBool"}));
-        ret.add(new RuleTuple("parBool", new String[] {"'('","boolean","')'"}));
-        ret.add(new RuleTuple("implication", new String[] {"boolean","'-'","'>'","boolean"}));
-        ret.add(new RuleTuple("implication", new String[] {"boolean","'<'","'-'","boolean"}));
-        ret.add(new RuleTuple("implication", new String[] {"boolean","'<'","'-'","'>'","boolean"}));
-        ret.add(new RuleTuple("assertion", new String[] {"boolean","'.'"}));
-        ret.add(new RuleTuple("assertion", new String[] {"implication","'.'"}));
-        ret.add(new RuleTuple("query", new String[] {"expr","';'"}));
-        ret.add(new RuleTuple("program", new String[] {"assignment"}));
-        ret.add(new RuleTuple("program", new String[] {"query"}));
-        ret.add(new RuleTuple("program", new String[] {"assertion"}));
-        ret.add(new RuleTuple("program", new String[] {"program","program"}));       
-        // Partitions and Functional Dependencies
-        ret.add(new RuleTuple("partition", new String[] {"expr","'#'","expr"}));
-        ret.add(new RuleTuple("query", new String[] {"partition","';'"}));
-        ret.add(new RuleTuple("boolean", new String[] {"partition","'<'","partition"}));
-        ret.add(new RuleTuple("boolean", new String[] {"partition","'>'","partition"}));
-        ret.add(new RuleTuple("boolean", new String[] {"partition","'='","partition"}));
-        ret.add(new RuleTuple("partition", new String[] {"partition","'^'","partition"}));
-        ret.add(new RuleTuple("partition", new String[] {"partition","'v'","partition"}));
-        ret.add(new RuleTuple("partition", new String[] {"'('","partition","')'"}));
-        // Pointwise
-        ret.add(new RuleTuple("attribute", new String[] {"identifier"}));
-        ret.add(new RuleTuple("value", new String[] {"digits"}));
-        ret.add(new RuleTuple("value", new String[] {"identifier"}));
-        ret.add(new RuleTuple("namedValue", new String[] {"attribute","'='","value"}));
-        ret.add(new RuleTuple("values", new String[] {"namedValue"}));
-        ret.add(new RuleTuple("values", new String[] {"values","','","namedValue"}));
-        ret.add(new RuleTuple("tuple", new String[] {"'<'","values","'>'"}));
-        ret.add(new RuleTuple("tuples", new String[] {"tuple"}));
-        ret.add(new RuleTuple("tuples", new String[] {"tuples","','","tuple"}));
-        ret.add(new RuleTuple("relation", new String[] {"'{'","tuples","'}'"}));
-        ret.add(new RuleTuple("table", new String[] {"'['","header","']'","content"}));
-        ret.add(new RuleTuple("table", new String[] {"'['","header","']'"}));
-        ret.add(new RuleTuple("table", new String[] {"'['","']'"}));
-        ret.add(new RuleTuple("table", new String[] {"'['","identifier","'='","identifier","']'"}));
-        ret.add(new RuleTuple("header", new String[] {"header","identifier"}));
-        ret.add(new RuleTuple("header", new String[] {"header","','","identifier"}));
-        ret.add(new RuleTuple("header", new String[] {"identifier"}));
-        ret.add(new RuleTuple("content", new String[] {"content","value"}));
-        ret.add(new RuleTuple("content", new String[] {"value"}));
-        ret.add(new RuleTuple("partition", new String[] {"content"}));
-        ret.add(new RuleTuple("partition", new String[] {"partition","'|'","content"}));
-        ret.add(new RuleTuple("expr", new String[] {"relation"}));
-        ret.add(new RuleTuple("expr", new String[] {"table"}));
-        ret.add(new RuleTuple("assignment", new String[] {"identifier","'='","expr","';'"})); // if defined in terms of lattice operations
-        ret.add(new RuleTuple("assignment", new String[] {"identifier","'='","partition","';'"})); 
-        ret.add(new RuleTuple("database", new String[] {"assignment"}));
-        ret.add(new RuleTuple("database", new String[] {"database","assignment"}));
-        return ret;
     }
     
     //// READ RULES
@@ -142,7 +39,7 @@ public class Grammar {
     static int unnamedMeet;
     public static int setIX;
     static int setEQ;
-    static int contain;
+    static int contains;
     static int transpCont;
     static int disjoint;
     static int almostDisj;
@@ -181,12 +78,9 @@ public class Grammar {
     static int values;
     static int namedValue;
     static int comma;
-    private static final String bnf = "grammar.serializedBNF";
-    static {
-        LexerToken.isPercentLineComment = true;
-        
+    static {        
         try {
-            cyk = new CYK(RuleTuple.getRules(path+bnf)) {
+            cyk = new CYK(latticeRules()) {
                 public int[] atomicSymbols() {
                     return new int[] {assertion,assignment,query};
                 }
@@ -199,7 +93,7 @@ public class Grammar {
             unnamedMeet = cyk.symbolIndexes.get("unnamedMeet");
             setIX = cyk.symbolIndexes.get("setIX");
             setEQ = cyk.symbolIndexes.get("setEQ");
-            contain = cyk.symbolIndexes.get("contain");
+            contains = cyk.symbolIndexes.get("contains");
             transpCont = cyk.symbolIndexes.get("transpCont");
             disjoint = cyk.symbolIndexes.get("disjoint");
             almostDisj = cyk.symbolIndexes.get("almostDisj");
@@ -243,6 +137,19 @@ public class Grammar {
         }
     }
     
+    private static Set<RuleTuple> latticeRules() throws Exception {
+        String input = Util.readFile(Grammar.class, "lattice.grammar");
+        HashMap<String, String> specialSymbols = new HashMap<String, String>();
+        specialSymbols.put("qtSymbol", "'");
+        List<LexerToken> src = new Lex(
+                      true, true, false,
+                      specialSymbols                 
+        ).parse(input);
+        //LexerToken.print(src);
+        ParseNode root = BNFGrammar.parseGrammarFile(src, input);
+        return BNFGrammar.grammar(root, src);
+    }
+    
     //--------------------------------------------------------------------------
     
     public List<LexerToken> src;
@@ -254,7 +161,7 @@ public class Grammar {
     }
 
     private void initDatabase( String dbSource ) throws Exception {
-        this.src =  LexerToken.parse(dbSource);
+        this.src =  new Lex().parse(dbSource);
         Matrix matrix = Grammar.cyk.initArray1(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
@@ -497,7 +404,7 @@ public class Grammar {
                 System.out.println(child.content(src)+"="+partition(child).toString()+";");
                 return null;
             } else if( child.contains(expr) ) {
-                System.out.println(child.content(src)+"="+((Relation)expr(child)).toString(child.content(src).length()+1, false)+";");
+                System.out.println(child.content(src)+"="+expr(child).toString(child.content(src).length()+1, false)+";");
                 return null;
             } 
         }
@@ -612,8 +519,8 @@ public class Grammar {
             return binaryOper(root,setIX);
         else if( root.contains(setEQ) ) 
             return binaryOper(root,setEQ);
-        else if( root.contains(contain) ) 
-            return binaryOper(root,contain);
+        else if( root.contains(contains) ) 
+            return binaryOper(root,contains);
         else if( root.contains(transpCont) ) 
             return binaryOper(root,transpCont);
         else if( root.contains(disjoint) ) 
@@ -670,8 +577,8 @@ public class Grammar {
             return database.quantifier((Relation)left,(Relation)right,setEQ);
         else if( oper == setIX ) 
             return Predicate.setIX(left,right);
-        else if( oper == contain ) 
-            return database.quantifier((Relation)left,(Relation)right,contain);
+        else if( oper == contains ) 
+            return database.quantifier((Relation)left,(Relation)right,contains);
         else if( oper == transpCont ) 
             return database.quantifier((Relation)left,(Relation)right,transpCont);
         else if( oper == disjoint ) 

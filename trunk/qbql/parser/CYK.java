@@ -76,7 +76,7 @@ public class CYK {
             //Util.readFile("c:/qbql_trunk/qbql/lattice/Partition.prg")
         ;
         long t1 = System.currentTimeMillis();
-        List<LexerToken> src =  LexerToken.parse(input);
+        List<LexerToken> src =  new Lex().parse(input);
         long t2 = System.currentTimeMillis();
         System.out.println("Lexer time = "+(t2-t1)); 
         LexerToken.print(src);

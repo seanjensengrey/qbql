@@ -1,7 +1,7 @@
-% Relational lattice instance from the Figure 1
-% http://arxiv1.library.cornell.edu/pdf/0807.3795
-% Attributes are renamed: x -> p, y -> q, z -> r, because 
-% elsewhere x, y, and z are relation variables!
+-- Relational lattice instance from the Figure 1
+-- http://arxiv1.library.cornell.edu/pdf/0807.3795
+-- Attributes are renamed: x -> p, y -> q, z -> r, because 
+-- elsewhere x, y, and z are relation variables!
 
 A = {<p=1>};		
 
@@ -24,7 +24,7 @@ _C = C ^ R00;
 
 ADvBC = (A ^ D) v (B ^ C);
 
-% Additional relations (beyond the scope of Figure 1)
+-- Additional relations (beyond the scope of Figure 1)
 
 A0 = [p] 0;
 A1 = [p] 2;
@@ -49,14 +49,14 @@ U_ = U ^ R00;
 V = {<q=c,p=0>,<q=a,p=0>,<q=a,p=1>};
 V_ = [p q]; 
 
-W = {<s=c,t=0>,<s=a,t=0>,<s=a,t=1>}; % V ~ W.
+W = {<s=c,t=0>,<s=a,t=0>,<s=a,t=1>}; -- V ~ W.
 W_ = [s t];
 
 W1=[p  s  t]
     0  a  0
     1  a  1
     0  c  0
-; % V ~ W1.
+; -- V ~ W1.
 
 
 

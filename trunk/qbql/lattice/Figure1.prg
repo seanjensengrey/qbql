@@ -264,17 +264,24 @@ x < R00 | y < R00 ->
 x + (x * y) = x.
 x < R00 | R11 < y ->
 x ^ (x * y) = x.
+
+
+x = [p  q]
+     1  a
+     1  b
+     2  a
+;
+(x v [p]) /1\ x;
+
+x^[] < [p] ->
+(x v [p]) /1\ x = (x v [p]) \|/ x |
+(x v [p]) /1\ x = (x v [p]) /|\ x |
+(x v [p]) /1\ x = (x v R10) v ([p])` |
+(x v [p]) /1\ x = (x ^ R00) v ([p])` |
+(x v [p]) /1\ x = (x v ([p])`)'.
 */
-X=[p  q  r]  
-   0  a  0  
-   0  a  1  
-   1  c  0  
-   1  c  1  
-   2  a  0  
-;  
+x = B ^ D;
+y = A;
+z = C;
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))';
 
-x = X v [p];
-y = X v [q];
-
-(X * (x ^ y));
-(x` v y);

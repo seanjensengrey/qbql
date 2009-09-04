@@ -1,0 +1,128 @@
+almostDisj:  expr '/' '1' expr
+;
+assertion:   boolean '.'
+          |  implication '.'
+;
+assignment:  identifier '=' expr ';'
+          |  identifier '=' partition ';'
+;
+attribute:   identifier
+;
+big:         expr '/' '!' expr
+;
+boolean:     parBool
+          |  '-' parBool
+          |  boolean '&' boolean
+          |  boolean '|' boolean
+          |  expr '<' expr
+          |  expr '=' expr
+          |  expr '>' expr
+          |  expr '~' expr
+          |  partition '<' partition
+          |  partition '=' partition
+          |  partition '>' partition
+          |  expr '!' '=' expr
+          |  expr '<' '~' expr
+          |  expr '>' '~' expr
+;
+complement:  identifier 'qtSymbol'
+          |  parExpr 'qtSymbol'
+;
+contains:     expr '/' '<' expr
+;
+content:     value
+          |  content value
+;
+database:    assignment
+          |  database assignment
+;
+disjoint:    expr '/' '0' expr
+;
+expr:        almostDisj
+          |  big
+          |  complement
+          |  contains
+          |  disjoint
+          |  identifier
+          |  innerJoin
+          |  innerUnion
+          |  inverse
+          |  join
+          |  outerUnion
+          |  parExpr
+          |  relation
+          |  setEQ
+          |  setIX
+          |  table
+          |  transpCont
+          |  unnamedJoin
+          |  unnamedMeet
+;
+header:      identifier
+          |  header identifier
+          |  header ',' identifier
+;
+implication:  boolean '-' '>' boolean
+          |  boolean '<' '-' boolean
+          |  boolean '<' '-' '>' boolean
+;
+innerJoin:   expr '*' expr
+;
+innerUnion:  expr 'v' expr
+;
+inverse:     identifier '`'
+          |  parExpr '`'
+;
+join:        expr '^' expr
+;
+namedValue:  attribute '=' value
+;
+outerUnion:  expr '+' expr
+;
+parBool:     '(' boolean ')'
+;
+parExpr:     '(' expr ')'
+;
+partition:   content
+          |  '(' partition ')'
+          |  expr '#' expr
+          |  partition '^' partition
+          |  partition 'v' partition
+          |  partition '|' content
+;
+program:     assertion
+          |  assignment
+          |  query
+          |  program program
+;
+query:       expr ';'
+          |  partition ';'
+;
+relation:    '{' tuples '}'
+;
+setEQ:       expr '/' '=' expr
+;
+setIX:       expr '/' '^' expr
+;
+table:       '[' ']'
+          |  '[' header ']'
+          |  '[' header ']' content
+          |  '[' identifier '=' identifier ']'
+;
+transpCont:  expr '|' '>' expr
+;
+tuple:       '<' values '>'
+;
+tuples:      tuple
+          |  tuples ',' tuple
+;
+unnamedJoin:  expr '^' '~' expr
+;
+unnamedMeet:  expr 'v' '~' expr
+;
+value:       digits
+          |  identifier
+;
+values:      namedValue
+          |  values ',' namedValue
+;

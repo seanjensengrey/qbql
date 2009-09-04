@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import qbql.parser.CYK;
+import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
@@ -47,13 +48,13 @@ public class Database {
         R01.addTuple(new TreeMap<String,Object>());
     }
 
-    //final static String databaseFile = "Figure1.db"; 
-    //final static String programFile = "Figure1.prg"; 
+    final static String databaseFile = "Figure1.db"; 
+    final static String programFile = "Figure1.prg"; 
     //final static String programFile = "Partition.prg"; 
     //final static String programFile = "Equality.prg"; 
     
-    final static String databaseFile = "Sims.db"; 
-    final static String programFile = "Sims.assertions"; 
+    //final static String databaseFile = "Sims.db"; 
+    //final static String programFile = "Sims.assertions"; 
     //final static String databaseFile = "Wittgenstein.db"; 
     //final static String programFile = "Wittgenstein.assertions"; 
     //final static String databaseFile = "Aggregate.db"; 
@@ -100,7 +101,7 @@ public class Database {
                 Relation singleY = new Relation(Y.colNames);
                 singleY.content.add(yi);
                 Relation rgt = Relation.innerUnion(Relation.join(singleY,y),hdrYX);
-                if( type == Grammar.contain && Relation.le(lft, rgt) 
+                if( type == Grammar.contains && Relation.le(lft, rgt) 
                  || type == Grammar.transpCont && Relation.ge(lft, rgt)   
                  || type == Grammar.disjoint && Relation.le(lft, complement(rgt)) 
                  || type == Grammar.almostDisj && Relation.join(lft, rgt).content.size()==1 
@@ -366,7 +367,7 @@ public class Database {
     }
     
     public static void run(String prg, String databaseSrc) throws Exception {
-        List<LexerToken> src =  LexerToken.parse(prg);
+        List<LexerToken> src =  new Lex().parse(prg);
         Matrix matrix = Grammar.cyk.initArray1(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
