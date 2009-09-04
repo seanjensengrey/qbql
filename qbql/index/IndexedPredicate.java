@@ -97,7 +97,7 @@ public class IndexedPredicate extends Predicate {
     public static IndexedPredicate join( IndexedPredicate x, IndexedPredicate y ) throws Exception {
         return new IndexedPredicate(x,y,Grammar.naturalJoin);
     }
-    public static IndexedPredicate joinIX( IndexedPredicate x, IndexedPredicate y ) throws Exception {
+    public static IndexedPredicate setIX( IndexedPredicate x, IndexedPredicate y ) throws Exception {
         return new IndexedPredicate(x,y,Grammar.setIX);
     }
     public static Relation join( Relation x, IndexedPredicate y ) throws Exception {
@@ -147,7 +147,7 @@ public class IndexedPredicate extends Predicate {
         }
         return ret;
     }
-    public static Relation joinIX( Relation x, IndexedPredicate y ) throws Exception {
+    public static Relation setIX( Relation x, IndexedPredicate y ) throws Exception {
         throw new Exception("Not implemented");
     }
 

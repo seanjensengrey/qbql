@@ -24,6 +24,7 @@ import javax.swing.JTextField;
 
 import qbql.lattice.Database;
 import qbql.parser.CYK;
+import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
@@ -193,7 +194,7 @@ public class Gui {
         Gui model = new Gui();
         String guiCode = Util.readFile(model.getClass(),path+"test.gui");
 
-        List<LexerToken> src =  LexerToken.parse(guiCode);
+        List<LexerToken> src =  new Lex().parse(guiCode);
         Matrix matrix = cyk.initArray1(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();

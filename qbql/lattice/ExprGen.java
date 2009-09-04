@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import qbql.parser.CYK;
+import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
@@ -17,10 +18,15 @@ import qbql.util.Util;
 
 public class ExprGen {
     static ExprTree join = null;
+    static ExprTree joinXZ = null;
+    static ExprTree joinYZ = null;
     static ExprTree union = null;
+    static ExprTree unionXZ = null;
+    static ExprTree unionYZ = null;
     static ExprTree star = null;
     static ExprTree complementX = null;
     static ExprTree complementY = null;
+    static ExprTree complementZ = null;
     static ExprTree inverseX = null;
     static ExprTree inverseY = null;
     static ExprTree r00 = null;
@@ -28,10 +34,15 @@ public class ExprGen {
     static {
         try {
             join = parse("(x ^ y)");
+            joinXZ = parse("(x ^ z)");
+            joinYZ = parse("(y ^ z)");
             union = parse("(x v y)");
+            unionXZ = parse("(x v z)");
+            unionYZ = parse("(y v z)");
             star = parse("(x * y)");
             complementX = parse("(x)'");
             complementY = parse("(y)'");
+            complementZ = parse("(z)'");
             inverseX = parse("(x)`");
             inverseY = parse("(y)`");
             r00 = parse("R00");
@@ -48,28 +59,37 @@ public class ExprGen {
         List<Substitution> grafts = new LinkedList<Substitution>();
         //grafts.add(new Substitution("x",r00));
         //grafts.add(new Substitution("y",r00));
+        //grafts.add(new Substitution("z",r00));
         //grafts.add(new Substitution("x",r11));
         //grafts.add(new Substitution("y",r11));
         grafts.add(new Substitution("x",join));
         grafts.add(new Substitution("y",join));
+        grafts.add(new Substitution("z",join));
+        grafts.add(new Substitution("x",joinXZ));
+        grafts.add(new Substitution("y",joinYZ));
         grafts.add(new Substitution("x",union));
         grafts.add(new Substitution("y",union));
+        grafts.add(new Substitution("z",union));
+        grafts.add(new Substitution("x",unionXZ));
+        grafts.add(new Substitution("y",unionYZ));
         grafts.add(new Substitution("x",complementX));
         grafts.add(new Substitution("y",complementY));
-        grafts.add(new Substitution("x",inverseX));
-        grafts.add(new Substitution("y",inverseY));
-        grafts.add(new Substitution("x",star));
-        grafts.add(new Substitution("y",star));
+        grafts.add(new Substitution("z",complementZ));
+        //grafts.add(new Substitution("x",inverseX));
+        //grafts.add(new Substitution("y",inverseY));
+        //grafts.add(new Substitution("x",star));
+        //grafts.add(new Substitution("y",star));
         //grafts.add(new Substitution("x",parse("(x + y)")));
         //grafts.add(new Substitution("y",parse("(x + y)")));
-        grafts.add(new Substitution("x",parse("(x /\\ y)")));
-        grafts.add(new Substitution("y",parse("(x /\\ y)")));
+        //grafts.add(new Substitution("x",parse("(x /\\ y)")));
+        //grafts.add(new Substitution("y",parse("(x /\\ y)")));
      
         
         //String goal = "x*y = expr.";
         //String goal = "x` ^ x' = expr.";
         //String goal = "x = expr.";
-        String goal = "x /1\\ y = expr.";
+        //String goal = "x /1\\ y = expr.";
+        String goal = "(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = expr.";
         System.out.println("goal: "+goal);
         ExprTree XeqExpr = parse(goal);
         
@@ -333,7 +353,7 @@ public class ExprGen {
     }
 
     private static ExprTree parse( String input ) throws Exception {
-        List<LexerToken> src =  LexerToken.parse(input);
+        List<LexerToken> src =  new Lex().parse(input);
         Matrix matrix = Grammar.cyk.initArray1(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
