@@ -280,8 +280,31 @@ x^[] < [p] ->
 (x v [p]) /1\ x = (x ^ R00) v ([p])` |
 (x v [p]) /1\ x = (x v ([p])`)'.
 */
-x = B ^ D;
-y = A;
-z = C;
-(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))';
+
+dx = [p  q]
+      1  a
+      --2  a
+;
+dy = [p]
+      --2
+;
+z = [p]
+;
+x = [p  q]
+     1  a
+     1  b
+     2  a
+;
+
+z != []          &
+z ^ [] = z       &       -- z is an empty relation (aka header)
+--x v z = y      &       -- View def: y is projection of x onto z
+x ^ [] = dx ^ [] &       -- x and dx have the same header
+(x v z) ^ [] = dy ^ [] & -- y and dy have the same header
+z > x ^ []       &       -- Atributes of z are contained in attributes of x
+dx < x &                 -- decrement relation containment
+dy < x v z &             -- ditto
+(x ^ dx') v z = (x v z) ^ dy'  -- View definition after update
+-> dx = dy ^ x. 
+
 

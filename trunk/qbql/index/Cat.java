@@ -4,11 +4,10 @@ import qbql.lattice.Database;
 import qbql.util.Util;
 
 public class Cat {
-    public static String prefix_source_from( String source, int from ) {
-        return source.substring(0,from);
-    }
-    public static String postfix_source_from( String source, int from ) {
-        return source.substring(from);
+    public static NamedTuple source_from_prefix_postfix( String source, int from ) {
+        String[] columns = new String[]{"prefix","postfix"};
+        Object[] data = new Object[]{source.substring(0,from),source.substring(from)};
+        return new NamedTuple(columns,data);
     }
     
     public static void main( String[] args ) throws Exception {
