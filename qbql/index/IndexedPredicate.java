@@ -55,6 +55,11 @@ public class IndexedPredicate extends Predicate {
     }
     
     public void renameInPlace( String from, String to ) throws Exception {
+        if( lft != null && lft.header.containsKey(from) )
+            lft.renameInPlace(from, to);
+        if( rgt != null && rgt.header.containsKey(from) )
+            rgt.renameInPlace(from, to);
+            
         if( from.equals(to) )
             return;
         int colFrom = header.get(from);
@@ -83,8 +88,12 @@ public class IndexedPredicate extends Predicate {
         }          
     }
     public IndexedPredicate( IndexedPredicate ip ) throws Exception {
-        super(ip.colNames); 
+        super(Util.clone(ip.colNames)); 
         implementation = ip.implementation;
+        if( ip.lft != null )
+            lft = new IndexedPredicate(ip.lft);
+        if( ip.rgt != null )
+            rgt = new IndexedPredicate(ip.rgt);
         renamed = (HashMap<String, String>) ip.renamed.clone();
     }
 
@@ -142,8 +151,12 @@ public class IndexedPredicate extends Predicate {
         return new IndexedPredicate(x,y,Grammar.setIX);
     }
     public static Relation join( Relation x, IndexedPredicate y ) throws Exception {
-        if( y.lft != null )
-            return join(join(x,y.lft),y.rgt);
+        if( y.lft != null ) {
+            Relation ret = join(join(x,y.lft),y.rgt);
+            if( ret.header.size() != y.header.size() )
+                return Relation.innerUnion(ret, new Relation(y.colNames));
+            return ret;
+        }
         Set<String> header = new TreeSet<String>();
         header.addAll(x.header.keySet());
         header.addAll(y.header.keySet());               
@@ -189,7 +202,29 @@ public class IndexedPredicate extends Predicate {
                 if( retTuple != null )
                     ret.content.add(new Tuple(retTuple));
             } else if( o instanceof Relation ) {
-                throw new Exception("TODO");
+                Relation r = (Relation)o;
+                for( Tuple t : r.content ) {
+                    Object[] retTuple = new Object[header.size()];
+                    for( String attr : ret.colNames ) {
+                        Integer colRet = ret.header.get(attr);
+                        Integer colX = x.header.get(attr);                    
+                        Integer colY = y.header.get(attr);
+                        if( colX != null && colY == null || inputs.contains(y.oldName(attr)) ) 
+                            retTuple[colRet] = tupleX.data[colX];
+                        else {
+                            Object co = t.data[r.header.get(y.oldName(attr))];
+                            if( colX != null ) 
+                                if( !co.equals(tupleX.data[colX]) ) {
+                                    retTuple = null;
+                                    break;
+                                }
+                            retTuple[colRet] = co;
+
+                        }
+                    }
+                    if( retTuple != null )
+                        ret.content.add(new Tuple(retTuple));
+                }
             } else
                 throw new Exception("Wrong return type");
         }
@@ -197,6 +232,25 @@ public class IndexedPredicate extends Predicate {
     }
     public static Relation setIX( Relation x, IndexedPredicate y ) throws Exception {
         throw new Exception("Not implemented");
+    }
+    public static IndexedPredicate innerUnion( Relation x, IndexedPredicate y ) throws Exception {
+        if( 0 < x.content.size() )
+            throw new Exception("Not a projection: TODO");
+        IndexedPredicate ret = new IndexedPredicate(y);
+        Set<String> columns = new HashSet<String>();
+        columns.addAll(x.header.keySet());
+        columns.retainAll(y.header.keySet());
+        HashMap<String,Integer> newHdr = new HashMap<String,Integer>();
+        String[] newColNames = new String[columns.size()];
+        int pos = -1;
+        for( String col : columns ) {
+            pos++;
+            newColNames[pos] = col;
+            newHdr.put(col, pos);
+        }
+        ret.header = newHdr;
+        ret.colNames = newColNames;
+        return ret; 
     }
 
 }

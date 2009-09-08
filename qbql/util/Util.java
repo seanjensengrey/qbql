@@ -118,5 +118,13 @@ public abstract class Util {
         } while ( next(indexes,target.length) );
     }
 
+    public static String[] clone( String[] colNames ) {
+        String[] ret = new String[colNames.length];
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = colNames[i];
+        }
+        return ret;
+    }
+
 
 }
