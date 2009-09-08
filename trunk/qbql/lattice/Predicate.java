@@ -9,6 +9,7 @@ import qbql.util.Util;
 public class Predicate {
     public HashMap<String,Integer> header = new HashMap<String,Integer>();
     public String[] colNames;
+    
     public Predicate( String[] columns ) {
         colNames = columns;
         for( int i = 0; i < columns.length; i++ ) {
@@ -31,6 +32,22 @@ public class Predicate {
             return IndexedPredicate.join((Relation)x,(IndexedPredicate)y);
         if( x instanceof IndexedPredicate && y instanceof IndexedPredicate ) 
             return IndexedPredicate.join((IndexedPredicate)x,(IndexedPredicate)y);
+        
+        throw new RuntimeException("Not implemented");
+    }
+
+    public static Predicate innerUnion( Predicate x, Predicate y ) throws Exception {
+        if( x instanceof Relation && y instanceof Relation )
+            return Relation.innerUnion((Relation)x, (Relation)y);
+        
+        if( !(y instanceof IndexedPredicate) ) {
+            Predicate tmp = x;
+            x = y;
+            y = tmp;
+        }
+        
+        if( x instanceof Relation && y instanceof IndexedPredicate ) 
+            return IndexedPredicate.innerUnion((Relation)x,(IndexedPredicate)y);
         
         throw new RuntimeException("Not implemented");
     }

@@ -566,7 +566,7 @@ public class Grammar {
         else if( oper == innerJoin )
             return Relation.innerJoin((Relation)left,(Relation)right);
         else if( oper == innerUnion )
-            return Relation.innerUnion((Relation)left,(Relation)right);
+            return Predicate.innerUnion(left,right);
         else if( oper == outerUnion )
             return database.outerUnion((Relation)left,(Relation)right);
         else if( oper == unnamedJoin )
