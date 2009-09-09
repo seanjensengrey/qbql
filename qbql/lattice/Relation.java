@@ -197,22 +197,6 @@ public class Relation extends Predicate {
         return ret;
     }
 
-    /**
-     * Set intersection join
-     */
-    static Relation setIX( Relation x, Relation y ) throws Exception {
-        Set<String> headerXmY = new TreeSet<String>();
-        headerXmY.addAll(x.header.keySet());
-        headerXmY.removeAll(y.header.keySet());            
-        Set<String> headerYmX = new TreeSet<String>();
-        headerYmX.addAll(y.header.keySet());
-        headerYmX.removeAll(x.header.keySet());
-        Set<String> headerSymDiff = new TreeSet<String>();
-        headerSymDiff.addAll(headerXmY);
-        headerSymDiff.addAll(headerYmX);
-        Relation hdr = new Relation(headerSymDiff.toArray(new String[0]));
-        return Relation.innerUnion(hdr,Relation.join(x, y));
-    }  
     
     /**
      * @param x

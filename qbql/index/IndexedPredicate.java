@@ -230,9 +230,6 @@ public class IndexedPredicate extends Predicate {
         }
         return ret;
     }
-    public static Relation setIX( Relation x, IndexedPredicate y ) throws Exception {
-        throw new Exception("Not implemented");
-    }
     public static IndexedPredicate innerUnion( Relation x, IndexedPredicate y ) throws Exception {
         if( 0 < x.content.size() )
             throw new Exception("Not a projection: TODO");

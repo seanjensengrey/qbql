@@ -216,18 +216,20 @@ public class Database {
         
         Relation ret = new Relation(doms.keySet().toArray(new String[0]));
         
-        Map<String, Integer> indexes = new HashMap<String, Integer>();
-        for( String key : doms.keySet() )
-            indexes.put(key, 0);
-        do {
-            Object[] t = new Object[ret.colNames.length];
-            for( String key : doms.keySet() )
-                t[ ret.header.get(key) ] = doms.get(key)[ indexes.get(key) ];
-            
-            ret.content.add(new Tuple(t));
-            
-        } while( next(indexes,doms) );
-        
+        try {
+            Map<String, Integer> indexes = new HashMap<String, Integer>();
+            for (String key: doms.keySet())
+                indexes.put(key, 0);
+            do {
+                Object[] t = new Object[ ret.colNames.length ];
+                for (String key: doms.keySet())
+                    t[ ret.header.get(key) ] = doms.get(key)[ indexes.get(key) ];
+
+                ret.content.add(new Tuple(t));
+
+            } while (next(indexes, doms));
+        } catch( Exception e ) { // for empty domains
+        }        
         R11 = ret;
         lattice.put("R11",ret);
     }    

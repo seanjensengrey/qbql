@@ -30,8 +30,4 @@ public class Cat {
         return ret;
     }
     
-    public static void main( String[] args ) throws Exception {
-        String prg = Util.readFile(Cat.class,"strings.prg");
-        Database.run(prg, "");    
-    }
 }
