@@ -25,7 +25,12 @@ Substr1 = (Substr /^ [source=src1] /^ [from=from1]) v [src1 from1 fragment];
 Substr2 = (Substr /^ [source=src2] /^ [from=from2]) v [src2 from2 fragment];
 ((Substr1 ^ [src1] Hello) ^ (Substr2 ^ [src2] World) ^ ([fragment]"")') 
 v [from1 from2 fragment];
-*/
-Substr1 = ((Substr /^ [source] Hello) /^ [from=from1]) v [from1 fragment];
+
+Substr1 = ([from=from1] /^ Substr /^ [source] Hello) v [from1 fragment];
 Substr2 = ((Substr /^ [source] World) /^ [from=from2]) v [from2 fragment];
 Substr1 ^ Substr2 ^ ([fragment]"")';
+*/
+SubstrSrc = (Substr /^ [source] "Hello World" /^ [fragment]o) v [prefix postfix];
+(Substr /^ SubstrSrc /^ [fragment]"***") v [source] ;
+
+
