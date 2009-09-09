@@ -103,9 +103,9 @@ public class Database {
                 Relation rgt = Relation.innerUnion(Relation.join(singleY,y),hdrYX);
                 if( type == Grammar.contains && Relation.le(lft, rgt) 
                  || type == Grammar.transpCont && Relation.ge(lft, rgt)   
-                 || type == Grammar.disjoint && Relation.le(lft, complement(rgt)) 
+                 || type == Grammar.disjoint && Relation.le(lft, (Relation)complement(rgt)) 
                  || type == Grammar.almostDisj && Relation.join(lft, rgt).content.size()==1 
-                 || type == Grammar.big && Relation.ge(lft, complement(rgt))   
+                 || type == Grammar.big && Relation.ge(lft, (Relation)complement(rgt))   
                  || type == Grammar.setEQ && lft.equals(rgt)
                 )
                     ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
@@ -119,6 +119,8 @@ public class Database {
         }        
         return ret;
     }
+    
+    Map<String,Boolean> finiteDomains = new HashMap<String,Boolean>();
     /**
      * Complement x' returns relation with the same header as x
      * with tuples which are not in x
@@ -126,7 +128,18 @@ public class Database {
         x' ^ x = x ^ R00.
         x' v x = x v R11.
      */
-    Relation complement( Relation x ) {
+    Predicate complement( Relation x ) {
+        for( String arg : x.colNames ) {
+            Boolean isFinite = finiteDomains.get(arg);
+            if( isFinite == null ) {
+                Relation a = Relation.innerUnion(R11,new Relation(new String[]{arg}));
+                isFinite = 0 < a.content.size() & R11.header.keySet().contains(arg);
+                finiteDomains.put(arg, isFinite);
+                if( !isFinite )
+                    return new ComplementPredicate(x);
+            }
+        }
+        
         Relation xvR11 = Relation.innerUnion(x, R11);
         Relation ret = new Relation(x.colNames);
         for( Tuple t : xvR11.content ) {
