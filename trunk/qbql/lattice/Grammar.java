@@ -589,7 +589,7 @@ public class Grammar {
             return database.quantifier((Relation)left,(Relation)right,big);
         throw new Exception("Unknown case");
     }
-    public Relation unaryOper( ParseNode root, int oper ) throws Exception  {
+    public Predicate unaryOper( ParseNode root, int oper ) throws Exception  {
         for( ParseNode child : root.children() ) {
             Relation rel = (Relation)expr(child);
             if( oper == complement )
@@ -742,6 +742,8 @@ public class Grammar {
             ret.add(root.content(src));
         else if( root.from + 1 == root.to && src.get(root.from).type == Token.DIGITS )
             ret.add(Integer.parseInt(root.content(src)));
+        else if( root.from + 1 == root.to && src.get(root.from).type == Token.DQUOTED_STRING )
+            ret.add(root.content(src).substring(1,root.content(src).length()-1));
         else
             for( ParseNode child : root.children() )
                 ret.addAll(values(child));

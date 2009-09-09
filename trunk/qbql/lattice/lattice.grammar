@@ -122,6 +122,7 @@ unnamedMeet:  expr 'v' '~' expr
 ;
 value:       digits
           |  identifier
+          |  string_literal
 ;
 values:      namedValue
           |  values ',' namedValue
