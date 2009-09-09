@@ -119,8 +119,8 @@ public class IndexedPredicate extends Predicate {
         for( Method m : implementation.getDeclaredMethods() ) {
             if( !Modifier.isPublic(m.getModifiers()) ) 
                 continue;
-            String fullName = m.getName();
-            if( "main".equals(fullName) )
+            Class<?> returnType = m.getReturnType();
+            if( returnType!=Relation.class && returnType!=NamedTuple.class )
                 continue;
             ret.add(m);
         }
@@ -152,7 +152,12 @@ public class IndexedPredicate extends Predicate {
     }
     public static Relation join( Relation x, IndexedPredicate y ) throws Exception {
         if( y.lft != null ) {
-            Relation ret = join(join(x,y.lft),y.rgt);
+            Relation ret = null;
+            try {
+                ret = join(join(x,y.lft),y.rgt);
+            } catch( AssertionError e ) {
+                ret = join(join(x,y.rgt),y.lft);
+            }
             if( ret.header.size() != y.header.size() )
                 return Relation.innerUnion(ret, new Relation(y.colNames));
             return ret;
