@@ -2,6 +2,8 @@ package qbql.lattice;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import qbql.index.IndexedPredicate;
 import qbql.util.Util;
@@ -58,10 +60,7 @@ public class Predicate {
      * Set intersection join
      */
     public static Predicate setIX( Predicate x, Predicate y ) throws Exception {
-        if( x instanceof Relation && y instanceof Relation )
-            return Relation.setIX((Relation)x, (Relation)y);
-        
-        if( !(y instanceof IndexedPredicate) && !(y instanceof EqualityPredicate) ) {
+        if( x instanceof EqualityPredicate && !(y instanceof EqualityPredicate) ) {
             Predicate tmp = x;
             x = y;
             y = tmp;
@@ -69,12 +68,18 @@ public class Predicate {
         
         if( y instanceof EqualityPredicate ) 
             return EqualityPredicate.setIX(x,(EqualityPredicate)y);
-        if( x instanceof Relation && y instanceof IndexedPredicate ) 
-            return IndexedPredicate.setIX((Relation)x,(IndexedPredicate)y);
-        if( x instanceof IndexedPredicate && y instanceof IndexedPredicate ) 
-            return IndexedPredicate.setIX((IndexedPredicate)x,(IndexedPredicate)y);
         
-        throw new RuntimeException("Not implemented");
+        Set<String> headerXmY = new TreeSet<String>();
+        headerXmY.addAll(x.header.keySet());
+        headerXmY.removeAll(y.header.keySet());            
+        Set<String> headerYmX = new TreeSet<String>();
+        headerYmX.addAll(y.header.keySet());
+        headerYmX.removeAll(x.header.keySet());
+        Set<String> headerSymDiff = new TreeSet<String>();
+        headerSymDiff.addAll(headerXmY);
+        headerSymDiff.addAll(headerYmX);
+        Relation hdr = new Relation(headerSymDiff.toArray(new String[0]));
+        return Relation.innerUnion(hdr,join(x, y));
     }
 
     public String toString() {
