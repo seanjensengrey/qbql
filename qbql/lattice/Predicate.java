@@ -24,7 +24,10 @@ public class Predicate {
         if( x instanceof Relation && y instanceof Relation )
             return Relation.join((Relation)x, (Relation)y);
         
-        if( !(y instanceof IndexedPredicate) && !(y instanceof ComplementPredicate) ) {
+        if( !(y instanceof IndexedPredicate) 
+         && !(y instanceof ComplementPredicate) 
+         && !(y instanceof EqualityPredicate) 
+        ) {
             Predicate tmp = x;
             x = y;
             y = tmp;
@@ -36,6 +39,8 @@ public class Predicate {
             return IndexedPredicate.join((IndexedPredicate)x,(IndexedPredicate)y);
         if( x instanceof Relation && y instanceof ComplementPredicate ) 
             return ComplementPredicate.join((Relation)x,(ComplementPredicate)y);
+        if( x instanceof Relation && y instanceof EqualityPredicate ) 
+            return EqualityPredicate.join((Relation)x,(EqualityPredicate)y);
         
         throw new RuntimeException("Not implemented");
     }

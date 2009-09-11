@@ -7,6 +7,8 @@ public class Run {
     public static void main( String[] args ) throws Exception {
         String db = Util.readFile(Run.class,"strings.db");
         String prg = Util.readFile(Run.class,"strings.prg");
+        //String db = Util.readFile(Run.class,"Sims.db");
+        //String prg = Util.readFile(Run.class,"Sims.assertions");
         Database.run(prg, db);    
     }
 
