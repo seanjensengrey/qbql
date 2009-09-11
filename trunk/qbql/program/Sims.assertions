@@ -1,8 +1,11 @@
+Certified;
+Certified';
+/*
 (Pets ^ Fed) v ((Pets v Fed`)^(Pets` v Fed)^[]) = Pets \|/ Fed. 
 
 (x ^ y) v ((x v y`)^(x` v y)^[]) = x \|/ y.
 
-/*
+
 Time v (Claire ^ At ^ Library) > Time v (Max ^ At ^ Home).
 
 Home /\ Max /\ At;

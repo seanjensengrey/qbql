@@ -8,18 +8,26 @@ import qbql.lattice.Relation;
 import qbql.util.Util;
 
 public class Cat {
-    public static NamedTuple source_from_prefix_postfix( String source, int from ) {
+    public static NamedTuple source_from_prefix_postfix( 
+            String source, int from 
+    ) {
         String[] columns = new String[]{"prefix","postfix"};
-        Object[] data = new Object[]{source.substring(0,from),source.substring(from)};
+        Object[] data = new Object[]{
+                source.substring(0,from),
+                source.substring(from)};
         return new NamedTuple(columns,data);
     }
-    public static NamedTuple prefix_postfix_source_from( String prefix, String postfix ) {
+    public static NamedTuple prefix_postfix_source_from( 
+            String prefix, String postfix 
+    ) {
         String[] columns = new String[]{"source","from"};
         Object[] data = new Object[]{prefix+postfix,prefix.length()};
         return new NamedTuple(columns,data);
     }
     public static Relation source_from_prefix_postfix( String source ) {
-        Relation ret = new Relation(new String[]{"from","prefix","postfix"});
+        Relation ret = new Relation(
+            new String[]{"from","prefix","postfix"}
+        );
         for( int i = 0; i <= source.length(); i++ ) {
             Map<String,Object> content = new HashMap<String,Object>();
             content.put("from", i);
@@ -28,6 +36,5 @@ public class Cat {
             ret.addTuple(content);
         }
         return ret;
-    }
-    
+    }  
 }
