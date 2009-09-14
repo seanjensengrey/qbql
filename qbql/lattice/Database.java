@@ -17,6 +17,7 @@ import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.parser.RuleTuple;
 import qbql.parser.Token;
+import qbql.program.Run;
 import qbql.util.Util;
 
 public class Database {
@@ -48,17 +49,6 @@ public class Database {
         R01.addTuple(new TreeMap<String,Object>());
     }
 
-    final static String databaseFile = "Figure1.db"; 
-    final static String programFile = "Figure1.prg"; 
-    //final static String programFile = "Partition.prg"; 
-    //final static String programFile = "Equality.prg"; 
-    
-    //final static String databaseFile = "Sims.db"; 
-    //final static String programFile = "Sims.assertions"; 
-    //final static String databaseFile = "Wittgenstein.db"; 
-    //final static String programFile = "Wittgenstein.assertions"; 
-    //final static String databaseFile = "Aggregate.db"; 
-    //final static String programFile = "Aggregate.prg"; 
         
     public Database() {				
         addPredicate("R00",Database.R00); 
@@ -374,11 +364,6 @@ public class Database {
 
     public static Relation unnamedMeet( Relation x, Relation y ) {
         throw new RuntimeException("Not impl");
-    }
-    public static void main( String[] args ) throws Exception {
-        String prg = Util.readFile(Database.class,programFile);
-        String databaseSrc = Util.readFile(Database.class,databaseFile);
-        run(prg, databaseSrc);
     }
     
     public static void run(String prg, String databaseSrc) throws Exception {

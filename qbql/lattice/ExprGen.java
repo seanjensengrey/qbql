@@ -14,6 +14,7 @@ import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.parser.RuleTuple;
+import qbql.program.Run;
 import qbql.util.Util;
 
 public class ExprGen {
@@ -64,21 +65,21 @@ public class ExprGen {
         //grafts.add(new Substitution("y",r11));
         grafts.add(new Substitution("x",join));
         grafts.add(new Substitution("y",join));
-        grafts.add(new Substitution("z",join));
-        grafts.add(new Substitution("x",joinXZ));
-        grafts.add(new Substitution("y",joinYZ));
+        //grafts.add(new Substitution("z",join));
+        //grafts.add(new Substitution("x",joinXZ));
+        //grafts.add(new Substitution("y",joinYZ));
         grafts.add(new Substitution("x",union));
         grafts.add(new Substitution("y",union));
-        grafts.add(new Substitution("z",union));
-        grafts.add(new Substitution("x",unionXZ));
-        grafts.add(new Substitution("y",unionYZ));
+        //grafts.add(new Substitution("z",union));
+        //grafts.add(new Substitution("x",unionXZ));
+        //grafts.add(new Substitution("y",unionYZ));
         grafts.add(new Substitution("x",complementX));
         grafts.add(new Substitution("y",complementY));
-        grafts.add(new Substitution("z",complementZ));
-        //grafts.add(new Substitution("x",inverseX));
-        //grafts.add(new Substitution("y",inverseY));
-        //grafts.add(new Substitution("x",star));
-        //grafts.add(new Substitution("y",star));
+        //grafts.add(new Substitution("z",complementZ));
+        grafts.add(new Substitution("x",inverseX));
+        grafts.add(new Substitution("y",inverseY));
+        grafts.add(new Substitution("x",star));
+        grafts.add(new Substitution("y",star));
         //grafts.add(new Substitution("x",parse("(x + y)")));
         //grafts.add(new Substitution("y",parse("(x + y)")));
         //grafts.add(new Substitution("x",parse("(x /\\ y)")));
@@ -88,14 +89,15 @@ public class ExprGen {
         //String goal = "x*y = expr.";
         //String goal = "x` ^ x' = expr.";
         //String goal = "x = expr.";
-        //String goal = "x /1\\ y = expr.";
-        String goal = "(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = expr.";
+        String goal = "x < y -> x /> y = expr.";
+        //String goal = "(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = expr.";
         System.out.println("goal: "+goal);
         ExprTree XeqExpr = parse(goal);
         
         Set<String> found = new HashSet<String>();
         
-        Grammar g = new Grammar(null,Util.readFile(Database.class,Database.databaseFile));
+        Grammar g = new Grammar(null,Util.readFile(Run.class,"Figure1.db"));
+        //Grammar g = new Grammar(null,Util.readFile(Run.class,"Wittgenstein.db"));
         int exprPos = XeqExpr.src.size()-2;    
         final long startTime = System.currentTimeMillis();
         long evalTime = 0;

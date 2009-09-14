@@ -1,4 +1,4 @@
-Blocks = {
+NamedBlocks = {
   <name=a,shape=tet,size=small>,
   <name=b,shape=cube,size=small>,
   <name=c,shape=cube,size=medium>,
@@ -16,12 +16,17 @@ B = {<name=b>};
 C = {<name=c>};
 D = {<name=d>};
 
-BlockD = Blocks ^ D;
+BlockD = NamedBlocks ^ D;
 
 Size = Large ^ R00;
 
 Cube = {<shape=cube>};
 Tet = {<shape=tet>};
 
-Shape = Cube ^ R00;
+Shape = [shape];
+Size = [size];
+
  
+Blocks = NamedBlocks v [shape size];
+
+Sizes = Blocks v Size;

@@ -1,5 +1,6 @@
-Certified;
-Certified';
+Claire /^ At /^ Library = Time v (Claire ^ At ^ Library).
+
+
 /*
 (Pets ^ Fed) v ((Pets v Fed`)^(Pets` v Fed)^[]) = Pets \|/ Fed. 
 
