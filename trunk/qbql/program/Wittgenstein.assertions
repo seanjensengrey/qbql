@@ -1,3 +1,4 @@
+/*
 (Blocks ^ D) v Size = Large.
 
 (Blocks ^ A) v Size = Small.
@@ -11,6 +12,10 @@
 ((Blocks ^ A) v Size) ^ ((Blocks ^ C) v Shape) = Small ^ Cube.
 
 (Blocks ^ D) v (Size ^ Shape) = Large ^ Cube -> (Blocks ^ D) v Size = Large.
+*/
 
-BlockD ^ Large < BlockD ^ Large'.
-BlockD ^ Cube < BlockD ^ Cube'.
+Blocks /^ Sizes = Blocks v Sizes`.
+
+Blocks /> Sizes = Blocks /= Sizes.
+Blocks < Sizes. -- conditional:
+Blocks /> Sizes = ( (Blocks' ^ Sizes) * Sizes` )'.
