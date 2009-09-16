@@ -32,8 +32,8 @@ public class Grammar {
     
     public static CYK cyk;
     public static int naturalJoin;
-    static int innerJoin;
-    static int innerUnion;
+    public static int innerJoin;
+    public static int innerUnion;
     static int outerUnion;
     static int unnamedJoin;
     static int unnamedMeet;
@@ -44,18 +44,18 @@ public class Grammar {
     static int disjoint;
     static int almostDisj;
     static int big;
-    static int complement;
-    static int inverse;
+    public static int complement;
+    public static int inverse;
     static int join;
     static int meet;
     static int equivalence;
     static int equality;
     static int num;
     static int minus;
-    static int expr;
+    public static int expr;
     static int partition;
     static int parExpr;
-    static int openParen;
+    public static int openParen;
     static int bool;
     static int implication;
     static int lt;
@@ -65,7 +65,7 @@ public class Grammar {
     static int excl;
     static int assertion;
     static int query;
-    static int identifier;
+    public static int identifier;
 
     static int assignment;
     static int relation;
@@ -74,7 +74,7 @@ public class Grammar {
     static int tuple;
     static int header;
     static int content;
-    static int attribute;
+    public static int attribute;
     static int values;
     static int namedValue;
     static int comma;
@@ -340,19 +340,9 @@ public class Grammar {
 
     public ParseNode assertion( ParseNode root, boolean outputVariables ) throws Exception {
         ParseNode ret = null;
-        Set<String> variables = new HashSet<String>();
+        Set<String> variables = variables(root);
+
         String[] tables = database.relNames();
-
-        for( ParseNode descendant : root.descendants() ) {
-            String id = descendant.content(src);
-            if( descendant.from+1 == descendant.to 
-                    && (descendant.contains(expr) || descendant.contains(identifier))
-                    && !root.parent(descendant.from, descendant.to).contains(header)
-                    && !root.parent(descendant.from, descendant.to).contains(table)
-                    && lookup(id) == null ) 
-                variables.add(id);
-        }
-
         int[] indexes = new int[variables.size()];
         for( int i = 0; i < indexes.length; i++ )
             indexes[i] = 0;
@@ -396,6 +386,20 @@ public class Grammar {
         for( String variable : variables )
             database.removePredicate(variable);
         return ret;
+    }
+
+    public Set<String> variables( ParseNode root ) {
+        Set<String> variables = new HashSet<String>();
+        for( ParseNode descendant : root.descendants() ) {
+            String id = descendant.content(src);
+            if( descendant.from+1 == descendant.to 
+                    && (descendant.contains(expr) || descendant.contains(identifier))
+                    && !root.parent(descendant.from, descendant.to).contains(header)
+                    && !root.parent(descendant.from, descendant.to).contains(table)
+                    && lookup(id) == null ) 
+                variables.add(id);
+        }
+        return variables;
     }
 
     public ParseNode query( ParseNode root ) throws Exception {
