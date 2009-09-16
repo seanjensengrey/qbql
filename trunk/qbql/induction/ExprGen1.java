@@ -1,4 +1,4 @@
-package qbql.lattice;
+package qbql.induction;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import qbql.lattice.Grammar;
 import qbql.parser.CYK;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
@@ -17,7 +18,8 @@ import qbql.parser.RuleTuple;
 import qbql.program.Run;
 import qbql.util.Util;
 
-public class ExprGen {
+// First (memory hungry) attempt: demoted in the name:-)
+public class ExprGen1 {
     static ExprTree join = null;
     static ExprTree joinXZ = null;
     static ExprTree joinYZ = null;
