@@ -7,7 +7,7 @@ A = {<p=1>};
 
 B = {<p=1>,<p=2>};
 		
-		
+/*		
 C = {<q=a>};
 		
 D = {<q=a>,<q=b>};
@@ -23,9 +23,9 @@ _A = A ^ R00;
 _C = C ^ R00;
 
 ADvBC = (A ^ D) v (B ^ C);
-
+*/
 -- Additional relations (beyond the scope of Figure 1)
-
+/*
 A0 = [p] 0;
 A1 = [p] 2;
 A2 = [p] 0 2;
@@ -63,3 +63,4 @@ W1=[p  s  t]
 SV = S ^ V;
 S1V = S1 ^ V;
 SUV = SV ^ U;
+*/

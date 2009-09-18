@@ -1,3 +1,5 @@
+(x ^ (y v z)) = ((x ^ y) v (x ^ z)).
+
 /*
 x ^ (y v z) = (x ^ (z v (R00 ^ y))) v (x ^ (y v (R00 ^ z))).
 
@@ -279,7 +281,7 @@ x^[] < [p] ->
 (x v [p]) /1\ x = (x v R10) v ([p])` |
 (x v [p]) /1\ x = (x ^ R00) v ([p])` |
 (x v [p]) /1\ x = (x v ([p])`)'.
-*/
+
 
 dx = [p  q]
       1  a
@@ -307,4 +309,4 @@ dy < x v z &             -- ditto
 (x ^ dx') v z = (x v z) ^ dy'  -- View definition after update
 -> dx = dy ^ x. 
 
-
+*/
