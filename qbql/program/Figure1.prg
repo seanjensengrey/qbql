@@ -1,4 +1,4 @@
-(x ^ (y v z)) = ((x ^ y) v (x ^ z)).
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = ((((z v y) ^ y') ^ x)' v (z ^ x))'.
 
 /*
 x ^ (y v z) = (x ^ (z v (R00 ^ y))) v (x ^ (y v (R00 ^ z))).
