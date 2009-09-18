@@ -17,8 +17,8 @@ public class Polish {
             clone.add(o);
         while( step(clone) ) 
             ;
-        if( clone.size() == 1 )
-            return (TreeNode)clone.get(0);
+        if( clone.size() == 1 ) 
+            return (TreeNode)clone.get(0).cloneLeaves();
         return null;      
     }
     static boolean step( List<TreeNode> code ) {
@@ -70,38 +70,60 @@ public class Polish {
             code.add(TreeNode.one);
     }
     
-    private static TreeNode leaf() {
+    static TreeNode leaf() {
         return new TreeNode(null,null);
     }
     
     public static void main( String[] args ) {
-        /*
-        ArrayList<TreeNode> l = new ArrayList<TreeNode>();
+        
+        /*ArrayList<TreeNode> l = new ArrayList<TreeNode>();
         l.add(leaf());
         l.add(leaf());
         l.add(leaf());
         l.add(TreeNode.one);
         l.add(TreeNode.two);
         l.add(TreeNode.two);
-        new Polish(l).decode().print();
-        */
+        TreeNode root = new Polish(l).decode();
+        ExprGen.zilliaryOps = new String[] {"x","y"};
+        ExprGen.init(root);
+        for( int i = 0; i < 500; i++ ) {
+            System.out.print(i+"=");
+            root.print();
+            if( !ExprGen.next(root) )
+                break;
+        }*/
+        
+        
         ArrayList<TreeNode> l = new ArrayList<TreeNode>();
         l.add(leaf());
         l.add(TreeNode.one);
         Polish num = new Polish(l);
         int cnt = 0; 
-        for( int i = 0; i < 10000000; i++ ) {
+        for( int i = 0; i < 20; i++ ) {
             TreeNode n = num.decode();            
             if( n != null ) {
-                //System.out.println();
-                //System.out.println(l.toString());
-                //n.print();
+                System.out.println();
+                System.out.println(l.toString());
+                n.print();
                 cnt++;
             } else {
-                //System.out.print('.');
+                System.out.print('.');
             }
             num.next();
         }
         System.out.println(cnt);
+        
+    }
+    
+    boolean wellBuilt() {
+        TreeNode predecessor = null;
+        TreeNode predpred = null;
+        for( TreeNode n : code ) {
+            if( n == TreeNode.one && predecessor == TreeNode.one && predpred == TreeNode.one )
+                return false;
+            predpred = predecessor;
+            predecessor = n; 
+        }
+        return true;
     }
 }

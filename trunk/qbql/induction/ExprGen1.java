@@ -157,6 +157,8 @@ public class ExprGen1 {
                         System.out.println(output);
                         found.add(sig);
                     }
+                    System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
+                    System.out.println("evalTime="+evalTime);
                     return;
                 }
             del(accumulated,current);
