@@ -86,6 +86,18 @@ public class Predicate {
         Relation hdr = new Relation(headerSymDiff.toArray(new String[0]));
         return Relation.innerUnion(hdr,join(x, y));
     }
+    public static Predicate setEQ( Predicate x, Predicate y ) throws Exception {
+        if( x instanceof IndexedPredicate && !(y instanceof IndexedPredicate) ) {
+            Predicate tmp = x;
+            x = y;
+            y = tmp;
+        }
+        
+        if( x instanceof Relation && y instanceof IndexedPredicate ) 
+            return IndexedPredicate.setEQ((Relation)x,(IndexedPredicate)y);
+        
+        throw new Exception("x.className="+x.getClass().getSimpleName()+",y.className="+y.getClass().getSimpleName());
+    }
 
     public String toString() {
         return toString(0, false);

@@ -24,14 +24,19 @@ public class ExprGen {
             "^",
             "v",             
             //"*",
-            //"+",             
+            //"+",
+            //"/>",
+            //"/<",
+            //"/=",
+            //"/0",
+            //"/1",
+            //"/!",
     };
     public static void main( String[] args ) throws Exception {
-        //String goal = "(x^y)+(x^z) = expr.";
-        //String goal = "x` ^ x' = expr.";
-        //String goal = "(x ^ y) * y = expr.";
-        //String goal = "x < y -> x /> y = expr.";
-        String goal = "(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = expr.";
+        String goal = "x ^ (x v y)' = expr.";
+        //String goal = "x /= y = expr.";
+        //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
+        //String goal = "x ^ (y v z) = (x ^ y) v (x ^ z) <- R00 = expr.";
         System.out.println("goal: "+goal);
         final String subgoal = goal.substring(0,goal.indexOf("expr"));
         
@@ -77,7 +82,7 @@ public class ExprGen {
                     continue;
                 //System.out.println();
                 ExprGen.init(n);
-                n.print();
+                //n.print();
                 do {
                     if( n.isRightSkewed() )
                         continue;
@@ -107,9 +112,9 @@ public class ExprGen {
                         continue;
                     System.out.println("*** found *** ");
                     System.out.println(input);
-                    System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
-                    System.out.println("evalTime="+evalTime);
-                    return;
+                    //System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
+                    //System.out.println("evalTime="+evalTime);
+                    //return;
                 } while( ExprGen.next(n) );
                 //cnt++;
             } else {

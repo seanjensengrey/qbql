@@ -254,5 +254,40 @@ public class IndexedPredicate extends Predicate {
         ret.colNames = newColNames;
         return ret; 
     }
+    public static Relation setEQ( Relation x, IndexedPredicate y ) throws Exception {
+        Set<String> headerXmY = new TreeSet<String>();
+        headerXmY.addAll(x.header.keySet());
+        headerXmY.removeAll(y.header.keySet());            
+        Set<String> headerYmX = new TreeSet<String>();
+        headerYmX.addAll(y.header.keySet());
+        headerYmX.removeAll(x.header.keySet());
+        Set<String> headerSymDiff = new TreeSet<String>();
+        headerSymDiff.addAll(headerXmY);
+        headerSymDiff.addAll(headerYmX);
+        Relation hdrXmY = new Relation(headerXmY.toArray(new String[0]));
+        //Relation hdrYmX = new Relation(headerYmX.toArray(new String[0]));
+        
+        Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
+                
+        Relation X = Relation.innerUnion(x,hdrXmY);
+        
+        Set<String> headerXY = new TreeSet<String>();
+        headerXY.addAll(x.header.keySet());
+        headerXY.retainAll(y.header.keySet());
+        Relation hdrYX = new Relation(headerXY.toArray(new String[0]));;
+        Method m = y.method(headerYmX);
+        for( Tuple xi : X.content ) {
+            Relation singleX = new Relation(X.colNames);
+            singleX.content.add(xi);
+            Relation lft = Relation.innerUnion(Relation.join(singleX,x),hdrYX);
+            
+            Relation singleY = ((NamedTuple)m.invoke(null, new Object[] {lft})).toRelation();
+            for( String newName : y.renamed.keySet() )
+                singleY.renameInPlace(y.renamed.get(newName), newName );
+            
+            ret = Relation.innerUnion(ret, Relation.join(singleX, singleY)); 
+        }        
+        return ret;      
+    }
 
 }

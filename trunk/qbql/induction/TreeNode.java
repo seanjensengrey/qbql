@@ -171,6 +171,9 @@ public class TreeNode {
         
         if( "'".equals(label) && "'".equals(lft.label) )
             return true;
+        if( ("'".equals(label)||"`".equals(label)) 
+         && ("R11".equals(lft.label)||"R00".equals(lft.label)) )
+            return true;
         
         return ret;
     }

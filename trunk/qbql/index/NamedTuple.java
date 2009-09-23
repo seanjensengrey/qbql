@@ -1,5 +1,6 @@
 package qbql.index;
 
+import qbql.lattice.Relation;
 import qbql.lattice.Tuple;
 
 public class NamedTuple extends Tuple {
@@ -19,4 +20,9 @@ public class NamedTuple extends Tuple {
         throw new Exception("Mismatching column?");
     }
 
+    public Relation toRelation() {
+        Relation ret = new Relation(columns);
+        ret.content.add(this); 
+        return ret;
+    }
 }
