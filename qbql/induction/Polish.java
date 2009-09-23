@@ -119,7 +119,7 @@ public class Polish {
         TreeNode predecessor = null;
         TreeNode predpred = null;
         for( TreeNode n : code ) {
-            if( n == TreeNode.one && predecessor == TreeNode.one && predpred == TreeNode.one )
+            if( n == TreeNode.one && predecessor == TreeNode.one /*&& predpred == TreeNode.one*/ )
                 return false;
             predpred = predecessor;
             predecessor = n; 

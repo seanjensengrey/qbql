@@ -24,7 +24,7 @@ public class Relation extends Predicate {
         super(columns);		
     }
     
-    void renameInPlace( String from, String to ) {
+    public void renameInPlace( String from, String to ) {
         if( from.equals(to) )
             return;
         int colFrom = header.get(from);

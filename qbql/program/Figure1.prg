@@ -1,6 +1,32 @@
+--(x v (y ^ z)) < ((x v y) ^ (x v z)).
+--x ^ (y v z) < x v (y ^ z).
+(x ^ y) v (x ^ z) < x ^ (y v z).
+/*
 (x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = ((((z v y) ^ y') ^ x)' v (z ^ x))'.
 
-/*
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = ((((z v y) ^ z') ^ x)' v (y ^ x))'.
+
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = ((((z v y) ^ x) ^ y')' v (z ^ x))'.
+
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = ((((z v y) ^ x) ^ z')' v (y ^ x))'.
+
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = (((y' ^ x) ^ (z v y))' v (z ^ x))'.
+
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = (((z' ^ x) ^ (z v y))' v (y ^ x))'.
+
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = ((z ^ x) v (y ^ x))' ^ (z v y) ^ x.
+
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = ((y' ^ x)' v (z ^ x))' ^ (z v y).
+
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = ((z' ^ x)' v (y ^ x))' ^ (z v y).
+
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = (((((z ^ x) v (y ^ x)))' ^ x) ^ (z v y)).
+
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = ((((z ^ x) v (y ^ x)))' ^ ((z v y) ^ x)).
+
+(x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = ((((z ^ x) v (y ^ x)) v (((z v y) ^ x))'))'.
+
+
 x ^ (y v z) = (x ^ (z v (R00 ^ y))) v (x ^ (y v (R00 ^ z))).
 
 (R00 ^ (x ^ (y v z))) v (y ^ z) = ((R00 ^ (x ^ y)) v z) ^ ((R00 ^ (x ^ z)) v y).
@@ -187,6 +213,8 @@ x /\ y = y /\ x.
 x \/ y = y \/ x.
 
 x /| y = y |\ x.
+
+(y)' /0 x = x /< y.
 
 [_reflexivity_];
 x < y & x = r v (x^R00) & y = r v (y^R00) ->  

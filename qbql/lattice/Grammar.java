@@ -577,9 +577,12 @@ public class Grammar {
             return database.unnamedJoin((Relation)left,(Relation)right);
         else if( oper == unnamedMeet )
             return database.unnamedMeet((Relation)left,(Relation)right);
-        else if( oper == setEQ ) 
-            return database.quantifier((Relation)left,(Relation)right,setEQ);
-        else if( oper == setIX ) 
+        else if( oper == setEQ ) {
+            if( left instanceof Relation && right instanceof Relation )
+                return database.quantifier((Relation)left,(Relation)right,setEQ);
+            else
+                return Predicate.setEQ(left,right);
+        } else if( oper == setIX ) 
             return Predicate.setIX(left,right);
         else if( oper == contains ) 
             return database.quantifier((Relation)left,(Relation)right,contains);

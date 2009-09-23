@@ -23,9 +23,9 @@ _A = A ^ R00;
 _C = C ^ R00;
 
 ADvBC = (A ^ D) v (B ^ C);
-*/
+
 -- Additional relations (beyond the scope of Figure 1)
-/*
+
 A0 = [p] 0;
 A1 = [p] 2;
 A2 = [p] 0 2;
