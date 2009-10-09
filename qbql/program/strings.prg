@@ -63,6 +63,8 @@ Dept = [DEPTNO DNAME LOC]
 40 OPERATIONS LONDON
 ;
 
+((Emp v [DEPTNO SAL]) /^ [SAL=summands]) /= Sum;
+
 MySum = Sum /^ [result=sum];
 
 ((Emp v [DEPTNO SAL]) /^ [SAL=summands]) /= MySum;

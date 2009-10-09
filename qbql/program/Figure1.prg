@@ -1,6 +1,42 @@
---(x v (y ^ z)) < ((x v y) ^ (x v z)).
---x ^ (y v z) < x v (y ^ z).
-(x ^ y) v (x ^ z) < x ^ (y v z).
+--x ^ y < z <- x < (z /> y).
+
+--x ^ y ^ (z /< x) < z.
+
+
+--x ^ (y + z) < x ^ (y v z).
+--(x ^ y) v (x ^ z) < x ^ (y v z).
+--(x ^ y) + (x ^ z) < (x ^ y) v (x ^ z).
+
+--(x v y) ^ (x v z) > x v (y ^ z).
+--(x + y) ^ (x + z) = x + (y ^ z).
+
+--(x * y) + (x * z) > x * (y + z).
+--(x + y) * (x + z) < x + (y * z).
+--(x ^ (y v z)) < (x + (y * z)).
+--(x ^ y) v (x ^ z) < (x + y) * (x + z).
+
+--(x ^ (y v z)) < ((x + y) * (x + z)).
+
+--((x + y) * (x + z)) > ((x ^ y) v (x ^ z)).
+
+y < (y v z)^(x + (y * z)).
+/*
+((x ^ y) v (x ^ z)) v y = ((z ^ x) v y).
+((x + y) * (x + z)) v y = (((R11 v z) ^ x) v y).
+(x v (y ^ z)) v y = (y v x).
+(x v (y ^ z)) ^ y = (((z ^ y) v x) ^ y).
+((x + y) * (x + z)) ^ y = (((y + x) * z) + x) ^ y.
+((x + y) * (x + z)) ^ y > (x ^ y) v (x ^ z).
+doublechecked: (((R11 v x) ^ y) ^ z) v (x^y) = ((x + y) * (x + z)) ^ y.
+expected implication the other way: ((R11 v x) ^ y) ^ z = x ^ y ^ z <- (x + y) * (x + z) = (x ^ y) v (x ^ z).
+(x + (y * z)) ^ (z v y) = (((z * y) + x) ^ (z v y)).
+(x + (y * z)) v (z v y) = ((R11 ^ x) v y) v z.
+(x v y)^(y v z) > y ^ ((x+y)*(x+z)).
+(x v y)^(y v z) < (x v y) ^ (((R11 ^ x) v y) v z).
+(x v y)^(y v z) ^ (y v ((x + y) * (x + z))) = (((z v y) ^ x) v y).
+*/
+
+
 /*
 (x ^ (y v z)) ^ ((x ^ y) v (x ^ z))' = ((((z v y) ^ y') ^ x)' v (z ^ x))'.
 
@@ -338,3 +374,4 @@ dy < x v z &             -- ditto
 -> dx = dy ^ x. 
 
 */
+

@@ -1,4 +1,4 @@
-Claire /^ At /^ Library = Time v (Claire ^ At ^ Library).
+Certified /= Requirements;
 
 
 /*
@@ -43,12 +43,6 @@ x /\ (x \/ y) = (x /\ (x \/ (x /\ (x \/ y)))).
 
 (Fed /\ ([name])')';
 (Fed \/ ([name])')';
-Certified /| Requirements;
-Certified |\ Requirements;
-Certified /\ Requirements;
-Certified \/ Requirements;
-Certified /|\ Requirements;
-Certified \|/ Requirements;
 
 y v R11 = y & x ^ R00 < y ^ R00 ->  x /|\ y = x \|/ y.
 
