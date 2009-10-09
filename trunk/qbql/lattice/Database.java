@@ -1,8 +1,6 @@
 package qbql.lattice;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +13,6 @@ import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
-import qbql.parser.RuleTuple;
-import qbql.parser.Token;
-import qbql.program.Run;
 import qbql.util.Util;
 
 public class Database {

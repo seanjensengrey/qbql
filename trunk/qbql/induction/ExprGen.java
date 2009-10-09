@@ -23,8 +23,8 @@ public class ExprGen {
     final static String[] binaryOps = new String[] {
             "^",
             "v",             
-            //"*",
-            //"+",
+            "*",
+            "+",
             //"/>",
             //"/<",
             //"/=",
@@ -33,10 +33,10 @@ public class ExprGen {
             //"/!",
     };
     public static void main( String[] args ) throws Exception {
-        String goal = "x ^ (x v y)' = expr.";
-        //String goal = "x /= y = expr.";
+        //String goal = "(x + (y * z)) ^ (x ^ (y v z))' = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
-        //String goal = "x ^ (y v z) = (x ^ y) v (x ^ z) <- R00 = expr.";
+        //String goal = "(x + y) ^ (x + (y * z)) = expr.";
+        String goal = "y v ((x ^ y) v (x ^ z)) = expr.";
         System.out.println("goal: "+goal);
         final String subgoal = goal.substring(0,goal.indexOf("expr"));
         
@@ -82,7 +82,7 @@ public class ExprGen {
                     continue;
                 //System.out.println();
                 ExprGen.init(n);
-                //n.print();
+                n.print();
                 do {
                     if( n.isRightSkewed() )
                         continue;
@@ -114,7 +114,7 @@ public class ExprGen {
                     System.out.println(input);
                     //System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
                     //System.out.println("evalTime="+evalTime);
-                    //return;
+                    return;
                 } while( ExprGen.next(n) );
                 //cnt++;
             } else {
