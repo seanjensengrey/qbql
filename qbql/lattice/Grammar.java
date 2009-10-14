@@ -133,7 +133,7 @@ public class Grammar {
             namedValue = cyk.symbolIndexes.get("namedValue");
             //System.out.println(cyk.allSymbols[20]);
         } catch( Exception e ) {
-            e.printStackTrace();
+            e.printStackTrace(); // (authorized)
         }
     }
     
@@ -153,11 +153,15 @@ public class Grammar {
     //--------------------------------------------------------------------------
     
     public List<LexerToken> src;
-    public Database database = new Database();
+    public Database database = new Database("qbql.lang");
     public Grammar( List<LexerToken> program, String dbSource ) throws Exception {
         initDatabase(dbSource);
 
         this.src = program;
+    }
+    public Grammar( List<LexerToken> program, Database db ) {
+        this.src = program;
+        this.database = db;
     }
 
     private void initDatabase( String dbSource ) throws Exception {
@@ -550,7 +554,7 @@ public class Grammar {
         if( ret != null ) 
             return ret;
         try {
-            return new IndexedPredicate(name);
+            return new IndexedPredicate(database,name);
         } catch (Exception e) {
             return null;
         }

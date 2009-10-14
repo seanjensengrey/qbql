@@ -1,5 +1,6 @@
 package qbql.index;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import qbql.lattice.Database;
 import qbql.lattice.EqualityPredicate;
 import qbql.lattice.Grammar;
 import qbql.lattice.Predicate;
@@ -73,9 +75,11 @@ public class IndexedPredicate extends Predicate {
             throw new Exception("Column collision");
     }
 
-    public IndexedPredicate( String name ) throws Exception {
+    private Database db = null;
+    public IndexedPredicate( Database db, String name ) throws Exception {
+        this.db = db;
         Set<String> tmp = new TreeSet<String>();
-        implementation = Class.forName("qbql.index."+name);
+        implementation = Class.forName(db.pkg+"."+name);
         for( Method m : methods() ) {
             tmp.addAll(arguments(m,ArgType.BOTH));
         }
@@ -89,6 +93,7 @@ public class IndexedPredicate extends Predicate {
     }
     public IndexedPredicate( IndexedPredicate ip ) throws Exception {
         super(Util.clone(ip.colNames)); 
+        this.db = ip.db;
         implementation = ip.implementation;
         if( ip.lft != null )
             lft = new IndexedPredicate(ip.lft);
@@ -182,7 +187,17 @@ public class IndexedPredicate extends Predicate {
                 pos++;
                 args[pos] = tupleX.data[x.header.get(y.newName(origName))];
             }
-            Object o = m.invoke(null, args);
+            Object o = null;
+            try {
+                Class partypes[] = new Class[1];
+                partypes[0] = Database.class;
+                Constructor ct = y.implementation.getConstructor(partypes);
+                Object arglist[] = new Object[1];
+                arglist[0] = y.db;
+                o = ct.newInstance(arglist);
+            } catch( NoSuchMethodException e ) {}
+            
+            o = m.invoke(o, args);
             
             if( o instanceof NamedTuple ) {
                 Object[] retTuple = new Object[header.size()];
@@ -274,14 +289,24 @@ public class IndexedPredicate extends Predicate {
         Set<String> headerXY = new TreeSet<String>();
         headerXY.addAll(x.header.keySet());
         headerXY.retainAll(y.header.keySet());
-        Relation hdrYX = new Relation(headerXY.toArray(new String[0]));;
+        Relation hdrYX = new Relation(headerXY.toArray(new String[0]));
         Method m = y.method(headerYmX);
         for( Tuple xi : X.content ) {
             Relation singleX = new Relation(X.colNames);
             singleX.content.add(xi);
             Relation lft = Relation.innerUnion(Relation.join(singleX,x),hdrYX);
             
-            Relation singleY = ((NamedTuple)m.invoke(null, new Object[] {lft})).toRelation();
+            Object o = null;
+            try {
+                Class partypes[] = new Class[1];
+                partypes[0] = Database.class;
+                Constructor ct = y.implementation.getConstructor(partypes);
+                Object arglist[] = new Object[1];
+                arglist[0] = y.db;
+                o = ct.newInstance(arglist);
+            } catch( NoSuchMethodException e ) {}
+            
+            Relation singleY = ((NamedTuple)m.invoke(o, new Object[] {lft})).toRelation();
             for( String newName : y.renamed.keySet() )
                 singleY.renameInPlace(y.renamed.get(newName), newName );
             

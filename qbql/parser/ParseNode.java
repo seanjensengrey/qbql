@@ -54,6 +54,15 @@ public class ParseNode implements Comparable {
         return ret;
     }
 
+    public ParseNode locate( int head, int tail ) {
+        if( from == head && tail == to ) 
+            return this;
+        for( ParseNode n : children() )
+            if( n.from <= head && tail <= n.to ) 
+                return n.locate(head, tail);
+        return null;
+    }
+
     /**
      * Parent of the ParseNode[head,tail), not "this" (which assumed to be the root)
      * @param head
@@ -253,64 +262,6 @@ public class ParseNode implements Comparable {
         return ret;    
     }
     
-    public ParseNode graft( int pos, ParseNode scion ) {
-        ParseNode clone = clone();
-        ParseNode scionClone = scion.clone();
-        ParseNode parent = clone.genuineParent(pos, pos+1);
-        clone.incrementAllDescendants(pos, scion.to-1);
-        scionClone.incrementAllDescendants(pos);
-        if( parent == null )
-            return scionClone;
-        if( parent.rgt != null && parent.rgt.from == pos ) {
-            //if( parent.rgt.from != scionClone.from || parent.rgt.to != scionClone.to )
-                //throw new RuntimeException("parent.rgt.from != scionClone.from || parent.rgt.to != scionClone.to");
-            parent.rgt = scionClone;
-        } else if( parent.lft != null && parent.lft.from == pos ) {
-            //if( parent.lft.from != scionClone.from || parent.lft.to != scionClone.to )
-                //throw new RuntimeException("parent.lft.from != scionClone.from || parent.lft.to != scionClone.to");
-            parent.lft = scionClone;
-        } else
-            throw new RuntimeException("parent.rgt.from == pos || parent.lft.from == pos");
-        return clone;
-    }
-    private ParseNode genuineParent( int from, int to ) {
-        if( rgt != null && rgt.from == from && to == rgt.to 
-         || lft != null && lft.from == from && to == lft.to ) {
-            return this;
-        }
-        if( rgt != null && rgt.from <= from && to <= rgt.to ) {
-            return rgt.genuineParent(from, to);
-        }
-        if( lft != null && lft.from <= from && to <= lft.to ) {
-            return lft.genuineParent(from, to);
-        }
-        return null;
-    }
-    private void incrementAllDescendants( int pos, int inc ) {
-        if( from <= pos && pos < to )
-            to += inc;        
-        if( pos < from ) {
-            to += inc;        
-            from += inc;
-        }
-        if( rgt != null ) 
-            rgt.incrementAllDescendants(pos, inc);
-        if( lft != null ) 
-            lft.incrementAllDescendants(pos, inc);
-        if( rgt != null && rgt.to != to || lft != null && lft.from != from )
-            throw new RuntimeException("rgt != null && rgt.to != to || lft != null && lft.from != from");
-    }
-    private void incrementAllDescendants( int inc ) {
-        from += inc;        
-        to += inc;        
-        if( rgt != null ) 
-            rgt.incrementAllDescendants(inc);
-        if( lft != null ) 
-            lft.incrementAllDescendants(inc);
-        // can't possibly violate the below constraint
-        //if( rgt != null && rgt.to != to || lft != null && lft.from != from )
-            //throw new RuntimeException("rgt != null && rgt.to != to || lft != null && lft.from != from");
-    }
 
     private long hash = 0;
     public long hash( List<LexerToken> src ) {

@@ -1,5 +1,6 @@
-package qbql.index;
+package qbql.lang;
 
+import qbql.index.NamedTuple;
 import qbql.lattice.Relation;
 import qbql.lattice.Tuple;
 

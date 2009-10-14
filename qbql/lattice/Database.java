@@ -22,7 +22,7 @@ public class Database {
         return lattice.get(name);
     }
     public void addPredicate( String name, Predicate relvar ) {
-       lattice.put(name, relvar);
+        lattice.put(name, relvar);
     }       
     public void removePredicate( String name ) {
         lattice.remove(name);
@@ -44,11 +44,20 @@ public class Database {
         R01.addTuple(new TreeMap<String,Object>());
     }
 
-        
-    public Database() {				
+    public String pkg = null;    
+    /*public Database() {                         
         addPredicate("R00",Database.R00); 
         addPredicate("R01",Database.R01);
+        StackTraceElement[] stack = new Throwable().getStackTrace();
+        String createdInClass = stack[1].getClassName();
+        pkg = createdInClass.substring(0,createdInClass.lastIndexOf('.'));
+    }*/
+    public Database( String pkg ) {                         
+        addPredicate("R00",Database.R00); 
+        addPredicate("R01",Database.R01);
+        this.pkg = pkg;
     }
+    
 
     Relation outerUnion( Relation x, Relation y ) {
         return Relation.innerUnion( Relation.join(x, Relation.innerUnion(y, R11))
