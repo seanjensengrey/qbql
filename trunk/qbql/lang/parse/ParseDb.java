@@ -11,6 +11,8 @@ import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.parser.RuleTuple;
+import qbql.program.Run;
+import qbql.util.Util;
 
 public class ParseDb extends Database {
     List<LexerToken> src;
@@ -26,13 +28,7 @@ public class ParseDb extends Database {
     
     public static void main( String[] args ) throws Exception {
         CYK cyk = Grammar.cyk;          
-        final String input =
-            //"x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";
-            "[source from] Hello 3 /0 [from=f];"
-            //"( ( x v y ) ^ ( ( x ^ y ) v ( ( x v y ) ) ' ) )"
-            //"cat ^ [source] Hello World ^ [from] 3;"
-            //Util.readFile("c:/qbql_trunk/qbql/lattice/Partition.prg")
-        ;
+        final String input = Util.readFile(ParseDb.class,"text.db");
         List<LexerToken> src =  new Lex().parse(input);
         LexerToken.print(src);
 
@@ -49,7 +45,7 @@ public class ParseDb extends Database {
         ParseDb db = new ParseDb(pkg, src, root, cyk);
         
         // program
-        String prg = "[pos] \"[8,13)\" ^ Vars;";
+        String prg = Util.readFile(ParseDb.class,"test.prg");;
         src =  new Lex().parse(prg);
         matrix = Grammar.cyk.initArray1(src);
         size = matrix.size();
