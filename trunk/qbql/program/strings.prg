@@ -1,6 +1,6 @@
-/*
-Cat ^ [source] "Hello World";
 
+Cat ^ [source] "Hello World";
+/*
 Cat ^ [source from] Hello 3;
 
 Cat ^ [source] Hello World ^ [from] 3;
@@ -34,7 +34,7 @@ HelloFgmts ^ WorldFgmts ^ ([fragment]"")';
 
 SubstrSrc = (Substr /^ [source] "Hello World" /^ [fragment]o) v [prefix postfix];
 (Substr /^ SubstrSrc /^ [fragment]"***") v [source] ;
-*/
+
 
 
 Sum /= [summands] 1 2 3 4;
@@ -68,3 +68,4 @@ Dept = [DEPTNO DNAME LOC]
 MySum = Sum /^ [result=sum];
 
 ((Emp v [DEPTNO SAL]) /^ [SAL=summands]) /= MySum;
+*/

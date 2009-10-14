@@ -87,6 +87,15 @@ public abstract class Util {
         return p-0x10001;
     }
 
+    // [14,5) -> 5
+    public static int Y( String interval ) {
+        return Integer.parseInt(interval.substring(interval.indexOf(',')+1,interval.length()-1));
+    }
+    // [14,5) -> 14
+    public static int X( String interval ) {
+        return Integer.parseInt(interval.substring(1,interval.indexOf(',')));
+    }
+    
     /*
      * State vector iterator
      */

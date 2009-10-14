@@ -1,13 +1,17 @@
-package qbql.index;
+package qbql.lang;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import qbql.index.NamedTuple;
 import qbql.lattice.Database;
 import qbql.lattice.Relation;
 import qbql.util.Util;
 
 public class Cat {
+    public Cat( Database d ) {
+    }
+    
     public static NamedTuple source_from_prefix_postfix( 
             String source, int from 
     ) {
