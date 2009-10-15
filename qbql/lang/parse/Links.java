@@ -1,5 +1,6 @@
 package qbql.lang.parse;
 
+import qbql.index.EmptySetException;
 import qbql.index.NamedTuple;
 import qbql.lattice.Database;
 import qbql.lattice.Relation;
@@ -19,16 +20,18 @@ public class Links {
         db = (ParseDb)d;       
     }
     
-    public NamedTuple down_up( String pos ) throws AssertionError {
+    public NamedTuple down_up( String pos ) throws EmptySetException {
         ParseNode prt = db.root.parent(Util.X(pos),Util.Y(pos));
+        if( prt == null )
+            throw new EmptySetException();
         return new NamedTuple(new String[]{"up"},new Object[]{"["+prt.from+","+prt.to+")"});      
     }
     public Relation up_down( String pos ) {
         ParseNode atPos = db.root.locate(Util.X(pos),Util.Y(pos));
         Relation ret = new Relation(new String[]{"down"});
-        for( ParseNode child : atPos.children() ) {
-           ret.content.add(new Tuple(new Object[]{"["+child.from+","+child.to+")"}));
-        }
+        if( atPos != null )
+           for( ParseNode child : atPos.children() ) 
+               ret.content.add(new Tuple(new Object[]{"["+child.from+","+child.to+")"}));
         return ret;      
     }
 }

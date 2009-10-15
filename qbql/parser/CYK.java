@@ -9,7 +9,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import qbql.lattice.Relation;
+import qbql.lattice.Grammar;
 import qbql.util.Util;
 
 
@@ -62,24 +62,22 @@ public class CYK {
 
     Set<Integer> keywords = new TreeSet<Integer>(); // pure Keywords
 
-    private static final String fname = "grammar.serializedBNF";
-    private static final String path = "/qbql/lattice/";
-    //static boolean debug = true;
     public static void main( String[] dummy ) throws Exception {
-        CYK cyk = new CYK(RuleTuple.getRules(path+fname));
-        cyk.printSelectedChomskiRules("nion");          
+        CYK cyk = Grammar.cyk;
+        cyk.printSelectedChomskiRules("union");          
         final String input =
             //"x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";
-            "[source from] Hello 3 \\|/ [from=f];"
+            //"Tokens /^ [txt] item /^ [pos=down] /^ Links /^ [pos=up] ^ Vars;"
             //"( ( x v y ) ^ ( ( x ^ y ) v ( ( x v y ) ) ' ) )"
             //"cat ^ [source] Hello World ^ [from] 3;"
-            //Util.readFile("c:/qbql_trunk/qbql/lattice/Partition.prg")
+            Util.readFile("c:/qbql_trunk/qbql/lang/parse/test.prg")
         ;
         long t1 = System.currentTimeMillis();
         List<LexerToken> src =  new Lex().parse(input);
         long t2 = System.currentTimeMillis();
         System.out.println("Lexer time = "+(t2-t1)); 
         LexerToken.print(src);
+        Visual visual = new Visual(src, cyk);
 
         long h = Runtime.getRuntime().totalMemory();
         long hf = Runtime.getRuntime().freeMemory();
@@ -110,7 +108,7 @@ public class CYK {
         System.out.println("mem="+(h-hf)); 
 
         root.printTree();
-        System.out.println("signature="+root.signature(src)); 
+        visual.draw(matrix);
     }
 
     public CYK( Set<RuleTuple> originalRules ) {
@@ -180,6 +178,9 @@ public class CYK {
                 int symbol = symbolIndexes.get("identifier");
                 dependents.addAll(singleRhsRules[symbol]);
             }
+        } else if( token.type == Token.CDATA ) {
+            int symbol = symbolIndexes.get("cdata");
+            dependents.addAll(singleRhsRules[symbol]);
         } else if( token.type == Token.DQUOTED_STRING || token.type == Token.QUOTED_STRING ) {
             int symbol = symbolIndexes.get("string_literal");
             dependents.addAll(singleRhsRules[symbol]);
@@ -190,7 +191,7 @@ public class CYK {
         int[] tmp = new int[dependents.size()];
         int i = 0;
         for( int e : dependents )
-            tmp[i++] = Util.pair(pos, e);
+            tmp[i++] = encode(pos, e);
         ret.put(Util.pair(pos,pos+1), tmp);
     }
     public void initArrayElement(SortedMap<Integer, Set<Integer>> ret, int pos, int symbol) {
@@ -229,10 +230,10 @@ public class CYK {
                     Integer nextX = skipRanges.get(x);
                     if( nextX != null ) {
 
-                        /*if( Visual.skipped!=null )
+                        if( Visual.skipped!=null )
                             for(int i = x; i>nextX; i--)
                                 Visual.skipped[i][y] = true;
-                        */
+                        
                         x = nextX;
                         continue;
                     }
@@ -262,7 +263,7 @@ public class CYK {
                                 continue;
                             List<Integer> B = new LinkedList<Integer>();
                             for( int a : A )
-                                B.add(Util.pair(mid, a));
+                                B.add(encode(mid, a));
                             tmp.addAll(B);
                         }                                                                              
 
@@ -311,7 +312,7 @@ public class CYK {
             return;
         }
         for( int kk : output ) {
-            int k = Util.Y(kk);
+            int k = decodeSymbol(kk);
             if( k == -1 )
                 System.out.print("''"); // (authorized)
             else        
@@ -664,6 +665,17 @@ public class CYK {
     }
 
     //////////////////////// Parse Tree ///////////////////////////
+    private int encode( int pos, int symbol ) {
+        // reorder split symbols so that 
+        // "expr op expr op expr" is left associative
+        return Util.pair(0xffff-pos, symbol);   
+    }
+    private int decodeSymbol( int symbolSplit ) {
+        return Util.Y(symbolSplit);
+    }
+    private int decodeSplit( int symbolSplit ) {
+        return Util.X(0xffff-symbolSplit);
+    }
     /**
      * @param begin
      * @param end
@@ -674,21 +686,22 @@ public class CYK {
     public ParseNode parseInterval( int begin, int end, int symbolSplit,
             Matrix backPtr
     ) {
-        int symbol = Util.Y(symbolSplit);
+        int symbol = decodeSymbol(symbolSplit);
         if( begin+1 == end ) {
             return new ParseNode(begin, end, symbol, symbol, this);
         }
-        int mid = Util.X(symbolSplit);
+        int mid = decodeSplit(symbolSplit);
         int[] pres = backPtr.get(Util.pair(begin,mid));
         if( pres == null )
             return null;
         int[] posts = backPtr.get(Util.pair(mid,end));
         if( posts == null )
             return null;
-        for( int pre : pres ) {
+        //for( int pre : pres ) {
+        for( int pre: pres ) {
             for( int post : posts ) {
-                int s1 = Util.Y(pre);
-                int s2 = Util.Y(post);
+                int s1 = decodeSymbol(pre);
+                int s2 = decodeSymbol(post);
                 Proj p = doubleRhsRules[s1];
                 if( p==null )
                     continue;
@@ -717,7 +730,6 @@ public class CYK {
     }
 
 
-
     /**
      * How to process Parsing Errors:
      * If the parser fails to derive the correct tree, let's
@@ -732,13 +744,7 @@ public class CYK {
             Set<Integer> orderedSms = new TreeSet<Integer>();
             for( int i : sms )
                 orderedSms.add(i);
-//          if(15<len&&len<25)
-            /*for( int sm : sms ) {
-                int symbol = Util.Y(sm);
-                int mid = Util.X(sm);
-                System.out.println(sm+"=<"+CYK.allSymbols[symbol]+","+mid+">");
-        }*/
-            for( int sm : orderedSms ) {
+            for( int sm : sms ) {
                 ret = parseInterval(0,len, sm,backPtr);
                 if( ret != null )
                     return ret;                                 

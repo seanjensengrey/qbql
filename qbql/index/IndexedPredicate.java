@@ -1,6 +1,7 @@
 package qbql.index;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
@@ -197,7 +198,14 @@ public class IndexedPredicate extends Predicate {
                 o = ct.newInstance(arglist);
             } catch( NoSuchMethodException e ) {}
             
-            o = m.invoke(o, args);
+            try {
+                o = m.invoke(o, args);
+            } catch( InvocationTargetException e ) {
+                if( e.getCause() instanceof EmptySetException )
+                    return ret;
+                else
+                    throw e;
+            }
             
             if( o instanceof NamedTuple ) {
                 Object[] retTuple = new Object[header.size()];
