@@ -30,9 +30,9 @@ public class Paths {
     public Relation up_down( String pos ) {
         ParseNode atPos = db.root.locate(Util.X(pos),Util.Y(pos));
         Relation ret = new Relation(new String[]{"down"});
-        for( ParseNode child : atPos.descendants() ) {
-           ret.content.add(new Tuple(new Object[]{"["+child.from+","+child.to+")"}));
-        }
+        if( atPos != null )
+            for( ParseNode child : atPos.descendants() ) 
+                ret.content.add(new Tuple(new Object[]{"["+child.from+","+child.to+")"}));
         return ret;      
     }
 }

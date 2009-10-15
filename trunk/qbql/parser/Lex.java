@@ -8,9 +8,9 @@ import java.util.StringTokenizer;
 
 public class Lex {
 
-    boolean isPercentLineComment = false; // Prover9 comments
-    boolean isQuotedString = false; // Prover9 unary '
-    boolean keepWSandCOMMENTS = false;
+    public boolean isPercentLineComment = false; // Prover9 comments
+    public boolean isQuotedString = false; // Prover9 unary '
+    public boolean keepWSandCOMMENTS = false;
     Map<String, String> specialSymbols = new HashMap<String, String>();
     
     public Lex( boolean isPercentLineComment, 
@@ -47,9 +47,11 @@ public class Lex {
                     last.content = last.content + token;
                 else
                     last.content = "/* ... "; // Speeds up really long comments.
-                // If needed the comment content
-                // then switch last.content to StringBuffer
-                last.end = last.begin + last.content.length();
+                last.end = pos;
+                // Fix the comment
+                if( last != null && last.type == Token.COMMENT && last.content.endsWith("*/") && !last.content.equals("/*/") ) { 
+                    last.content = sourceExpr.substring(last.begin,last.end);
+                }
                 continue;
             }
             if( last != null && last.type == Token.COMMENT && last.content.endsWith("*/") && !last.content.equals("/*/") ) {
@@ -63,27 +65,36 @@ public class Lex {
                 last.end = pos-token.length();
                 last.end = last.begin + last.content.length();
             }
+            if( last != null && last.type == Token.CDATA && !"]".equals(token) ) {
+                last.content = last.content + token;
+                continue;
+            }
+            if( last != null && last.type == Token.CDATA && "]".equals(token) ) {
+                last.end = pos-token.length();
+                last.end = last.begin + last.content.length();
+                token = " ";
+            }
             if( isQuotedString && last != null && last.type == Token.QUOTED_STRING && !"'".equals(token)
                     && !(last.content.endsWith("'")&&last.content.length()>1)) {
-                last.content = last.content + token;
-                last.end = last.begin + last.content.length();
+                //last.content = last.content + token;
+                //last.end = last.begin + last.content.length();
                 continue;
             }
             if( isQuotedString && last != null && last.type == Token.QUOTED_STRING && "'".equals(token) 
                     && !(last.content.endsWith("'")&&last.content.length()>1)) {
-                last.content = last.content + token;
                 last.end = pos;
+                last.content = sourceExpr.substring(last.begin,last.end);
                 continue;
             }
             if( last != null && last.type == Token.DQUOTED_STRING && !"\"".equals(token) 
                     && !(last.content.endsWith("\"")&&last.content.length()>1)) {
-                last.content = last.content + token;
-                last.end = last.begin + last.content.length();
+                //last.content = last.content + token;
+                //last.end = last.begin + last.content.length();
                 continue;
             }
             if( last != null && last.type == Token.DQUOTED_STRING && "\"".equals(token) ) {
-                last.content = last.content + token;
                 last.end = pos;
+                last.content = sourceExpr.substring(last.begin,last.end);
                 continue;
             }
 
@@ -96,6 +107,11 @@ public class Lex {
             if( "-".equals(token) && last != null && "-".equals(last.content) ) {
                 last.content = last.content + token;
                 last.type = Token.LINE_COMMENT;
+                continue;
+            }
+            if( "[".equals(token) && last != null && "cdata".equalsIgnoreCase(last.content) ) {
+                last.content = "";
+                last.type = Token.CDATA;
                 continue;
             }
             if( isPercentLineComment && "%".equals(token) ) {
@@ -123,7 +139,7 @@ public class Lex {
                 // This seems to be a minor bug -- the containing expressions are OK  
                 ret.add(new LexerToken(token, pos-token.length(), pos, Token.DIGITS));
                 continue;
-            } 
+            }
             ret.add(new LexerToken(token, pos-token.length(), pos, Token.IDENTIFIER));      
 
         }
