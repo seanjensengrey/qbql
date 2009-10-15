@@ -1,5 +1,0 @@
-/*Substr =  
-(Cat /^ [from=to] /^ [prefix=_1])
-/^
-(Cat /^ [source=_1] /^ [postfix=fragment]) 
-;*/ 
