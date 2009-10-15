@@ -1,0 +1,65 @@
+-- Relational lattice instance from the Figure 1
+-- http://arxiv1.library.cornell.edu/pdf/0807.3795
+-- Attributes are renamed: x -> p, y -> q, z -> r, because 
+-- elsewhere x, y, and z are relation variables!
+
+A = {<p=1>};		
+
+B = {<p=1>,<p=2>};
+		
+		
+C = {<q=a>};
+		
+D = {<q=a>,<q=b>};
+
+JAC = A ^ C;
+
+JAD = A ^ D;
+
+JBC = B ^ C;
+
+_A = A ^ R00;
+
+_C = C ^ R00;
+
+ADvBC = (A ^ D) v (B ^ C);
+
+-- Additional relations (beyond the scope of Figure 1)
+
+A0 = [p] 0;
+A1 = [p] 2;
+A2 = [p] 0 2;
+A3 = [p] 0 1;
+		
+D0 = [q] b;
+D1 = [q] c;
+D2 = [q] b c;
+D3 = [q] a b c;
+
+F =  [r] 0;
+F_ = [r];
+
+S = {<p=0,r=0>,<p=0,r=1>,<p=1,r=0>};
+S1 = {<p=0,r=0>,<p=1,r=0>};
+S_ = [p r];
+
+U = {<s=c,r=0>,<s=a,r=0>,<s=a,r=1>};
+U_ = U ^ R00; 
+
+V = {<q=c,p=0>,<q=a,p=0>,<q=a,p=1>};
+V_ = [p q]; 
+
+W = {<s=c,t=0>,<s=a,t=0>,<s=a,t=1>}; --  V ~ W.
+W_ = [s t];
+
+W1=[p  s  t]
+    0  a  0
+    1  a  1
+    0  c  0
+; -- V ~ W1.
+
+
+
+SV = S ^ V;
+S1V = S1 ^ V;
+SUV = SV ^ U;

@@ -1,0 +1,112 @@
+People = {
+  <name=max,sex=male>,
+  <name=peter,sex=male>,
+  <name=joe,sex=male>,
+  <name=claire,sex=female>
+};
+
+Pets = {
+  <nickname=folly,specie=dog>,
+  <nickname=scruffy,specie=cat>
+};
+
+Time = {
+  <time=dummy>
+} ^ R00 ;
+
+Fed = {
+  <name=max,nickname=folly,time=200>,
+  <name=claire,nickname=folly,time=200>,
+  <name=max,nickname=folly,time=300>,
+  <name=max,nickname=scruffy,time=200>
+};
+
+Max = {
+  <name=max>
+};
+
+Claire = {
+  <name=claire>
+};
+
+Peter = {
+  <name=peter>
+};
+
+Male = {
+  <sex=male>
+};
+
+
+Folly = {
+  <nickname=folly>
+};
+
+Scruffy = {
+  <nickname=scruffy>
+};
+
+TwoOclock = {
+  <time=200>
+};
+
+ThreeOclock = {
+  <time=300>
+};
+
+
+At = {
+  --<name=max,   location=home,time=100>,
+  --<name=claire,location=home,time=100>,
+  <name=peter,   location=library,   time=200>,
+  <name=max,     location=home,      time=200>,
+  <name=claire,  location=library,   time=200>,
+  <name=max,     location=home,      time=300>,
+  <name=claire,  location=library,   time=300>,
+  <name=max,     location=library,   time=400>,
+  <name=claire,  location=home,      time=400>,
+  <name=max,     location=library,   time=500>,
+  <name=claire,  location=library,   time=500>
+};
+
+Home = {
+  <location=home>
+};
+
+Library = {
+  <location=library>
+};
+
+Parent = {
+  <name=peter,relationship=peterFatherMax>
+};
+
+Child = {
+  <name=max,relationship=peterFatherMax>
+};
+
+Relationship = {
+  <relationship=dummy>
+} ^ R00;
+
+
+Certified = {
+  <name=max,   skill=java>,
+  <name=max,   skill=sql>,
+  <name=peter, skill=java>,
+  <name=peter, skill=html>,
+  <name=claire,skill=java>
+};
+
+Requirements = {
+  <job=appl,skill=java>,
+  <job=appl,skill=sql>,
+  --<job=web, skill=java>,
+  <job=web, skill=html>,
+  <job=teaching, skill=java>
+};
+
+Requirements2 = {
+  <job=entry,skill=java>
+};
+

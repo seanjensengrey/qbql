@@ -1,0 +1,35 @@
+value:       digits
+          |  identifier
+          |  string_literal
+;
+
+equality:    identifier '=' identifier
+          |  identifier '=' value
+;
+
+equalities:  equality
+          |  equality equalities
+;
+
+opentag:     '<' identifier '>'
+          |  '<' identifier equalities '>'
+;
+
+closetag:    '<' '/' identifier '>'
+;
+
+node:        opentag nodes closetag
+          |  opentag '<' '!' '[' cdata ']' '>' closetag
+          |  opentag identifier closetag
+          |  opentag closetag
+;
+
+nodes:       node 
+          |  nodes node
+          |  junk nodes
+;
+
+
+
+junk: '<' '?' 'xml' equalities '?' '>'
+; 
