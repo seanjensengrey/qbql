@@ -15,7 +15,7 @@ import java.util.TreeSet;
 
 import qbql.lattice.Database;
 import qbql.lattice.EqualityPredicate;
-import qbql.lattice.Grammar;
+import qbql.lattice.Program;
 import qbql.lattice.Predicate;
 import qbql.lattice.Relation;
 import qbql.lattice.Tuple;
@@ -108,7 +108,7 @@ public class IndexedPredicate extends Predicate {
     int oper;
     public IndexedPredicate( IndexedPredicate lft, IndexedPredicate rgt, int oper ) {
         super(
-              oper==Grammar.naturalJoin ?
+              oper==Program.naturalJoin ?
               Util.union(lft.colNames,rgt.colNames) :
               Util.symmDiff(lft.colNames,rgt.colNames)
         );       
@@ -151,10 +151,10 @@ public class IndexedPredicate extends Predicate {
 
     
     public static IndexedPredicate join( IndexedPredicate x, IndexedPredicate y ) throws Exception {
-        return new IndexedPredicate(x,y,Grammar.naturalJoin);
+        return new IndexedPredicate(x,y,Program.naturalJoin);
     }
     public static IndexedPredicate setIX( IndexedPredicate x, IndexedPredicate y ) throws Exception {
-        return new IndexedPredicate(x,y,Grammar.setIX);
+        return new IndexedPredicate(x,y,Program.setIX);
     }
     public static Relation join( Relation x, IndexedPredicate y ) throws Exception {
         if( y.lft != null ) {

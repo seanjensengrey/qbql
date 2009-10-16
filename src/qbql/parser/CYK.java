@@ -9,7 +9,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import qbql.lattice.Grammar;
+import qbql.lattice.Program;
 import qbql.util.Util;
 
 
@@ -63,7 +63,7 @@ public class CYK {
     Set<Integer> keywords = new TreeSet<Integer>(); // pure Keywords
 
     public static void main( String[] dummy ) throws Exception {
-        CYK cyk = Grammar.cyk;
+        CYK cyk = Program.cyk;
         cyk.printSelectedChomskiRules("union");          
         final String input =
             //"x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";

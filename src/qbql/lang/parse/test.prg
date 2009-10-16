@@ -49,9 +49,11 @@ Sql = Tokens /^ [txt] sql /^ [pos=down] /^ Links /^ [up=down] /^ Links
 Sql;
 
 SqlItems = Items ^ Paths /^ [down=pos] /^ Sql;
-SqlItems;
+Result = SqlItems;
 
 
 SqlItems ^ Vertical /^ Node;
 --Items ^ Paths /^ [down=pos] ^ Equalities;
 --Items ^ Paths /^ [down=pos] ^ Vars /^ [name]equality;
+
+Result;

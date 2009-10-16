@@ -17,9 +17,8 @@
 
 --(x ^ (y v z)) < ((x + y) * (x + z)).
 
---((x + y) * (x + z)) > ((x ^ y) v (x ^ z)).
+((x + y) * (x + z)) > ((x ^ y) v (x ^ z)).
 
-y < (y v z)^(x + (y * z)).
 /*
 ((x ^ y) v (x ^ z)) v y = ((z ^ x) v y).
 ((x + y) * (x + z)) v y = (((R11 v z) ^ x) v y).

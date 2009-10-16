@@ -95,12 +95,12 @@ public class Database {
                 Relation singleY = new Relation(Y.colNames);
                 singleY.content.add(yi);
                 Relation rgt = Relation.innerUnion(Relation.join(singleY,y),hdrYX);
-                if( type == Grammar.contains && Relation.le(lft, rgt) 
-                 || type == Grammar.transpCont && Relation.ge(lft, rgt)   
-                 || type == Grammar.disjoint && Relation.le(lft, (Relation)complement(rgt)) 
-                 || type == Grammar.almostDisj && Relation.join(lft, rgt).content.size()==1 
-                 || type == Grammar.big && Relation.ge(lft, (Relation)complement(rgt))   
-                 || type == Grammar.setEQ && lft.equals(rgt)
+                if( type == Program.contains && Relation.le(lft, rgt) 
+                 || type == Program.transpCont && Relation.ge(lft, rgt)   
+                 || type == Program.disjoint && Relation.le(lft, (Relation)complement(rgt)) 
+                 || type == Program.almostDisj && Relation.join(lft, rgt).content.size()==1 
+                 || type == Program.big && Relation.ge(lft, (Relation)complement(rgt))   
+                 || type == Program.setEQ && lft.equals(rgt)
                 )
                     ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
                 /*if( type == Grammar.unison && lft.equals(rgt) ) {
@@ -370,21 +370,51 @@ public class Database {
         throw new RuntimeException("Not impl");
     }
     
-    public static void run(String prg, String databaseSrc) throws Exception {
-        List<LexerToken> src =  new Lex().parse(prg);
-        Matrix matrix = Grammar.cyk.initArray1(src);
+    public static Database init( String dbSource ) throws Exception {
+        Database database = new Database("qbql.lang");
+        List<LexerToken> src =  new Lex().parse(dbSource);
+        Matrix matrix = Program.cyk.initArray1(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        Grammar.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = Grammar.cyk.forest(size, matrix);
+        Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
+        ParseNode root = Program.cyk.forest(size, matrix);
+
+        if( root.topLevel != null ) {
+            System.out.println("*** Parse Error in database file ***");
+            CYK.printErrors(dbSource, src, root);
+            throw new Exception("Parse Error");
+        }
+
+        Program dbPrg = new Program(src,database);
+        dbPrg.program(root);
+
+        database.buildR10();
+        database.buildR11();
+
+        // relations that requre complement can be built only after R10 and R11 are defined
+        try {
+            database.addPredicate("UJADJBC'",database.complement((Relation)(database.predicate("UJADJBC"))));
+        } catch( Exception e ) { // NPE if databaseFile is not Figure1.db
+        }
+        return database;
+    }
+    
+    public static Database run( String dbSrc, String prg ) throws Exception {
+        List<LexerToken> src =  new Lex().parse(prg);
+        Matrix matrix = Program.cyk.initArray1(src);
+        int size = matrix.size();
+        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
+        Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
+        ParseNode root = Program.cyk.forest(size, matrix);
 
         if( root.topLevel != null ) {
             System.out.println("*** Parse Error in assertions file ***");
             CYK.printErrors(prg, src, root);
-            return;
+            return null;
         }
 
-        Grammar program = new Grammar(src,databaseSrc); 
+        Database db = init(dbSrc);
+        Program program = new Program(src,db); 
         long t1 = System.currentTimeMillis();
         ParseNode exception = program.program(root);
         long t2 = System.currentTimeMillis();
@@ -392,8 +422,8 @@ public class Database {
         if( exception != null ) {
             System.out.println("*** False Assertion ***");
             System.out.println(prg.substring(src.get(exception.from).begin, src.get(exception.to-1).end));
-            return;
         }
+        return db;
     }
 
 }
