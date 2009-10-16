@@ -7,7 +7,7 @@
 
 	<target name="clean" description="Removes all compiled classes and jar files">
 		<delete dir="${bin.dir}" />
-		<delete dir="${dist.dir}" />
+		<!--delete dir="${dist.dir}" / obstructed svn update--> 
 		<delete dir="${doc.dir}" />
 	</target>
 
