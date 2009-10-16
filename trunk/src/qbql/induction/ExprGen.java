@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
-import qbql.lattice.Grammar;
+import qbql.lattice.Database;
+import qbql.lattice.Program;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
@@ -47,15 +48,15 @@ public class ExprGen {
         
         final Lex lex = new Lex();
         List<LexerToken> src =  lex.parse(goal);
-        Matrix matrix = Grammar.cyk.initArray1(src);
+        Matrix matrix = Program.cyk.initArray1(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        Grammar.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = Grammar.cyk.forest(size, matrix);
+        Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
+        ParseNode root = Program.cyk.forest(size, matrix);
         if( root.topLevel != null )
             throw new Exception("root.topLevel!=null" );     
         
-        Grammar g = new Grammar(lex.parse(goal),Util.readFile(Run.class,"Figure1.db"));
+        Program g = new Program(lex.parse(goal),Database.init(Util.readFile(Run.class,"Figure1.db")));
         Set<String> variables = g.variables(root);
         variables.remove("expr");
         zilliaryOps = new String[variables.size()+constants.length];
@@ -95,17 +96,16 @@ public class ExprGen {
                                         
                     String input = subgoal + n.toString() +".";
                     src =  lex.parse(input);
-                    matrix = Grammar.cyk.initArray1(src);
+                    matrix = Program.cyk.initArray1(src);
                     size = matrix.size();
                     skipRanges = new TreeMap<Integer,Integer>();
-                    Grammar.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-                    root = Grammar.cyk.forest(size, matrix);
+                    Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
+                    root = Program.cyk.forest(size, matrix);
                     if( root.topLevel != null )
                         throw new Exception("root.topLevel!=null" );     
                     
                     final long t2 = System.currentTimeMillis();
                     
-                    g.src = src;
                     ParseNode eval = g.assertion(root, false);
                     evalTime += System.currentTimeMillis()-t2;
                     if( eval != null )

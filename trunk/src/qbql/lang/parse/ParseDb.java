@@ -5,7 +5,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import qbql.lattice.Database;
-import qbql.lattice.Grammar;
+import qbql.lattice.Program;
+import qbql.lattice.Relation;
 import qbql.parser.BNFGrammar;
 import qbql.parser.CYK;
 import qbql.parser.Lex;
@@ -21,7 +22,7 @@ public class ParseDb extends Database {
     CYK cyk;    
     int node;
     
-    public ParseDb( String pkg ) {
+    public ParseDb( String pkg, String db ) {
         super(pkg);
         try {
             cyk = new CYK(myGrammarRules()) {
@@ -31,8 +32,7 @@ public class ParseDb extends Database {
             };  
             node = cyk.symbolIndexes.get("node");
             
-            final String input = Util.readFile(ParseDb.class,"test.db");
-            src =  new Lex().parse(input);
+            src =  new Lex().parse(db);
             LexerToken.print(src);
 
             Matrix matrix = cyk.initArray1(src);
@@ -47,31 +47,43 @@ public class ParseDb extends Database {
         }
     }
         
-    public static void main( String[] args ) throws Exception {               
+    public static void main( String[] args ) throws Exception {
+        final String db = Util.readFile(ParseDb.class,"test.db");
+        final String prg = Util.readFile(ParseDb.class,"test.prg");
+        run(db,prg);
+    }
+    
+    public static ParseDb run( String database, String prg ) throws Exception {
         
         StackTraceElement[] stack = new Throwable().getStackTrace();
         String createdInClass = stack[0].getClassName();
         String pkg = createdInClass.substring(0,createdInClass.lastIndexOf('.'));
-        ParseDb db = new ParseDb(pkg);
+        ParseDb db = new ParseDb(pkg,database);
         
         // program
-        String prg = Util.readFile(ParseDb.class,"test.prg");
         List<LexerToken> src =  new Lex().parse(prg);
-        Matrix matrix = Grammar.cyk.initArray1(src);
+        Matrix matrix = Program.cyk.initArray1(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        Grammar.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = Grammar.cyk.forest(size, matrix);
+        Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
+        ParseNode root = Program.cyk.forest(size, matrix);
 
         if( root.topLevel != null ) {
             System.out.println("*** Parse Error in assertions file ***");
             CYK.printErrors(prg, src, root);
-            return;
+            return null;
         }
         System.out.println("-------------------------------------");
 
-        Grammar program = new Grammar(src,db); 
+        Program program = new Program(src,db); 
         ParseNode exception = program.program(root);
+        if( exception != null ) {
+            System.out.println("*** False Assertion ***");
+            System.out.println(prg.substring(src.get(exception.from).begin, src.get(exception.to-1).end));
+        }
+        
+        //Relation result = (Relation)db.predicate("Result");
+        return db;
     }
 
     private static Set<RuleTuple> myGrammarRules() throws Exception {

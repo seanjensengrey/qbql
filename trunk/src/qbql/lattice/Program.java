@@ -21,7 +21,7 @@ import qbql.parser.RuleTuple;
 import qbql.parser.Token;
 import qbql.util.Util;
 
-public class Grammar {
+public class Program {
 
     public static void main( String[] args ) throws Exception {
         Set<RuleTuple> rules = latticeRules();
@@ -138,7 +138,7 @@ public class Grammar {
     }
     
     private static Set<RuleTuple> latticeRules() throws Exception {
-        String input = Util.readFile(Grammar.class, "lattice.grammar");
+        String input = Util.readFile(Program.class, "lattice.grammar");
         HashMap<String, String> specialSymbols = new HashMap<String, String>();
         specialSymbols.put("qtSymbol", "'");
         List<LexerToken> src = new Lex(
@@ -152,42 +152,11 @@ public class Grammar {
     
     //--------------------------------------------------------------------------
     
-    public List<LexerToken> src;
-    public Database database = new Database("qbql.lang");
-    public Grammar( List<LexerToken> program, String dbSource ) throws Exception {
-        initDatabase(dbSource);
-
-        this.src = program;
-    }
-    public Grammar( List<LexerToken> program, Database db ) {
+    private List<LexerToken> src;
+    public Database database;
+    public Program( List<LexerToken> program, Database db ) {
         this.src = program;
         this.database = db;
-    }
-
-    private void initDatabase( String dbSource ) throws Exception {
-        this.src =  new Lex().parse(dbSource);
-        Matrix matrix = Grammar.cyk.initArray1(src);
-        int size = matrix.size();
-        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        Grammar.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = Grammar.cyk.forest(size, matrix);
-
-        if( root.topLevel != null ) {
-            System.out.println("*** Parse Error in database file ***");
-            CYK.printErrors(dbSource, src, root);
-            throw new Exception("Parse Error");
-        }
-
-        database(root);
-
-        database.buildR10();
-        database.buildR11();
-
-        // relations that requre complement can be built only after R10 and R11 are defined
-        try {
-            database.addPredicate("UJADJBC'",database.complement((Relation)(database.predicate("UJADJBC"))));
-        } catch( Exception e ) { // NPE if databaseFile is not Figure1.db
-        }
     }
 
     public boolean bool( ParseNode root ) throws Exception {
@@ -443,17 +412,6 @@ public class Grammar {
     }
 
 
-    public void database( ParseNode root ) throws Exception {
-        if( root.contains(assignment) )
-            createPredicate(root);
-        else
-            for( ParseNode child : root.children() ) {                              
-                if( child.contains(assignment) )
-                    createPredicate(child);
-                else 
-                    database(child);
-            }
-    }
     public void createPredicate( ParseNode root ) throws Exception {
         String left = null;
         Predicate right = null;
