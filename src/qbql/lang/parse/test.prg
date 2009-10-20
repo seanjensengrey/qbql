@@ -48,11 +48,20 @@ Sql = Tokens /^ [txt] sql /^ [pos=down] /^ Links /^ [up=down] /^ Links
 ^ Tokens;
 Sql;
 
-SqlItems = Items ^ Paths /^ [down=pos] /^ Sql;
-Result = SqlItems;
+Title = Tokens /^ [txt]title /^ [pos=down] /^ Links /^ [up=down] /^ Links 
+/^ Paths /^ [pos=down]  
+^ Vars /^ [name]cdata
+^ Tokens;
+Title;
+
+TitleItems = Items ^ Paths /^ [down=pos] /^ Title /^ [txt=title];
+TitleItems;
+
+SqlItems = Items ^ Paths /^ [down=pos] /^ Sql /^ [txt=sql];
+SqlItems;
 
 
-SqlItems ^ Vertical /^ Node;
+Result = TitleItems ^ SqlItems ^ Vertical /^ Node;
 --Items ^ Paths /^ [down=pos] ^ Equalities;
 --Items ^ Paths /^ [down=pos] ^ Vars /^ [name]equality;
 

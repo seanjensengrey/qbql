@@ -64,8 +64,23 @@ public class EqualityPredicate extends Predicate {
             colX = y.colY;
             colY = y.colX;
         }
-        if( colX == null || colY == null )
+        if( colX == null || colY == null ) {
+            if( hdrX.contains(y.colX) && hdrX.contains(y.colY) ) {
+                colX = y.colX;
+                colY = y.colY;
+                String[] header = new String[x.colNames.length];
+                System.arraycopy(x.colNames, 0, header, 0, x.colNames.length);
+                Relation ret = new Relation(header);
+                for( Tuple t : x.content ) 
+                    if( t.data[x.header.get(colX)].equals(t.data[x.header.get(colY)]) ) {
+                        Object[] o = new Object[x.colNames.length];
+                        System.arraycopy(t.data, 0, o, 0, x.colNames.length);
+                        ret.content.add(new Tuple(o));
+                    }
+                return ret;
+            } 
             throw new AssertionError("Equality column doesn't match relation");
+        }
         String[] header = new String[x.colNames.length+1];
         System.arraycopy(x.colNames, 0, header, 0, x.colNames.length);
         header[x.colNames.length] = colY;
