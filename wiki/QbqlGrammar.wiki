@@ -1,1 +1,6 @@
+#summary Link to the source defining QBQL grammar.
+
+----
+
+
 http://code.google.com/p/qbql/source/browse/trunk/src/qbql/lattice/lattice.grammar
