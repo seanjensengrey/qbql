@@ -6,9 +6,9 @@
 QBQL is written in java. Therefore, until QBQL elevates to more sophisticated interface, the only way to get it running is to install _Eclipse_, _Subversion_ plugin, and then check out the source from _google_ _code_ svn. All these steps are standard and are documented elsewhere.
 
 Before proceeding to the next section (which is written in cookbook style) a reader is advised to read QBQL introductory articles 
-* [http://vadimtropashko.wordpress.com/relational-programming-with-qbql/ Part 1]
-* [http://vadimtropashko.wordpress.com/relational-programming-with-qbql/manipulating-strings-in-qbql/ Part 2]
-* [http://vadimtropashko.wordpress.com/relational-programming-with-qbql/aggregation-and-set-joins/ Part 3]
+ * [http://vadimtropashko.wordpress.com/relational-programming-with-qbql/ Part 1]
+ * [http://vadimtropashko.wordpress.com/relational-programming-with-qbql/manipulating-strings-in-qbql/ Part 2]
+ * [http://vadimtropashko.wordpress.com/relational-programming-with-qbql/aggregation-and-set-joins/ Part 3]
 
 == Database ==
 
@@ -101,7 +101,7 @@ The name of the assertions text file is hard coded in the beginning of `Database
 
 == Run the program ==
 
-Now you are set. Just run the Database.main() and watch the console output. If the database satisfies all the assertions then the expected output is
+Now you are set. Just run the Run.main() and watch the console output. If the database satisfies all the assertions then the expected output is
 
 `All Assertions are OK`
 
