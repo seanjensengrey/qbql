@@ -3,7 +3,7 @@
 ----
 == Programmatic Environment ==
 
-QBQL is written in java. Therefore, until QBQL elevates to more sophisticated interface, the only way to get it running is to install _Eclipse_, _Subversion_ plugin, and then check out the source from _google_ _code_ svn. All these steps are standard and are documented elsewhere.
+QBQL is implemented in java. Therefore, until QBQL elevates to more sophisticated interface, the only way to get it running is to install _Eclipse_, _Subversion_ plugin, and then check out the source from _google_ _code_ svn. All these steps are standard and are documented elsewhere.
 
 Before proceeding to the next section (which is written in cookbook style) a reader is advised to read QBQL introductory articles 
  * [http://vadimtropashko.wordpress.com/relational-programming-with-qbql/ Part 1]
@@ -66,7 +66,7 @@ After definining several relations, you may build new relations from the existin
 
 Watch out for *pitfalls*. Predefined relation constants `R00`, `R01` are database independent and, therefore are calculated before database creation. `R10` and `R11`, however, are infinite relations, which makes them impossible to implement as sets of tuples. Yet, for any given database instance there are finite incarnations of `R10`, `R11` which satisfy all RL axioms. Consequently, `R10` and `R11` are not defined until the very last base relation is added to the database. In other words, you can use `R00`, `R01` in relational expression within database definition file, but not `R10` and `R11`. Likewise, outer union and complement leverage the `R11` definition and, therefore, can't be used in the database definition file.  
 
-The name of the database definition text file is hard coded in the beginning of `Database.java` file. 
+The name of the database definition text file is hard coded in the beginning of `Run.java` file. 
 
 == Assertions/Program ==
  
@@ -97,7 +97,7 @@ claims the following propositions
 "A is smaller than D"
 }}}
 
-The name of the assertions text file is hard coded in the beginning of `Database.java`.
+The name of the assertions text file is hard coded in the beginning of `Run.java`.
 
 == Run the program ==
 
