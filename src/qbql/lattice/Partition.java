@@ -33,14 +33,14 @@ public class Partition implements Comparable<Partition> {
     }
     
     public Partition( Relation r, Relation attributes, Database db ) {
-        //Relation projection = Relation.innerUnion(relvar, attributes);
-        Relation rjR11 = Relation.join(r, db.R11);
+        //Relation rjR11 = Relation.join(r, db.R11);
+        Relation relVar = r;
         Map<Tuple, Integer> indexes = new HashMap<Tuple, Integer>(); 
-        for( Tuple t1 : rjR11.content )
-            for( Tuple t2 : rjR11.content ) {
+        for( Tuple t1 : relVar.content )
+            for( Tuple t2 : relVar.content ) {
                 boolean equals = true;
                 for( String attr : attributes.colNames ) {
-                    Integer pos = rjR11.header.get(attr);
+                    Integer pos = relVar.header.get(attr);
                     if( pos == null )
                         continue;
                     if( !t1.data[pos].equals(t2.data[pos]) ) {

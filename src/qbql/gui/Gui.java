@@ -6,6 +6,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
@@ -23,6 +24,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import qbql.lattice.Database;
+import qbql.lattice.Program;
+import qbql.parser.BNFGrammar;
 import qbql.parser.CYK;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
@@ -52,10 +55,11 @@ public class Gui {
                 nodes(child, src, contentPane);
             else if( child.contains(digits) ) {
                 int width = Integer.valueOf(child.content(src));
-                GroupLayout layout = new GroupLayout(contentPane);
+                //GroupLayout layout = new GroupLayout(contentPane);
+                GridLayout layout = new GridLayout(0,width);
                 contentPane.setLayout(layout);
-                layout.setAutoCreateGaps(true);
-                layout.setAutoCreateContainerGaps(true);
+                //layout.setAutoCreateGaps(true);
+                //layout.setAutoCreateContainerGaps(true);
             }
         }
     }
@@ -97,6 +101,9 @@ public class Gui {
             if( child.contains(identifier) ) {
                 label = child.content(src);
             }
+            if( child.contains(string_literal) ) {
+                label = child.content(src).substring(1,child.content(src).length()-1);
+            }
         }
         b.setText(label);
         contentPane.add(b);
@@ -113,8 +120,8 @@ public class Gui {
         JPanel p = new JPanel();
         p.add(label);
         p.add(input);
-        //GridLayout tblLayout = new GridLayout(0,2);
-        //p.setLayout(tblLayout);
+        GridLayout tblLayout = new GridLayout(0,2);
+        p.setLayout(tblLayout);
         contentPane.add(p);
     }
     private void codeArea( ParseNode root, List<LexerToken> src, Container contentPane ) {
@@ -135,46 +142,37 @@ public class Gui {
         contentPane.add(Box.createRigidArea(new Dimension(width,width)));
     }
     /////////////////////////GRAMMAR//////////////////////////
-    private static Set<RuleTuple> guiRules() {
-        Set<RuleTuple> ret = new TreeSet<RuleTuple>();
-        ret.add(new RuleTuple("node", new String[] {"grid"}));
-        ret.add(new RuleTuple("node", new String[] {"widget"}));
-        ret.add(new RuleTuple("nodes", new String[] {"nodes","','","node"}));
-        ret.add(new RuleTuple("nodes", new String[] {"node"}));
-        //------------------------------------------------------
-        ret.add(new RuleTuple("widget", new String[] {"button"}));
-        ret.add(new RuleTuple("button", new String[] {"'button'", "identifier"}));
-        ret.add(new RuleTuple("widget", new String[] {"input"}));
-        ret.add(new RuleTuple("input", new String[] {"'input'", "identifier"}));
-        ret.add(new RuleTuple("widget", new String[] {"codeArea"}));
-        ret.add(new RuleTuple("codeArea", new String[] {"'codeArea'", "identifier"}));
-        ret.add(new RuleTuple("widget", new String[] {"padding"}));
-        ret.add(new RuleTuple("padding", new String[] {"'['","']'"}));
-        ret.add(new RuleTuple("padding", new String[] {"'['","digits", "']'"}));
-        //----------------------------------------------------------------
-        ret.add(new RuleTuple("grid", new String[] {"'('","nodes","')'","'/'","digits"}));
-        ret.add(new RuleTuple("grid", new String[] {"'('","nodes","')'"}));
-        return ret;
+    private static Set<RuleTuple> guiRules() throws Exception {
+        String input = Util.readFile(Gui.class, "gui.grammar");
+        HashMap<String, String> specialSymbols = new HashMap<String, String>();
+        List<LexerToken> src = new Lex(
+                      true, true, false,
+                      specialSymbols                 
+        ).parse(input);
+        //LexerToken.print(src);
+        ParseNode root = BNFGrammar.parseGrammarFile(src, input);
+        return BNFGrammar.grammar(root, src);
     }
     
-    static CYK cyk = new CYK(guiRules()) {
-        public int[] atomicSymbols() {
-            return new int[] {};
-        }
-    };
+    static CYK cyk = null; 
     static int grid;
     static int node;
     static int nodes;
     static int digits;
     static int widget;
     static int identifier;
+    static int string_literal;
     static int button;
     static int input;
     static int codeArea;
     static int padding;
     static {
         try {
-            grid = cyk.symbolIndexes.get("grid");
+            cyk = new CYK(guiRules()) {
+                public int[] atomicSymbols() {
+                    return new int[] {};
+                }
+            };            grid = cyk.symbolIndexes.get("grid");
             node = cyk.symbolIndexes.get("node");
             nodes = cyk.symbolIndexes.get("nodes");
             digits = cyk.symbolIndexes.get("digits");
@@ -184,6 +182,7 @@ public class Gui {
             codeArea = cyk.symbolIndexes.get("codeArea");
             padding = cyk.symbolIndexes.get("padding");
             identifier = cyk.symbolIndexes.get("identifier");
+            string_literal = cyk.symbolIndexes.get("string_literal");
         } catch( Exception e ) {
             e.printStackTrace();
         }
@@ -195,6 +194,7 @@ public class Gui {
         String guiCode = Util.readFile(model.getClass(),path+"test.gui");
 
         List<LexerToken> src =  new Lex().parse(guiCode);
+        //LexerToken.print(src);
         Matrix matrix = cyk.initArray1(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();

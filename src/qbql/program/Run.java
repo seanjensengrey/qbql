@@ -10,12 +10,13 @@ public class Run {
         //String prg = Util.readFile(Run.class,"strings.prg");
         //String db = Util.readFile(Run.class,"Sims.db");
         //String prg = Util.readFile(Run.class,"Sims.assertions");
+        String prg = Util.readFile(Run.class,"mereologic.prg");
         //String db = Util.readFile(Run.class,"Wittgenstein.db");
         //String prg = Util.readFile(Run.class,"Wittgenstein.assertions");
-        //String db = Util.readFile(Run.class,"Figure1.db");
+        String db = Util.readFile(Run.class,"Figure1.db");
         //String prg = Util.readFile(Run.class,"Figure1.prg");
-        String db = Util.readFile(Run.class,"sets.db");
-        String prg = Util.readFile(Run.class,"sets.prg");
+        //String db = Util.readFile(Run.class,"sets.db");
+        //String prg = Util.readFile(Run.class,"sets.prg");
         Database.run(db, prg);    
     }
 
