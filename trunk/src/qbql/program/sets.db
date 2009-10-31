@@ -48,7 +48,9 @@ BiCircular = [m     _s]
 ;
 Sets = ABC v AB v A v B v C v BC v _A_ v _AB_ v _A_AB_ v A_AB_ v Circular v BiCircular;
 
+EmptySet = [_s] "{}";
+
 -- to build R11 correctly:
-S1=Sets v [_s] /^ [_s=s1];
---S2=Sets v [_s] /^ [_s=s2];
+S1=(Sets v EmptySet) /^ [_s=s1];
+--S2=(Sets v EmptySet) /^ [_s=s2];
 --M1=Sets v [m] /^ [m=m1];
