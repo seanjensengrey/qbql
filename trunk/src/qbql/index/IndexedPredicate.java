@@ -57,23 +57,11 @@ public class IndexedPredicate extends Predicate {
         return ret;
     }
     
-    public void renameInPlace( String from, String to ) throws Exception {
-        if( lft != null && lft.header.containsKey(from) )
-            lft.renameInPlace(from, to);
-        if( rgt != null && rgt.header.containsKey(from) )
-            rgt.renameInPlace(from, to);
-            
-        if( from.equals(to) )
-            return;
-        int colFrom = header.get(from);
-        Integer colTo = header.get(to);
-        if( colTo == null ) {
-            colNames[colFrom] = to;
-            header.remove(from);
-            header.put(to, colFrom);
-            renamed.put(to, from);
-        } else
-            throw new Exception("Column collision");
+    public void renameInPlace( String from, String to ) {
+        
+        super.renameInPlace(from, to);
+        
+        renamed.put(to, from);
     }
 
     private Database db = null;
@@ -92,33 +80,13 @@ public class IndexedPredicate extends Predicate {
             pos++;
         }          
     }
-    public IndexedPredicate( IndexedPredicate ip ) throws Exception {
+    public IndexedPredicate( IndexedPredicate ip ) {
         super(Util.clone(ip.colNames)); 
         this.db = ip.db;
         implementation = ip.implementation;
-        if( ip.lft != null )
-            lft = new IndexedPredicate(ip.lft);
-        if( ip.rgt != null )
-            rgt = new IndexedPredicate(ip.rgt);
         renamed = (HashMap<String, String>) ip.renamed.clone();
     }
 
-    IndexedPredicate lft = null;
-    IndexedPredicate rgt;
-    int oper;
-    public IndexedPredicate( IndexedPredicate lft, IndexedPredicate rgt, int oper ) {
-        super(
-              oper==Program.naturalJoin ?
-              Util.union(lft.colNames,rgt.colNames) :
-              Util.symmDiff(lft.colNames,rgt.colNames)
-        );       
-        Set<String> header = new TreeSet<String>();
-        header.addAll(lft.header.keySet());
-        header.addAll(rgt.header.keySet());               
-        this.lft = lft;
-        this.rgt = rgt;
-        this.oper = oper;
-    }
     
     private Set<Method> methods() {
         Set<Method> ret = new HashSet<Method>();
@@ -150,24 +118,7 @@ public class IndexedPredicate extends Predicate {
     }
 
     
-    public static IndexedPredicate join( IndexedPredicate x, IndexedPredicate y ) throws Exception {
-        return new IndexedPredicate(x,y,Program.naturalJoin);
-    }
-    public static IndexedPredicate setIX( IndexedPredicate x, IndexedPredicate y ) throws Exception {
-        return new IndexedPredicate(x,y,Program.setIX);
-    }
     public static Relation join( Relation x, IndexedPredicate y ) throws Exception {
-        if( y.lft != null ) {
-            Relation ret = null;
-            try {
-                ret = join(join(x,y.lft),y.rgt);
-            } catch( AssertionError e ) {
-                ret = join(join(x,y.rgt),y.lft);
-            }
-            if( ret.header.size() != y.header.size() )
-                return Relation.innerUnion(ret, new Relation(y.colNames));
-            return ret;
-        }
         Set<String> header = new TreeSet<String>();
         header.addAll(x.header.keySet());
         header.addAll(y.header.keySet());               
@@ -321,6 +272,10 @@ public class IndexedPredicate extends Predicate {
             ret = Relation.innerUnion(ret, Relation.join(singleX, singleY)); 
         }        
         return ret;      
+    }
+
+    protected IndexedPredicate clone() {
+        return new IndexedPredicate(this);
     }
 
 }

@@ -121,6 +121,7 @@ unnamedJoin:  expr '^' '~' expr
 unnamedMeet:  expr 'v' '~' expr
 ;
 value:       digits
+          |  '-' digits
           |  identifier
           |  string_literal
 ;

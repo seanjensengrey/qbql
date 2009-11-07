@@ -1,6 +1,6 @@
-
-Cat ^ [source] "Hello World";
 /*
+Cat ^ [source] "Hello World";
+
 Cat ^ [source from] Hello 3;
 
 Cat ^ [source] Hello World ^ [from] 3;
@@ -13,29 +13,52 @@ Cat ^ [] = [from  prefix  postfix   source].
 ~
 Cat ^ [source] Hello World ^ [from] 3
 .
+*/
 
+Substr =
+(Cat /^ [from=to] /^ [prefix=_1])
+/^
+(Cat /^ [source=_1] /^ [postfix=fragment])
+;
+Substr^[]=[fragment  from  postfix  prefix  source  to].
 
-
-Substr;
-
-(Substr ^ [source] Hello World ^ [from to] 1 3) v [fragment];
-
-(Substr ^ [source] Hello World ^ [fragment] "o" l) v [from fragment];
-
+(Substr ^ [source] Hello World ^ [from to] 1 3) v [fragment]=[fragment]
+                                                   el
+                                                   or
+.
+(Substr ^ [source] Hello World ^ [fragment] "o" l) v [from fragment]=[fragment  from]
+                                                           l  2
+                                                           l  3
+                                                           o  1
+                                                           o  4
+.
 
 Substr1 = (Substr /^ [source=src1] /^ [from=from1]) v [src1 from1 fragment];
 Substr2 = (Substr /^ [source=src2] /^ [from=from2]) v [src2 from2 fragment];
+Substr1^[]=[src1 from1 fragment].
+Substr2^[]=[src2 from2 fragment].
+
 ((Substr1 ^ [src1] Hello) ^ (Substr2 ^ [src2] World) ^ ([fragment]"")') 
-v [from1 from2 fragment];
+v [from1 from2 fragment]=[fragment  from1  from2]
+                          l  2  3
+                          l  3  3
+                          o  4  1
+.
+
 
 HelloFgmts = ([from=from1] /^ Substr /^ [source] Hello) v [from1 fragment];
-WorldFgmts = ((Substr /^ [source] World) /^ [from=from2]) v [from2 fragment];
-HelloFgmts ^ WorldFgmts ^ ([fragment]"")';
+WorldFgmts = ([source] World /^ Substr /^ [from=from2]) v [from2 fragment];
+HelloFgmts ^ WorldFgmts ^ ([fragment]"")'=[fragment  from1  from2]
+                                       l  2  3
+                                       l  3  3
+                                       o  4  1
+.
 
 SubstrSrc = (Substr /^ [source] "Hello World" /^ [fragment]o) v [prefix postfix];
-(Substr /^ SubstrSrc /^ [fragment]"***") v [source] ;
+SubstrSrc;
+(Substr /^ (SubstrSrc /^ [fragment]"***")) v [source] ;
 
-
+/*
 
 Sum /= [summands] 1 2 3 4;
 
@@ -68,4 +91,19 @@ Dept = [DEPTNO DNAME LOC]
 MySum = Sum /^ [result=sum];
 
 ((Emp v [DEPTNO SAL]) /^ [SAL=summands]) /= MySum;
+
+(Emp v [ENAME SAL]) /^ [SAL=x] /^ [y]10000 /^Plus;
+
+(Emp v [ENAME SAL]) ^ [SAL=lft] /^ [rgt]1000 /^ LE;
 */
+Neg = Plus /^ [z]0;
+--Positive = LE /^ [rgt]0 /^ [lft=x];
+
+--Abs = ([x=abs] v ([z]0 /^ Plus /^ [y=abs])) ^ LE /^ [rgt]0 /^ [lft=abs];
+
+--[x] 1 -1 0 ^ Abs;
+
+R = [x] 1 -3 0 ^ [x=rgt] ^ [lft]0 /^ LE ^ [x=abs]; 
+R;
+R = [x] 1 -3 0 ^ [z]0 ^ Plus ^ [y=rgt] ^ [lft]0 /^ LE /^ [y=abs]; 
+R;
