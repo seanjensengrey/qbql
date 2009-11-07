@@ -1,6 +1,5 @@
 package qbql.lattice;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -15,7 +14,6 @@ import qbql.parser.BNFGrammar;
 import qbql.parser.CYK;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
-import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.parser.RuleTuple;
 import qbql.parser.Token;
@@ -37,7 +35,7 @@ public class Program {
     static int outerUnion;
     static int unnamedJoin;
     static int unnamedMeet;
-    public static int setIX;
+    static int setIX;
     static int setEQ;
     static int contains;
     static int transpCont;
@@ -152,14 +150,14 @@ public class Program {
     
     //--------------------------------------------------------------------------
     
-    private List<LexerToken> src;
+    public List<LexerToken> src;
     public Database database;
     public Program( List<LexerToken> program, Database db ) {
         this.src = program;
         this.database = db;
     }
 
-    public boolean bool( ParseNode root ) throws Exception {
+    private boolean bool( ParseNode root ) throws Exception {
         for( ParseNode child : root.children() ) 
             if( child.contains(expr) || child.contains(partition) )
                 return atomicProposition(root);
@@ -168,7 +166,7 @@ public class Program {
         throw new Exception("Impossible exception, no children??"+root.content(src));
     }
 
-    public boolean logical( ParseNode root ) throws Exception {
+    private boolean logical( ParseNode root ) throws Exception {
         Boolean left = null;
         Boolean right = null;
         int oper = -1;
@@ -203,7 +201,7 @@ public class Program {
         throw new Exception("Unknown boolean operation "+oper);
     }
 
-    public boolean atomicProposition( ParseNode root ) throws Exception {
+    private boolean atomicProposition( ParseNode root ) throws Exception {
         for( ParseNode child : root.children() ) {
             if( child.contains(partition) )
                 return partitionProposition(root);
@@ -238,7 +236,7 @@ public class Program {
 
         throw new Exception("Impossible case");             
     }
-    public boolean relationalProposition( ParseNode root ) throws Exception {
+    private boolean relationalProposition( ParseNode root ) throws Exception {
         int oper = -1;
         Predicate left = null;
         Predicate right = null;
@@ -279,7 +277,7 @@ public class Program {
             throw new Exception("Impossible case");             
     }
 
-    public ParseNode implication( ParseNode root ) throws Exception {
+    private ParseNode implication( ParseNode root ) throws Exception {
         ParseNode left = null;
         ParseNode right = null;
         boolean impl = false;
@@ -375,7 +373,7 @@ public class Program {
         return variables;
     }
 
-    public ParseNode query( ParseNode root ) throws Exception {
+    private ParseNode query( ParseNode root ) throws Exception {
         for( ParseNode child : root.children() ) {
             if( child.contains(partition) ) {
                 System.out.println(child.content(src)+"="+partition(child).toString()+";");
@@ -412,7 +410,7 @@ public class Program {
     }
 
 
-    public void createPredicate( ParseNode root ) throws Exception {
+    private void createPredicate( ParseNode root ) throws Exception {
         String left = null;
         Predicate right = null;
         for( ParseNode child : root.children() ) {
@@ -427,7 +425,7 @@ public class Program {
         }
         database.addPredicate(left, right);
     }
-    public Predicate expr( ParseNode root ) throws Exception {
+    private Predicate expr( ParseNode root ) throws Exception {
         if( root.contains(relation) ) {
             for( ParseNode child : root.children() ) {
                 if( child.contains(tuples) )
@@ -518,7 +516,7 @@ public class Program {
         }
     }
     
-    public Predicate binaryOper( ParseNode root, int oper ) throws Exception  {
+    private Predicate binaryOper( ParseNode root, int oper ) throws Exception  {
         Predicate left = null;
         Predicate right = null;
         for( ParseNode child : root.children() ) {
@@ -558,7 +556,7 @@ public class Program {
             return database.quantifier((Relation)left,(Relation)right,big);
         throw new Exception("Unknown case");
     }
-    public Predicate unaryOper( ParseNode root, int oper ) throws Exception  {
+    private Predicate unaryOper( ParseNode root, int oper ) throws Exception  {
         for( ParseNode child : root.children() ) {
             Relation rel = (Relation)expr(child);
             if( oper == complement )
@@ -583,7 +581,7 @@ public class Program {
     }
 
             
-    public Partition partition( ParseNode root ) throws Exception {
+    private Partition partition( ParseNode root ) throws Exception {
         boolean parenthesis = false;
         for( ParseNode child : root.children() ) {
             if( child.contains(openParen) ) {
@@ -636,7 +634,7 @@ public class Program {
     }
 
     
-    public Relation tuples( ParseNode root ) throws Exception {
+    private Relation tuples( ParseNode root ) throws Exception {
         Set<String> attrs = new TreeSet<String>();
         for( ParseNode descendant: root.descendants() )
             if( descendant.contains(attribute) )
@@ -674,7 +672,7 @@ public class Program {
             else if( child.contains(values) )
                 values(tuple,child);
     }
-    public void value( Map<String,Object> tuple, ParseNode root ) {
+    private void value( Map<String,Object> tuple, ParseNode root ) {
         String left = null;
         Object right = null;
         for( ParseNode child : root.children() ) {
@@ -694,7 +692,7 @@ public class Program {
         tuple.put(left, right);
     }
 
-    List<String> strings( ParseNode root ) throws Exception {
+    private List<String> strings( ParseNode root ) throws Exception {
         List<String> ret = new LinkedList<String>();
         if( root.from + 1 == root.to && src.get(root.from).type == Token.IDENTIFIER )
             ret.add(root.content(src));
@@ -705,11 +703,12 @@ public class Program {
                 ret.addAll(strings(child));
         return ret;
     }   
-    List<Object> values( ParseNode root ) throws Exception {
+    private List<Object> values( ParseNode root ) throws Exception {
         List<Object> ret = new LinkedList<Object>();
         if( root.from + 1 == root.to && src.get(root.from).type == Token.IDENTIFIER )
             ret.add(root.content(src));
-        else if( root.from + 1 == root.to && src.get(root.from).type == Token.DIGITS )
+        else if( root.from + 1 == root.to && src.get(root.from).type == Token.DIGITS  
+            ||   root.from + 2 == root.to && "-".equals(src.get(root.from).content) && src.get(root.from+1).type == Token.DIGITS )
             ret.add(Integer.parseInt(root.content(src)));
         else if( root.from + 1 == root.to && src.get(root.from).type == Token.DQUOTED_STRING )
             ret.add(root.content(src).substring(1,root.content(src).length()-1));
@@ -718,7 +717,7 @@ public class Program {
                 ret.addAll(values(child));
         return ret;
     }   
-    void addContent( Relation ret, ParseNode root ) throws Exception {
+    private void addContent( Relation ret, ParseNode root ) throws Exception {
         int i = 0;
         Object[] t = new Object[ret.colNames.length];
         for( Object elem : values(root) ) {

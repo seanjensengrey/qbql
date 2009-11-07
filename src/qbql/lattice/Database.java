@@ -35,9 +35,9 @@ public class Database {
         return ret.toArray(new String[0]);
     }       
     
-    static Relation R00 = new Relation(new String[]{});
+    public static Relation R00 = new Relation(new String[]{});
     Relation R11;
-    static Relation R01 = new Relation(new String[]{});
+    public static Relation R01 = new Relation(new String[]{});
     Predicate R10;
 
     static {
@@ -129,9 +129,9 @@ public class Database {
                 Relation a = Relation.innerUnion(R11,new Relation(new String[]{arg}));
                 isFinite = 0 < a.content.size() & R11.header.keySet().contains(arg);
                 finiteDomains.put(arg, isFinite);
-                if( !isFinite )
-                    return new ComplementPredicate(x);
             }
+            if( !isFinite )
+                return new ComplementPredicate(x);
         }
         
         Relation xvR11 = Relation.innerUnion(x, R11);

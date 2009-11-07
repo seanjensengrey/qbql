@@ -14,43 +14,36 @@ public class EqualityPredicate extends Predicate {
         this.colY = colY;
     }
     
-    EqualityPredicate lft;
-    EqualityPredicate rgt;
-    public EqualityPredicate( EqualityPredicate lft, EqualityPredicate rgt ) {
-        super(Util.union(lft.colNames,rgt.colNames));       
-        this.lft = lft;
-        this.rgt = rgt;
-    }
-
-    static Predicate setIX( Predicate x, EqualityPredicate y ) throws Exception {
-        if( x instanceof Relation || x instanceof IndexedPredicate ) {
-            if( y.colX != null ) {
-                if( x instanceof Relation ) {
-                    Relation ret = (Relation)Relation.join(x, Database.R01); // clone
-                    if( x.header.containsKey(y.colX) )
-                        ret.renameInPlace(y.colX, y.colY);
-                    else if( x.header.containsKey(y.colY) )
-                        ret.renameInPlace(y.colY, y.colX);
-                    else
-                        throw new Exception("Renaming columns are disjoint with target relation");
-                    return ret;                    
-                } else {
-                    IndexedPredicate ret = new IndexedPredicate((IndexedPredicate)x);
-                    if( x.header.containsKey(y.colX) )
-                        ret.renameInPlace(y.colX, y.colY);
-                    else if( x.header.containsKey(y.colY) )
-                        ret.renameInPlace(y.colY, y.colX);
-                    else
-                        throw new Exception("Renaming columns are disjoint with target relation");
-                    return ret;                    
-                }
-            } else {
-                return setIX(setIX(x,y.lft),y.rgt);
-            }
-        } else if( x instanceof EqualityPredicate ) {
-            return new EqualityPredicate((EqualityPredicate)x,y);
+    static Predicate setIX( Predicate x, EqualityPredicate y ) throws Exception  {
+        if( x instanceof Relation ) {
+            Relation ret = (Relation)Relation.join(x, Database.R01); // clone
+            if( x.header.containsKey(y.colX) )
+                ret.renameInPlace(y.colX, y.colY);
+            else if( x.header.containsKey(y.colY) )
+                ret.renameInPlace(y.colY, y.colX);
+            else
+                throw new AssertionError("Renaming columns are disjoint with target relation");
+            return ret;                           
+        } else if( x instanceof IndexedPredicate ) {
+            IndexedPredicate ret = new IndexedPredicate((IndexedPredicate)x);
+            if( x.header.containsKey(y.colX) )
+                ret.renameInPlace(y.colX, y.colY);
+            else if( x.header.containsKey(y.colY) )
+                ret.renameInPlace(y.colY, y.colX);
+            else
+                throw new AssertionError("Renaming columns are disjoint with target relation");
+            return ret;                                
+        } else if( x.lft != null ) {
+            Predicate ret = x.clone();
+            if( ret.header.containsKey(y.colX) ) {
+                ret.renameInPlace(y.colX, y.colY);
+            } else if( ret.header.containsKey(y.colY) )
+                ret.renameInPlace(y.colY, y.colX);
+            else
+                throw new AssertionError("Renaming columns are disjoint with target relation");
+            return ret;
         }
-        throw new Exception("Unexpected case");
+        throw new AssertionError("Unexpected case");
     }
     
     static Predicate join( Relation x, EqualityPredicate y ) throws Exception {

@@ -60,6 +60,16 @@ public abstract class Util {
             ret.add(s);
         return ret.toArray(new String[0]);
     }
+    public static String[] intersect( String[] x, String[] y ) {
+        Set<String> ret = new TreeSet<String>();
+        for( String sx : x )
+            for( String sy : y ) 
+                if( sx.equals(sy) ) {
+                    ret.add(sx);
+                    break;
+                }
+        return ret.toArray(new String[0]);
+    }
     public static String[] symmDiff( String[] x, String[] y ) {
         Set<String> ret = new TreeSet<String>();
         for( String s : x )

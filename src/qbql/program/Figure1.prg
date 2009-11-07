@@ -372,5 +372,16 @@ dy < x v z &             -- ditto
 (x ^ dx') v z = (x v z) ^ dy'  -- View definition after update
 -> dx = dy ^ x. 
 
+
+y /^ z = (y v z)` * (y ^ z).
+y /^ z = ((R00 ^ z)` ^ y`) v (y ^ z).
+
+((x v y) v z)^R00=R00 ->   
+x ^ (y /^ z) = (x ^ (R00 ^ z)` ^ y`) v (x ^ y ^ z).
 */
+--((x v y) v z)^R00=R00 ->   
+--x /^ (y /^ z) = ((x v y` v z` ^ (R00 ^ z)` ^ y`) v (x ^ y ^ z).
+
+x 
+
 

@@ -19,13 +19,13 @@ public class ExprGen {
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
             "'",
-            //"`",
+            "`",
     };
     final static String[] binaryOps = new String[] {
             "^",
             "v",             
-            "*",
-            "+",
+            //"*",
+            //"+",
             //"/>",
             //"/<",
             //"/=",
@@ -37,7 +37,7 @@ public class ExprGen {
         //String goal = "(x + (y * z)) ^ (x ^ (y v z))' = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "(x + y) ^ (x + (y * z)) = expr.";
-        String goal = "y v ((x ^ y) v (x ^ z)) = expr.";
+        String goal = "x/^y = expr.";
         System.out.println("goal: "+goal);
         final String subgoal = goal.substring(0,goal.indexOf("expr"));
         
@@ -56,8 +56,8 @@ public class ExprGen {
         if( root.topLevel != null )
             throw new Exception("root.topLevel!=null" );     
         
-        Program g = new Program(lex.parse(goal),Database.init(Util.readFile(Run.class,"Figure1.db")));
-        Set<String> variables = g.variables(root);
+        Program p = new Program(src,Database.init(Util.readFile(Run.class,"Figure1.db")));
+        Set<String> variables = p.variables(root);
         variables.remove("expr");
         zilliaryOps = new String[variables.size()+constants.length];
         for( int i = 0; i < variables.size(); i++ ) {
@@ -95,8 +95,8 @@ public class ExprGen {
                         //n.print();
                                         
                     String input = subgoal + n.toString() +".";
-                    src =  lex.parse(input);
-                    matrix = Program.cyk.initArray1(src);
+                    p.src =  lex.parse(input);
+                    matrix = Program.cyk.initArray1(p.src);
                     size = matrix.size();
                     skipRanges = new TreeMap<Integer,Integer>();
                     Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
@@ -106,7 +106,7 @@ public class ExprGen {
                     
                     final long t2 = System.currentTimeMillis();
                     
-                    ParseNode eval = g.assertion(root, false);
+                    ParseNode eval = p.assertion(root, false);
                     evalTime += System.currentTimeMillis()-t2;
                     if( eval != null )
                         continue;

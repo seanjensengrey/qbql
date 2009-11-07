@@ -294,7 +294,7 @@ public class Relation extends Predicate {
     }
 
     static Relation renameCols( Relation x, Relation y, int[] indexes ) {
-        Relation ret = join(y,Database.R01); // clone
+        Relation ret = y.clone(); 
         for( int i = 0; i < ret.colNames.length; i++) 
             if( indexes[i] < 0 ) 
                 ret.renameInPlace(y.colNames[i], y.colNames[i]+"1");
@@ -307,4 +307,8 @@ public class Relation extends Predicate {
         return ret;
     }
 
+    protected Relation clone() {
+        return join(this,Database.R01);
+    }
+    
 }
