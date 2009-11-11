@@ -61,6 +61,27 @@ public class Predicate {
         if( rgt != null && rgt.header.containsKey(from) )
             rgt.renameInPlace(from, to);
     }
+    public void eqInPlace( String from, String to ) {
+        if( from.equals(to) )
+            throw new AssertionError("renameInPlace: from=to");
+        
+        Integer colTo = header.get(to);
+        if( colTo == null ) {
+            String[] newCols = new String[colNames.length+1];
+            for( int i = 0; i < colNames.length; i++ ) {
+                newCols[i] = colNames[i]; 
+            }
+            newCols[colNames.length]=to;
+            header.put(to, colNames.length);
+            colNames = newCols;
+        } else
+            throw new AssertionError("Column collision");
+        
+        if( lft != null && lft.header.containsKey(from) )
+            lft.eqInPlace(from, to);
+        if( rgt != null && rgt.header.containsKey(from) )
+            rgt.eqInPlace(from, to);
+    }
     
     public static Predicate join( Predicate x, Predicate y ) throws Exception {
         if( x instanceof Relation && y instanceof Relation )
@@ -71,6 +92,8 @@ public class Predicate {
             if( y.oper == Program.naturalJoin )
                 try {
                     ret = join(join(x,y.lft),y.rgt);
+                    if( !(ret instanceof Relation) )
+                        ret = join(join(x,y.rgt),y.lft);
                 } catch( AssertionError e ) {
                     ret = join(join(x,y.rgt),y.lft);
                 }
@@ -85,24 +108,6 @@ public class Predicate {
                     r.add(s);
                 if( l.equals(r) ) // SDC
                     ret = innerUnion(join(x,y.lft),join(x,y.rgt));
-            /*} else if( y.oper == Program.setIX 
-            //((x v y) v z)^R00=R00 -> x ^ (y /^ z) = (x ^ (R00 ^ z)` ^ y`) v (x ^ y ^ z).
-               && Util.intersect(Util.intersect(x.colNames, y.lft.colNames),y.rgt.colNames).length == 0 
-            ) { 
-                try {
-                    ret = join(join(x,y.lft),y.rgt);
-                } catch( AssertionError e ) {
-                    ret = join(join(x,y.rgt),y.lft);
-                }
-                Set<String> hdr = new HashSet<String>();
-                for( String s : ret.colNames )
-                    if( x.header.keySet().contains(s) 
-                    || !y.lft.header.keySet().contains(s) 
-                    || !y.rgt.header.keySet().contains(s) 
-                    )
-                        hdr.add(s);
-                ret = innerUnion(ret,new Relation(hdr.toArray(new String[0])));
-            */
             } else if( x == Database.R00 ) {
                 return new Relation(y.colNames);
             } else
@@ -122,15 +127,20 @@ public class Predicate {
         }
         
         if( x instanceof Relation && y instanceof IndexedPredicate ) 
-            return IndexedPredicate.join((Relation)x,(IndexedPredicate)y);
-        if( x instanceof IndexedPredicate && y instanceof IndexedPredicate ) 
-            return new Predicate(x,y,Program.naturalJoin);
+            try {
+                return IndexedPredicate.join((Relation)x,(IndexedPredicate)y);
+            } catch( AssertionError e ) {
+                return new Predicate(x,y,Program.naturalJoin);
+            }           
         if( x instanceof Relation && y instanceof ComplementPredicate ) 
             return ComplementPredicate.join((Relation)x,(ComplementPredicate)y);
         if( x instanceof Relation && y instanceof EqualityPredicate ) 
             return EqualityPredicate.join((Relation)x,(EqualityPredicate)y);
         
-        throw new AssertionError("Not implemented");
+        if( y instanceof EqualityPredicate ) 
+            return EqualityPredicate.join(x,(EqualityPredicate)y);
+        
+        return new Predicate(x,y,Program.naturalJoin);
     }
 
     public static Predicate innerUnion( Predicate x, Predicate y ) throws Exception {

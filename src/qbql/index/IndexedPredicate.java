@@ -27,15 +27,14 @@ public class IndexedPredicate extends Predicate {
     
     private HashMap<String,String> renamed = new HashMap<String,String>(); //new_name->old_name
     private String oldName( String col ) {
-        String ret = renamed.get(col);
-        return (ret == null) ? col : ret;
+        return renamed.get(col);
     }
-    private String newName( String col ) {
-        String ret = null;
+    private Set<String> newNames( String col ) {
+        Set<String> ret = new HashSet<String>();
         for( String newName : renamed.keySet() )
-            if( col.equals(renamed.get(newName)) )
-                ret = newName;
-        return (ret == null) ? col : ret;
+            if( col.equals(oldName(newName)) )
+                ret.add(newName);
+        return ret;
     }
     
     private Method method( Set<String> output ) {
@@ -44,7 +43,7 @@ public class IndexedPredicate extends Predicate {
             List<String> args = arguments(m,ArgType.OUTPUT);
             boolean inputsCovered = true;
             for( String i : output )
-                if( !args.contains(oldName(i)) ) {
+                if( !args.contains(i) ) {
                     inputsCovered = false;
                     break;
                 }
@@ -57,11 +56,16 @@ public class IndexedPredicate extends Predicate {
         return ret;
     }
     
-    public void renameInPlace( String from, String to ) {
-        
+    public void renameInPlace( String from, String to ) {       
         super.renameInPlace(from, to);
         
-        renamed.put(to, from);
+        renamed.put(to, oldName(from));
+        renamed.remove(oldName(from));
+    }
+    public void eqInPlace( String from, String to ) {     
+        super.eqInPlace(from, to);
+        
+        renamed.put(to, oldName(from));
     }
 
     private Database db = null;
@@ -76,7 +80,8 @@ public class IndexedPredicate extends Predicate {
         int pos = 0;
         for( String s : tmp ) {
             colNames[pos] = s;
-            header.put(colNames[pos],pos);
+            header.put(s,pos);
+            renamed.put(s, s);
             pos++;
         }          
     }
@@ -124,8 +129,10 @@ public class IndexedPredicate extends Predicate {
         header.addAll(y.header.keySet());               
         Relation ret = new Relation(header.toArray(new String[0]));
         Set<String> required = new HashSet<String>();
-        required.addAll(y.header.keySet());
-        required.removeAll(x.header.keySet());
+        for( String s : y.header.keySet() )
+            required.add(y.oldName(s));
+        for( String s : x.header.keySet() )
+            required.remove(y.oldName(s));
         Method m = y.method(required);
         for( Tuple tupleX: x.content ) {
             if( m == null ) 
@@ -137,7 +144,13 @@ public class IndexedPredicate extends Predicate {
             int pos = -1;
             for( String origName : inputs ) {
                 pos++;
-                args[pos] = tupleX.data[x.header.get(y.newName(origName))];
+                for( String s : y.newNames(origName) ) {
+                    Integer xHeaderPos = x.header.get(s);
+                    if( xHeaderPos != null ) {
+                        args[pos] = tupleX.data[xHeaderPos];
+                        break;
+                    }
+                }
             }
             Object o = null;
             try {
@@ -164,19 +177,29 @@ public class IndexedPredicate extends Predicate {
                 for( String attr : ret.colNames ) {
                     Integer colRet = ret.header.get(attr);
                     Integer colX = x.header.get(attr);                    
-                    Integer colY = y.header.get(attr);
-                    if( colX != null && colY == null || inputs.contains(y.oldName(attr)) ) 
-                        retTuple[colRet] = tupleX.data[colX];
-                    else {
-                        Object co = nt.get(y.oldName(attr));
+                    //Integer colY = y.header.get(attr);
+                    Object co = null;
+                    String oldYattr = y.oldName(attr);
+                    if( oldYattr != null )
+                        co = nt.get(oldYattr);
+                    if( co != null ) {
                         if( colX != null ) 
                             if( !co.equals(tupleX.data[colX]) ) {
                                 retTuple = null;
                                 break;
                             }
-                        retTuple[colRet] = co;
-                        
-                    }
+                        retTuple[colRet] = co;                        
+                    } else if( colX != null ) {
+                        retTuple[colRet] = tupleX.data[colX]; 
+                    } else {
+                        for( String eqCol : y.newNames(y.oldName(attr)) ) {
+                            colX = x.header.get(eqCol);
+                            if( colX != null ) {
+                                retTuple[colRet] = tupleX.data[colX];
+                            }
+                        }
+                    }                        
+
                 }
                 if( retTuple != null )
                     ret.content.add(new Tuple(retTuple));
@@ -187,19 +210,26 @@ public class IndexedPredicate extends Predicate {
                     for( String attr : ret.colNames ) {
                         Integer colRet = ret.header.get(attr);
                         Integer colX = x.header.get(attr);                    
-                        Integer colY = y.header.get(attr);
-                        if( colX != null && colY == null || inputs.contains(y.oldName(attr)) ) 
-                            retTuple[colRet] = tupleX.data[colX];
-                        else {
-                            Object co = t.data[r.header.get(y.oldName(attr))];
+                        //Integer colY = y.header.get(attr);
+                        Integer colR = r.header.get(y.oldName(attr));
+                        if( colR != null ) {
+                            Object co = t.data[colR];
                             if( colX != null ) 
                                 if( !co.equals(tupleX.data[colX]) ) {
                                     retTuple = null;
                                     break;
                                 }
-                            retTuple[colRet] = co;
-
-                        }
+                            retTuple[colRet] = co;                            
+                        } else if( colX != null ) {
+                            retTuple[colRet] = tupleX.data[colX]; 
+                        } else {
+                            for( String eqCol : y.newNames(y.oldName(attr)) ) {
+                                colX = x.header.get(eqCol);
+                                if( colX != null ) {
+                                    retTuple[colRet] = tupleX.data[colX];
+                                }
+                            }
+                        }                        
                     }
                     if( retTuple != null )
                         ret.content.add(new Tuple(retTuple));
@@ -249,7 +279,14 @@ public class IndexedPredicate extends Predicate {
         headerXY.addAll(x.header.keySet());
         headerXY.retainAll(y.header.keySet());
         Relation hdrYX = new Relation(headerXY.toArray(new String[0]));
-        Method m = y.method(headerYmX);
+        
+        
+        Set<String> required = new HashSet<String>();
+        for( String s : y.header.keySet() )
+            required.add(y.oldName(s));
+        for( String s : x.header.keySet() )
+            required.remove(y.oldName(s));
+        Method m = y.method(required);
         for( Tuple xi : X.content ) {
             Relation singleX = new Relation(X.colNames);
             singleX.content.add(xi);
