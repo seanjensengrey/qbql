@@ -17,35 +17,45 @@ public class EqualityPredicate extends Predicate {
     static Predicate setIX( Predicate x, EqualityPredicate y ) throws Exception  {
         if( x instanceof Relation ) {
             Relation ret = (Relation)Relation.join(x, Database.R01); // clone
-            if( x.header.containsKey(y.colX) )
+            if( x.header.containsKey(y.colX) && !x.header.containsKey(y.colY) )
                 ret.renameInPlace(y.colX, y.colY);
-            else if( x.header.containsKey(y.colY) )
+            else if( x.header.containsKey(y.colY) && !x.header.containsKey(y.colX) )
                 ret.renameInPlace(y.colY, y.colX);
             else
-                throw new AssertionError("Renaming columns are disjoint with target relation");
+                throw new AssertionError("Renaming columns misaligned with target relation");
             return ret;                           
         } else if( x instanceof IndexedPredicate ) {
             IndexedPredicate ret = new IndexedPredicate((IndexedPredicate)x);
-            if( x.header.containsKey(y.colX) )
+            if( x.header.containsKey(y.colX) && !x.header.containsKey(y.colY) )
                 ret.renameInPlace(y.colX, y.colY);
-            else if( x.header.containsKey(y.colY) )
+            else if( x.header.containsKey(y.colY) && !x.header.containsKey(y.colX)  )
                 ret.renameInPlace(y.colY, y.colX);
             else
-                throw new AssertionError("Renaming columns are disjoint with target relation");
+                throw new AssertionError("Renaming columns misaligned with target relation");
             return ret;                                
         } else if( x.lft != null ) {
             Predicate ret = x.clone();
-            if( ret.header.containsKey(y.colX) ) {
+            if( ret.header.containsKey(y.colX) && !x.header.containsKey(y.colY) ) {
                 ret.renameInPlace(y.colX, y.colY);
-            } else if( ret.header.containsKey(y.colY) )
+            } else if( ret.header.containsKey(y.colY) && !x.header.containsKey(y.colX) )
                 ret.renameInPlace(y.colY, y.colX);
             else
-                throw new AssertionError("Renaming columns are disjoint with target relation");
+                throw new AssertionError("Renaming columns misaligned with target relation");
             return ret;
         }
         throw new AssertionError("Unexpected case");
     }
     
+    static Predicate join( Predicate x, EqualityPredicate y ) throws Exception {
+        Predicate ret = x.clone();
+        if( ret.header.containsKey(y.colX) && !x.header.containsKey(y.colY) ) {
+            ret.eqInPlace(y.colX, y.colY);
+        } else if( ret.header.containsKey(y.colY) && !x.header.containsKey(y.colX) )
+            ret.eqInPlace(y.colY, y.colX);
+        else
+            throw new AssertionError("Renaming columns are disjoint with target relation");
+        return ret;       
+    }
     static Predicate join( Relation x, EqualityPredicate y ) throws Exception {
         String colX = null;
         String colY = null;
