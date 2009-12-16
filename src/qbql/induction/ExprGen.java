@@ -24,7 +24,7 @@ public class ExprGen {
     final static String[] binaryOps = new String[] {
             "^",
             "v",             
-            //"*",
+            "*",
             //"+",
             //"/>",
             //"/<",
@@ -37,13 +37,13 @@ public class ExprGen {
         //String goal = "(x + (y * z)) ^ (x ^ (y v z))' = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "(x + y) ^ (x + (y * z)) = expr.";
-        String goal = "x/^y = expr.";
+        String goal = "x /> y = expr.";
         System.out.println("goal: "+goal);
         final String subgoal = goal.substring(0,goal.indexOf("expr"));
         
         final String[] constants = new String[] {
-            "R00",
-            "R11",             
+            //"R00",
+            //"R11",             
         };
         
         final Lex lex = new Lex();

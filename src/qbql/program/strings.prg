@@ -89,6 +89,7 @@ Dept = [DEPTNO DNAME LOC]
 30 RESEARCH ROME
 40 OPERATIONS LONDON
 ;
+Dept;
 
 ((Emp v [DEPTNO SAL]) /^ [SAL=summands]) /= Sum = [DEPTNO  result]
                                           10  8750
@@ -139,3 +140,37 @@ Abs = (Positive ^ [x=abs]) v (Negation ^ Negative /^ [y=abs]);
              1  1
              3  -3
 .
+
+Incr = Plus /^ [y]1;
+[x]4 /^ Incr /^ [z=x] /^ Incr /^ [z=x];
+
+A=[i j1 j2]
+   1 3 1
+   2 1 0
+;
+
+(A /^ [j1=s] /^ [j]1)
+v
+(A /^ [j2=s] /^ [j]2)
+;
+
+A=[i j s]
+   1 1 3
+   1 2 1
+   2 1 1
+   2 2 0
+;
+
+(A /^ [j1=s] /^ [j]1)
+^
+(A /^ [j2=s] /^ [j]2)
+; 
+
+B=[i j s]
+   1 1 4
+   1 2 1
+   2 1 1
+   2 2 0
+;
+(A/^[j=k]/^[s=x]) /^ (B/^[i=k]/^[s=y]) /^ Multiply /^[z=summands]  /= Sum /^[result=s];  
+

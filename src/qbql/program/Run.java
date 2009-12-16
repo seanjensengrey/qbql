@@ -6,17 +6,24 @@ import qbql.util.Util;
 public class Run {
     
     public static void main( String[] args ) throws Exception {
-        String db = Util.readFile(Run.class,"strings.db");
-        String prg = Util.readFile(Run.class,"strings.prg");
-        //String db = Util.readFile(Run.class,"Sims.db");
-        //String prg = Util.readFile(Run.class,"Sims.assertions");
-        //String prg = Util.readFile(Run.class,"mereologic.prg");
-        //String db = Util.readFile(Run.class,"Wittgenstein.db");
-        //String prg = Util.readFile(Run.class,"Wittgenstein.assertions");
-        //String db = Util.readFile(Run.class,"sets.db");
-        //String prg = Util.readFile(Run.class,"sets.prg");
-        //String db = Util.readFile(Run.class,"Figure1.db");
-        //String prg = Util.readFile(Run.class,"Figure1.prg");
+        String db = null;
+        String prg = null;
+        if( args.length == 2 ) {
+            db = Util.readFile(args[0]);
+            prg = Util.readFile(args[1]);
+        } else {
+            //String db = Util.readFile(Run.class,"strings.db");
+            //String prg = Util.readFile(Run.class,"strings.prg");
+            db = Util.readFile(Run.class,"Sims.db");
+            prg = Util.readFile(Run.class,"Sims.assertions");
+            //String prg = Util.readFile(Run.class,"mereologic.prg");
+            //String db = Util.readFile(Run.class,"Wittgenstein.db");
+            //String prg = Util.readFile(Run.class,"Wittgenstein.assertions");
+            //String db = Util.readFile(Run.class,"sets.db");
+            //String prg = Util.readFile(Run.class,"sets.prg");
+            //String db = Util.readFile(Run.class,"Figure1.db");
+            //String prg = Util.readFile(Run.class,"Figure1.prg");     
+        }
         Database.run(db, prg);    
     }
 
