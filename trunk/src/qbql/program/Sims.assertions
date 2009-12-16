@@ -1,7 +1,11 @@
-Certified /= Requirements;
+x = y.
+
+/*Certified /= Requirements;
+
+x /< y = ( (x v y)` * (x ^ y') )'.
+x /= y = ( (x v y)` * ((x'^ y) v (x ^ y')) )'.
 
 
-/*
 (Pets ^ Fed) v ((Pets v Fed`)^(Pets` v Fed)^[]) = Pets \|/ Fed. 
 
 (x ^ y) v ((x v y`)^(x` v y)^[]) = x \|/ y.

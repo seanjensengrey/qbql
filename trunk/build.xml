@@ -37,6 +37,7 @@
 			<manifest>
 				<attribute name="Implementation-Title" value="${ant.project.name}" />
 				<attribute name="Implementation-Vendor" value="Vadim Tropashko" />
+				<attribute name="Main-Class" value="qbql.program.Run" />
 				<attribute name="Version" value="1.0" />
 			</manifest>
 		</jar>
