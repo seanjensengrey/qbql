@@ -65,7 +65,7 @@ expr3 = expr4.
 ...
 }}}
 
-inequalities
+or inequalities
 
 {{{
 expr1 < expr2.
