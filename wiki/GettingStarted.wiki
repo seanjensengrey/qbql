@@ -55,11 +55,9 @@ After definining several relations, you may build new relations from the existin
 
 Watch out for [http://code.google.com/p/qbql/wiki/CurrentLimitations pitfalls]. 
 
-The name of the database definition text file is specified as the second argument to QBQL program, otherwise the one hard coded in the beginning of `Run.java` file is used. 
-
 == Assertions/Program ==
  
-You define _assertions_ as equations 
+A program is a sequence of _assignment operations_ and _assertions_. Assertions are either equalities 
 
 {{{
 expr1 = expr2.
@@ -67,7 +65,15 @@ expr3 = expr4.
 ...
 }}}
 
-in a text file as well. Each expression is either a relational variable, or terms built with operations of join `^`, inner union `v`, outer union `+`, inner join `*`, and negation `'` applied to relations. See [http://code.google.com/p/qbql/source/browse/trunk/src/qbql/lattice/lattice.grammar QBQL grammar] for the details.
+inequalities
+
+{{{
+expr1 < expr2.
+expr3 > expr4.
+...
+}}}
+
+or complex assertions built with boolean operations out of primitive equalities and inequalities. Each expression on left-hand and right-hand side of an equality or inequality is either a relation/predicate variable, or a term built via operations of join `^`, inner union `v`, outer union `+`, inner join `*`, negation `'`, or set join applied to relations/predicates. See [http://code.google.com/p/qbql/source/browse/trunk/src/qbql/lattice/lattice.grammar QBQL grammar] for the details.
 
 For example, the `Wittgenstein.assertions` file 
 
@@ -76,7 +82,6 @@ For example, the `Wittgenstein.assertions` file
 (Blocks ^ A) v Size = Small.
 (((A ^ Left) v Comparison) ^ (D ^ Right)) v R00 = R01.
 }}} 
-
    
 claims the following propositions
 
@@ -86,7 +91,7 @@ claims the following propositions
 "A is smaller than D"
 }}}
 
-The name of the assertions text file is hard coded in the beginning of `Run.java`.
+The name of the database assertions/program text file is specified as the second argument to QBQL program, otherwise the one hard coded in the beginning of `Run.java` file is used. 
 
 == Run the program ==
 
