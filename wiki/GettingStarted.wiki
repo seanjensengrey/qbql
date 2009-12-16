@@ -5,6 +5,13 @@
 
 QBQL is implemented in java. Therefore, until QBQL elevates to more sophisticated interface, the only way to get it running is to install _Eclipse_, _Subversion_ plugin, and then check out the source from _google_ _code_ svn. All these steps are standard and are documented elsewhere.
 
+Alternatively, you can download [http://code.google.com/p/qbql/source/browse/trunk/dist/qbql.jar qbql.jar] and run it from the command line as follows:
+
+{{{
+C:\> java -jar C:\qbql_trunk\dist\qbql.jar C:\qbql_tr
+unk\src\qbql\program\strings.db C:\qbql_trunk\src\qbql\program\strings.prg
+}}} 
+
 Before proceeding to the next section (which is written in cookbook style) a reader is advised to read QBQL introductory articles 
  * [http://vadimtropashko.wordpress.com/relational-programming-with-qbql/ Part 1]
  * [http://vadimtropashko.wordpress.com/relational-programming-with-qbql/manipulating-strings-in-qbql/ Part 2]
