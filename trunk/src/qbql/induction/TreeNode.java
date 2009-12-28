@@ -97,6 +97,10 @@ public class TreeNode {
     // algebraic optimizations
     boolean isRightSkewed() {
         boolean ret = false;
+        
+        if( "<".equals(label) || ">".equals(label) )
+            return ret;
+        
         if( lft != null )
             ret = lft.isRightSkewed();
         if( ret )

@@ -195,7 +195,7 @@ public class Gui {
 
         List<LexerToken> src =  new Lex().parse(guiCode);
         //LexerToken.print(src);
-        Matrix matrix = cyk.initArray1(src);
+        Matrix matrix = cyk.initMatrixSubdiagonal(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
         cyk.closure(matrix, 0, size+1, skipRanges, -1);

@@ -35,7 +35,7 @@ public class ParseDb extends Database {
             src =  new Lex().parse(db);
             LexerToken.print(src);
 
-            Matrix matrix = cyk.initArray1(src);
+            Matrix matrix = cyk.initMatrixSubdiagonal(src);
             int size = matrix.size();
             TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
             cyk.closure(matrix, 0, size+1, skipRanges, -1);
@@ -62,7 +62,7 @@ public class ParseDb extends Database {
         
         // program
         List<LexerToken> src =  new Lex().parse(prg);
-        Matrix matrix = Program.cyk.initArray1(src);
+        Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
         Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);

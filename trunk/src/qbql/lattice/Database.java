@@ -373,7 +373,7 @@ public class Database {
     public static Database init( String dbSource ) throws Exception {
         Database database = new Database("qbql.lang");
         List<LexerToken> src =  new Lex().parse(dbSource);
-        Matrix matrix = Program.cyk.initArray1(src);
+        Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
         Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
@@ -401,7 +401,7 @@ public class Database {
     
     public static Database run( String dbSrc, String prg ) throws Exception {
         List<LexerToken> src =  new Lex().parse(prg);
-        Matrix matrix = Program.cyk.initArray1(src);
+        Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
         Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);

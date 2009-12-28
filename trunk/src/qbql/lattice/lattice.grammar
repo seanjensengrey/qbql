@@ -1,7 +1,6 @@
 almostDisj:  expr '/' '1' expr
 ;
 assertion:   boolean '.'
-          |  implication '.'
 ;
 assignment:  identifier '=' expr ';'
           |  identifier '=' partition ';'
@@ -10,10 +9,14 @@ attribute:   identifier
 ;
 big:         expr '/' '!' expr
 ;
-boolean:     parBool
+boolean:     
+             parBool
           |  '-' parBool
           |  boolean '&' boolean
           |  boolean '|' boolean
+          |  boolean '-' '>' boolean
+          |  boolean '<' '-' boolean
+          |  boolean '<' '-' '>' boolean
           |  expr '<' expr
           |  expr '=' expr
           |  expr '>' expr
@@ -62,10 +65,6 @@ header:      identifier
           |  header identifier
           |  header ',' identifier
 ;
-implication:  boolean '-' '>' boolean
-          |  boolean '<' '-' boolean
-          |  boolean '<' '-' '>' boolean
-;
 innerJoin:   expr '*' expr
 ;
 innerUnion:  expr 'v' expr
@@ -83,12 +82,15 @@ parBool:     '(' boolean ')'
 ;
 parExpr:     '(' expr ')'
 ;
-partition:   content
+partition: 'disabled' '#' 
+             /*  
+             content
           |  '(' partition ')'
           |  expr '#' expr
           |  partition '^' partition
           |  partition 'v' partition
-          |  partition '|' content
+          |  partition '|' content 
+             */
 ;
 program:     assertion
           |  assignment

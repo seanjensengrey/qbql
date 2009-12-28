@@ -18,47 +18,54 @@ public class ExprGen {
     
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
-            "'",
-            "`",
+            //"'",
+            //"`",
     };
     final static String[] binaryOps = new String[] {
             "^",
             "v",             
-            "*",
+            //"*",
             //"+",
-            //"/>",
+            ///"/>",
             //"/<",
-            //"/=",
+            "/=",
+            //"/^",
             //"/0",
             //"/1",
             //"/!",
+            
+            "<",
+            //"=",
+            //"&",
     };
     public static void main( String[] args ) throws Exception {
         //String goal = "(x + (y * z)) ^ (x ^ (y v z))' = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
-        //String goal = "(x + y) ^ (x + (y * z)) = expr.";
-        String goal = "x /> y = expr.";
+        //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
+        //String goal = "x /^ y = expr.";
+        String goal = "(x=y -> z=u) <-> boolean.";
+        //String goal = "(x/=y = z) <- boolean.";
+        //String goal = "x ^ (y v z) = (x ^ y) v (x ^ z) <-> boolean.";
         System.out.println("goal: "+goal);
-        final String subgoal = goal.substring(0,goal.indexOf("expr"));
+        final String subgoal = subgoal(goal);
         
         final String[] constants = new String[] {
-            //"R00",
+            "R00",
             //"R11",             
         };
         
         final Lex lex = new Lex();
         List<LexerToken> src =  lex.parse(goal);
-        Matrix matrix = Program.cyk.initArray1(src);
+        Matrix matrix = Program.cyk.initMatrixSubdiagonal(src,true);
         int size = matrix.size();
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
         Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
         ParseNode root = Program.cyk.forest(size, matrix);
-        if( root.topLevel != null )
-            throw new Exception("root.topLevel!=null" );     
+        if( !root.contains(Program.cyk.symbolIndexes.get("assertion") ) )
+            throw new Exception("!root.contains(assertion)" );     
         
         Program p = new Program(src,Database.init(Util.readFile(Run.class,"Figure1.db")));
         Set<String> variables = p.variables(root);
-        variables.remove("expr");
         zilliaryOps = new String[variables.size()+constants.length];
         for( int i = 0; i < variables.size(); i++ ) {
             zilliaryOps[i] = variables.toArray(new String[0])[i];
@@ -74,6 +81,8 @@ public class ExprGen {
         //int cnt = 0; 
         final long startTime = System.currentTimeMillis();
         long evalTime = 0;
+        //boolean skip = true;
+        boolean skip = false;
         for( Polish num = new Polish(l); ; num.next() ) {
             if( !num.wellBuilt() )
                 continue;
@@ -82,8 +91,16 @@ public class ExprGen {
                 if( n.isRightSkewed() )
                     continue;
                 //System.out.println();
-                ExprGen.init(n);
+                try {
+                    init(n);
+                } catch( ArrayIndexOutOfBoundsException e ) { // no unary operations
+                    continue;
+                }
                 n.print();
+                if( skip && "(((((z ^ z) ^ (z)`) ^ ((z ^ z))`) ^ ((z ^ z))`))`".equals(n.toString()) )
+                    skip = false;
+                if( skip )
+                    continue;
                 do {
                     if( n.isRightSkewed() )
                         continue;
@@ -96,13 +113,13 @@ public class ExprGen {
                                         
                     String input = subgoal + n.toString() +".";
                     p.src =  lex.parse(input);
-                    matrix = Program.cyk.initArray1(p.src);
+                    matrix = Program.cyk.initMatrixSubdiagonal(p.src);
                     size = matrix.size();
                     skipRanges = new TreeMap<Integer,Integer>();
                     Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
                     root = Program.cyk.forest(size, matrix);
-                    if( root.topLevel != null )
-                        throw new Exception("root.topLevel!=null" );     
+                    if( !root.contains(Program.cyk.symbolIndexes.get("assertion") ) )
+                        continue;     
                     
                     final long t2 = System.currentTimeMillis();
                     
@@ -124,13 +141,22 @@ public class ExprGen {
         //System.out.println(cnt);
         
     }
+
+    private static String subgoal( String goal ) {
+        for( String symb : Program.cyk.allSymbols  ) {
+            int ind = goal.indexOf(symb);
+            if( ind > 0 )
+                return goal.substring(0,ind);
+        }
+        throw new AssertionError("no subgoal?");
+    }
     
     static void init( TreeNode node ) {
         if( node.lft == null ) 
             node.label = zilliaryOps[0];
         else {
             init(node.lft);
-            if( node.rgt == null )
+            if( node.rgt == null ) 
                 node.label = unaryOps[0];
             else {
                 init(node.rgt);
