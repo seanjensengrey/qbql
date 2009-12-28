@@ -43,7 +43,7 @@ public class BNFGrammar {
 
 
     public static ParseNode parseGrammarFile( List<LexerToken> src, String input ) throws Exception {
-        Matrix ret = cyk.initArray1(src);
+        Matrix ret = cyk.initMatrixSubdiagonal(src);
         int size = ret.size();
         cyk.closure(ret, 0,size+1, new TreeMap<Integer,Integer>(), -1);
         ParseNode root = cyk.forest(size, ret);

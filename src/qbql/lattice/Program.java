@@ -55,7 +55,6 @@ public class Program {
     static int parExpr;
     public static int openParen;
     static int bool;
-    static int implication;
     static int lt;
     static int gt;
     static int amp;
@@ -114,7 +113,6 @@ public class Program {
             parExpr = cyk.symbolIndexes.get("parExpr");
             openParen = cyk.symbolIndexes.get("'('");
             bool = cyk.symbolIndexes.get("boolean");
-            implication = cyk.symbolIndexes.get("implication");
             assertion = cyk.symbolIndexes.get("assertion");
             query = cyk.symbolIndexes.get("query");
             identifier = cyk.symbolIndexes.get("identifier");
@@ -168,8 +166,9 @@ public class Program {
 
     private boolean logical( ParseNode root ) throws Exception {
         Boolean left = null;
-        Boolean right = null;
         int oper = -1;
+        boolean impl = false;
+        boolean bimpl = false;
         for( ParseNode child : root.children() ) {
             if( left == null ) {
                 if( child.contains(minus) ) {
@@ -182,22 +181,43 @@ public class Program {
                     left = bool(child);
             } else if( child.contains(amp) ) 
                 oper = amp;
-            else if( child.contains(bar) ) 
+            else if( child.contains(bar) ) {
                 oper = bar;
-            else {                               
-                right = bool(child);
-                break;    // e.g.   "(" "x = y" ")"
-                // break after ^^^^^
+            } else if( child.contains(gt)||child.contains(minus)||child.contains(lt) ) {
+                if( child.contains(gt) )
+                    impl = true;
+                if( child.contains(lt) )
+                    bimpl = true;
+            } else {                               
+                if( oper == amp ) {
+                    // return left & bool(child) -- experienced function eval even when unnecessary
+                    // therefore, optimized explicitly
+                    if( !left )
+                        return false;
+                    else
+                        return bool(child);
+                } else if( oper == bar ) {
+                    //return left | bool(child);
+                    if( left )
+                        return true;
+                    else
+                        return bool(child);
+                } else if( oper == minus )
+                    return ! bool(child);
+                else if( oper == openParen )
+                    return bool(child);
+                else if( impl && !bimpl ) { 
+                    //return !left | bool(child);
+                    if( !left )
+                        return true;
+                    else
+                        return bool(child);
+                } else if( !impl && bimpl ) 
+                    return left | !bool(child);
+                else if( impl && bimpl ) 
+                    return left == bool(child);
             }
         }
-        if( oper == amp )
-            return left & right;
-        else if( oper == bar )
-            return left | right;
-        else if( oper == minus )
-            return ! right;
-        else if( oper == openParen )
-            return right;
         throw new Exception("Unknown boolean operation "+oper);
     }
 
@@ -277,38 +297,6 @@ public class Program {
             throw new Exception("Impossible case");             
     }
 
-    private ParseNode implication( ParseNode root ) throws Exception {
-        ParseNode left = null;
-        ParseNode right = null;
-        boolean impl = false;
-        boolean bimpl = false;
-        for( ParseNode child : root.children() ) {
-            if( left == null ) {
-                left = child;
-            } else if( child.contains(gt)||child.contains(minus)||child.contains(lt) ) {
-                if( child.contains(gt) )
-                    impl = true;
-                if( child.contains(lt) )
-                    bimpl = true;
-            } else                          
-                right = child;
-        }           
-        if( impl && !bimpl && impl(left,right) ) 
-            return null;
-        else if( !impl && bimpl && impl(right,left) ) 
-            return null;
-        else if( impl && bimpl && impl(left,right) && impl(right,left) ) 
-            return null;
-        else
-            return root;
-    }
-    private boolean impl( ParseNode left,ParseNode right ) throws Exception {
-        boolean l = bool(left);
-        if( !l ) // optimization: early termination
-            return true;
-        return bool(right);
-    }
-
     public ParseNode assertion( ParseNode root, boolean outputVariables ) throws Exception {
         ParseNode ret = null;
         Set<String> variables = variables(root);
@@ -338,19 +326,7 @@ public class Program {
                             database.removePredicate(variable);
                         return ret;
                     }
-                } else if( child.contains(implication) ) {
-                    ret = implication(child);
-                    if( ret != null ) {
-                        for( String variable : variables )
-                            if( outputVariables )
-                                System.out.println(variable+" = "
-                                                   +database.predicate(variable).toString(variable.length()+3, false)
-                                                   +";");
-                        for( String variable : variables )
-                            database.removePredicate(variable);
-                        return ret;
-                    }
-                } 
+                }  
             }
         } while( Util.next(indexes,tables.length) );
 

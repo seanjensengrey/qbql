@@ -376,12 +376,24 @@ dy < x v z &             -- ditto
 y /^ z = (y v z)` * (y ^ z).
 y /^ z = ((R00 ^ z)` ^ y`) v (y ^ z).
 
-((x v y) v z)^R00=R00 ->   
+(x v y v z)^R00=R00 ->   
 x ^ (y /^ z) = (x ^ (R00 ^ z)` ^ y`) v (x ^ y ^ z).
+
+--[] < x v y v z -> x /^ (y /^ z) = (x /^ y) /^ z.
+
+--R00 ^ (x v y) = R00 ^ (x v z) <-> [] < x v y v z` & [] < x v z v y`. -- SDC criteria
+
+--R00 ^ (x v y) = R00 ^ (x v z) -> x /^ (y v z) = (x /^ y) v (x /^ z).
+
+--R00 ^ (x v y) = R00 ^ (y v z) -> x * (y * z) = (x * y) * z.
+
+--[] < x v y` -> x + (x * y) = x.
+
+[] < x v y v z ->   
+x /^ (y /^ z) = (R00 ^ ((x`^ y`) v (y`^ z`) v (x`^ z`)) ) v (x ^ y ^ z).
 */
---((x v y) v z)^R00=R00 ->   
---x /^ (y /^ z) = ((x v y` v z` ^ (R00 ^ z)` ^ y`) v (x ^ y ^ z).
 
-[x]1 /= [x]1;
+--R00 ^ (x v y) = R00 ^ (x v z) -> x ^ (y v z) = (x ^ y) v (x ^ z).
 
+(x/=y = z) <-> (((x /> y) = z) & ((x /< y) = z)).
 

@@ -93,7 +93,7 @@ public class Polish {
                 break;
         }*/
         
-        
+        /*
         ArrayList<TreeNode> l = new ArrayList<TreeNode>();
         l.add(leaf());
         l.add(TreeNode.one);
@@ -112,6 +112,7 @@ public class Polish {
             num.next();
         }
         System.out.println(cnt);
+        */
         
     }
     

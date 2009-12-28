@@ -60,8 +60,6 @@ public class CYK {
     public String[] allSymbols;  
     public Map<String,Integer> symbolIndexes;
 
-    Set<Integer> keywords = new TreeSet<Integer>(); // pure Keywords
-
     public static void main( String[] dummy ) throws Exception {
         CYK cyk = Program.cyk;
         cyk.printSelectedChomskiRules("union");          
@@ -83,7 +81,7 @@ public class CYK {
         long hf = Runtime.getRuntime().freeMemory();
         System.out.println("mem="+(h-hf)); // 
         t1 = System.currentTimeMillis();
-        Matrix matrix = cyk.initArray1(src);
+        Matrix matrix = cyk.initMatrixSubdiagonal(src);
         t2 = System.currentTimeMillis();
         System.out.println("Init array time = "+(t2-t1)); 
 
@@ -137,44 +135,31 @@ public class CYK {
         System.out.println("-------------------------------------"); // (authorized)
     }
 
-    public Matrix initArray( List<LexerToken> input ) {
-        Matrix ret = new Matrix(this);  
-
-        int i = 0;
-        for( LexerToken token : input ) {
-            initArrayElement(ret, i, token, false);
-            i++;
-        }
-
-        return ret;
+    public Matrix initMatrixSubdiagonal( List<LexerToken> input ) {
+        return initMatrixSubdiagonal(input, false);
     }
-    public Matrix initArray1( List<LexerToken> input ) {
+    public Matrix initMatrixSubdiagonal( List<LexerToken> input, boolean grammarSymbolsAllowedAsIdentifiers ) {
         Matrix ret = new Matrix(this);  
 
         int i = 0;
         for( LexerToken token : input ) {
-            initArrayElement(ret, i, token, true);
+            initMatrixElem(ret, i, token, grammarSymbolsAllowedAsIdentifiers);
             i++;
         }
 
         return ret;
     }
 
-    public void initArrayElement(Matrix ret, int pos, LexerToken token, boolean identifiersOnly) {
-        /*if( token.type == RegexprBasedLexer.WS ) // this is done as part of parsing
-                                continue;
-                        if( token.type == RegexprBasedLexer.COMMENT )
-                                continue;
-                        if( token.type == RegexprBasedLexer.LINE_COMMENT )
-                                continue;
-         */
+    public void initMatrixElem( Matrix ret, int pos, LexerToken token, boolean grammarSymbolsAllowedAsIdentifiers ) {
         Integer suspect = symbolIndexes.get("'" + token.content + "'");
         Set<Integer> dependents = new TreeSet<Integer>();
-        if( suspect != null ) {
+        if( suspect != null ) 
             dependents.addAll(singleRhsRules[suspect]);
-        }
         if( token.type == Token.IDENTIFIER ) {
-            if( !identifiersOnly || suspect == null || !keywords.contains(suspect) ) {
+            suspect = symbolIndexes.get(token.content);
+            if( grammarSymbolsAllowedAsIdentifiers && suspect != null ) {
+                dependents.addAll(singleRhsRules[suspect]);
+            } else {
                 int symbol = symbolIndexes.get("identifier");
                 dependents.addAll(singleRhsRules[symbol]);
             }
@@ -193,11 +178,6 @@ public class CYK {
         for( int e : dependents )
             tmp[i++] = encode(pos, e);
         ret.put(Util.pair(pos,pos+1), tmp);
-    }
-    public void initArrayElement(SortedMap<Integer, Set<Integer>> ret, int pos, int symbol) {
-        Set<Integer> dependents = new TreeSet<Integer>();
-        dependents.addAll(singleRhsRules[symbol]);
-        ret.put(Util.pair(pos,pos+1), dependents);
     }
 
 
