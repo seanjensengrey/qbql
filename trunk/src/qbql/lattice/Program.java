@@ -335,7 +335,7 @@ public class Program {
         return ret;
     }
 
-    public Set<String> variables( ParseNode root ) {
+    public Set<String> variables( ParseNode root ) throws Exception {
         Set<String> variables = new HashSet<String>();
         for( ParseNode descendant : root.descendants() ) {
             String id = descendant.content(src);
@@ -481,14 +481,14 @@ public class Program {
         throw new Exception("Unknown case");
     }
 
-    private Predicate lookup( String name ) {
+    private Predicate lookup( String name ) throws Exception {
         Predicate ret = database.predicate(name);
         if( ret != null ) 
             return ret;
         try {
             return new IndexedPredicate(database,name);
-        } catch (Exception e) {
-            return null;
+        } catch ( Exception e ) {
+            throw new Exception("Predicate/Table '"+name+"' not in the database");
         }
     }
     
