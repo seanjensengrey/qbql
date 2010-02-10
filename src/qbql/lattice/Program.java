@@ -475,7 +475,10 @@ public class Program {
         
         else if( root.contains(identifier) || root.from+1 == root.to ) {
             String name = src.get(root.from).content;
-            return lookup(name);
+            Predicate candidate = lookup(name);
+            if( candidate == null )
+                throw new Exception("Predicate/Table '"+name+"' not in the database");
+			return candidate;
         }
                     
         throw new Exception("Unknown case");
@@ -488,7 +491,7 @@ public class Program {
         try {
             return new IndexedPredicate(database,name);
         } catch ( Exception e ) {
-            throw new Exception("Predicate/Table '"+name+"' not in the database");
+            return null;
         }
     }
     
