@@ -210,8 +210,17 @@ public class Program {
                     //return !left | bool(child);
                     if( !left )
                         return true;
-                    else
-                        return bool(child);
+                    else {
+                    	boolean ret = bool(child);
+                    	/*if( ret ) {
+                            for( String variable : variables(root, false) )
+                            	System.out.println(variable+" = "
+                            			+database.predicate(variable).toString(variable.length()+3, false)
+                            			+";");
+
+                    	}*/
+                        return ret;
+                    }
                 } else if( !impl && bimpl ) 
                     return left | !bool(child);
                 else if( impl && bimpl ) 
@@ -312,7 +321,6 @@ public class Program {
                 database.addPredicate(variable, database.predicate(tables[indexes[var++]]));
             }
 
-
             for( ParseNode child : root.children() ) {
                 if( child.contains(bool) ) {
                     if( !bool(child) ) {
@@ -325,8 +333,10 @@ public class Program {
                         for( String variable : variables )
                             database.removePredicate(variable);
                         return ret;
-                    }
-                }  
+                    } 
+                    break;
+                } else
+                	throw new Exception("Non boolean assertion???"); 
             }
         } while( Util.next(indexes,tables.length) );
 
@@ -335,7 +345,7 @@ public class Program {
         return ret;
     }
 
-    public Set<String> variables( ParseNode root ) throws Exception {
+    private Set<String> variables( ParseNode root, boolean notAssignedOnes ) throws Exception {
         Set<String> variables = new HashSet<String>();
         for( ParseNode descendant : root.descendants() ) {
             String id = descendant.content(src);
@@ -343,10 +353,13 @@ public class Program {
                     && (descendant.contains(expr) || descendant.contains(identifier))
                     && !root.parent(descendant.from, descendant.to).contains(header)
                     && !root.parent(descendant.from, descendant.to).contains(table)
-                    && lookup(id) == null ) 
+                    && (!notAssignedOnes || lookup(id) == null) ) 
                 variables.add(id);
         }
         return variables;
+    }
+    public Set<String> variables( ParseNode root ) throws Exception {
+    	return variables(root, true);
     }
 
     private ParseNode query( ParseNode root ) throws Exception {

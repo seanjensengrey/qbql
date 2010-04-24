@@ -28,30 +28,30 @@ public class ExprGen {
             //"+",
             ///"/>",
             //"/<",
-            "/=",
+            //"/=",
             //"/^",
             //"/0",
             //"/1",
             //"/!",
             
             "<",
-            //"=",
-            //"&",
+            "=",
+            "&",
     };
     public static void main( String[] args ) throws Exception {
         //String goal = "(x + (y * z)) ^ (x ^ (y v z))' = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
-        //String goal = "x /^ y = expr.";
-        String goal = "(x=y -> z=u) <-> boolean.";
-        //String goal = "(x/=y = z) <- boolean.";
-        //String goal = "x ^ (y v z) = (x ^ y) v (x ^ z) <-> boolean.";
+        String goal = "(y * z = y <-> y + z = z) <-> boolean.";
+        //String goal = "x * y = expr.";
+        //String goal = "(x=y -> z=u) <-> boolean.";
+        //String goal = "x ^ y = x ^ y ^ (((x /^ s) /^ y) /^ s) <-> boolean.";
         System.out.println("goal: "+goal);
         final String subgoal = subgoal(goal);
         
         final String[] constants = new String[] {
             "R00",
-            //"R11",             
+            "R11",             
         };
         
         final Lex lex = new Lex();

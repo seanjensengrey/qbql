@@ -68,7 +68,8 @@ public class CYK {
             //"Tokens /^ [txt] item /^ [pos=down] /^ Links /^ [pos=up] ^ Vars;"
             //"( ( x v y ) ^ ( ( x ^ y ) v ( ( x v y ) ) ' ) )"
             //"cat ^ [source] Hello World ^ [from] 3;"
-            Util.readFile("c:/qbql_trunk/qbql/lang/parse/test.prg")
+        	"(y * z = y <-> y + z = z) <-> (y * z = z <-> y + z = y)."
+            //Util.readFile("c:/qbql_trunk/qbql/lang/parse/test.prg")
         ;
         long t1 = System.currentTimeMillis();
         List<LexerToken> src =  new Lex().parse(input);

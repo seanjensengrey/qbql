@@ -10,14 +10,32 @@ attribute:   identifier
 big:         expr '/' '!' expr
 ;
 boolean:     
-             parBool
-          |  '-' parBool
-          |  boolean '&' boolean
-          |  boolean '|' boolean
-          |  boolean '-' '>' boolean
-          |  boolean '<' '-' boolean
-          |  boolean '<' '-' '>' boolean
-          |  expr '<' expr
+             implication
+;
+
+implication: 
+             implication '-' '>' implication
+          |  implication '<' '-' implication
+          |  implication '<' '-' '>' implication
+          |  disjunction
+          |  '(' implication ')'
+;
+
+disjunction: 
+             conjunction '|' disjunction
+          |  conjunction 
+          |  '(' disjunction ')'
+;
+
+conjunction: 
+             proposition '&' conjunction
+          |  proposition 
+          |  '(' conjunction ')'
+          |   '-' '(' conjunction ')'
+;
+
+proposition:     
+             expr '<' expr
           |  expr '=' expr
           |  expr '>' expr
           |  expr '~' expr
@@ -28,6 +46,8 @@ boolean:
           |  expr '<' '~' expr
           |  expr '>' '~' expr
 ;
+
+
 complement:  identifier 'qtSymbol'
           |  parExpr 'qtSymbol'
 ;
@@ -62,6 +82,7 @@ expr:        almostDisj
           |  unnamedMeet
 ;
 header:      identifier
+          |  string_literal
           |  header identifier
           |  header ',' identifier
 ;
@@ -82,15 +103,14 @@ parBool:     '(' boolean ')'
 ;
 parExpr:     '(' expr ')'
 ;
-partition: 'disabled' '#' 
-             /*  
+partition:  --dummy '#' problem in expr generator
              content
           |  '(' partition ')'
           |  expr '#' expr
           |  partition '^' partition
           |  partition 'v' partition
           |  partition '|' content 
-             */
+           
 ;
 program:     assertion
           |  assignment
