@@ -25,7 +25,7 @@ _C = C ^ R00;
 ADvBC = (A ^ D) v (B ^ C);
 
 -- Additional relations (beyond the scope of Figure 1)
-/*
+
 A0 = [p] 0;
 A1 = [p] 2;
 A2 = [p] 0 2;
@@ -41,6 +41,7 @@ F_ = [r];
 
 S = {<p=0,r=0>,<p=0,r=1>,<p=1,r=0>};
 S1 = {<p=0,r=0>,<p=1,r=0>};
+S2 = {<p=0,r=0>,<p=1,r=1>,<p=2,r=2>};
 S_ = [p r];
 
 U = {<s=c,r=0>,<s=a,r=0>,<s=a,r=1>};
@@ -63,4 +64,3 @@ W1=[p  s  t]
 SV = S ^ V;
 S1V = S1 ^ V;
 SUV = SV ^ U;
-*/

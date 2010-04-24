@@ -1,6 +1,6 @@
 --x ^ y < z <- x < (z /> y).
 
---x ^ y ^ (z /< x) < z.
+--?x ^ y ^ (z /< x) < z.
 
 
 --x ^ (y + z) < x ^ (y v z).
@@ -396,8 +396,76 @@ x /^ (y /^ z) = (R00 ^ ((x`^ y`) v (y`^ z`) v (x`^ z`)) ) v (x ^ y ^ z).
 --R00 ^ (x v y) = R00 ^ (x v z) -> x ^ (y v z) = (x ^ y) v (x ^ z).
 
 (x/=y = z) <-> (((x /> y) = z) & ((x /< y) = z)).
+
+[] < (x v y v s) ^ (x v y v t) ^ (x v s v t) ^ (s v y v t) & 
+(x /^ s) /^ s = x & (y /^ t) /^ t = x ->
+((x /^ s) ^ (y /^ t)) = 
+((x ^ y) /^ (s /^ t)) ^ ((x /^ y) /^ (s ^ t)) ^
+((x ^ t) /^ (s /^ y)) ^ ((x /^ t) /^ (s ^ y))
+.
+
+--[] < (x v y v s) ^ (x v y v t) ^ (x v s v t) ^ (s v y v t) ->
+--(x /^ s) ^ (y /^ t) < (x /^ y) /^ (s ^ t).
+
+[] < ((x /^ s) v (y /^ t) v s) ^ ((x /^ s) v (y /^ t) v t) ^ ((x /^ s) v s v t) ^ (s v (y /^ t) v t)  ->
+x ^ y < ((x /^ s) /^ (y /^ t)) /^ (s ^ t).
+
+-- independence of "non-informative" attribute(s) "s" 
+(x ^ s) ^ y = (x ^ y) ^ s.
+
+s v R11 = s 
+->   
+(x ^ s) + y = (x + y) ^ s.
+
+s v R11 = s 
+& s v y = R01
+->
+(x ^ s) v y = x v y
+. 
+
+s v R11 = s 
+& s v y = R01
+->
+(x ^ s) * y = x * y
+.  
+
+s v R11 = s 
+& s v y = R01
+->
+(x ^ s) /^ y = (x /^ y) ^ s
+. 
+
+s v R11 = s 
+& s v y = R01
+->
+(x ^ s) /= y = (x /= y) ^ s
+.
+
+["------1------"];
+y > x -> (r^x)^y > (r^x)^y'.
+["------2------"];
+(r^x)^y > (r^x)^y' & (r^y)^z > (r^y)^z' -> (r^x)^z > (r^x)^z'.  
+["------3------"]; 
+(r^x)^y > (r^x)^y' -> (r^x^z)^(y^z) > (r^x^z)^(y^z)'.
+
+--(r /^ y) /^ r < y
+--& (r /^ y) /^ y = r
+--& (r` /^ y) /^ y = r`
+--& (r' /^ y) /^ r' = r'
+(r^x)^y > (r^x)^y'
+<-
+r#x < r#y
+.
+
+r v x > s v x &
+s v y > t v y &
+x > y -> 
+r v x > t v x.
+
+
+r#x < r#y & r#s < r#t
+-> r#(x^s) < r#(y^t).
+
 */
-[] < x v y v s ->
-(x /^ s) ^ y = (x /^ s) ^ y ^ ((x /^ y) /^ s).
 
-
+--(y * z = y <-> y + z = z) <-> (y * z = z <-> y + z = y).
