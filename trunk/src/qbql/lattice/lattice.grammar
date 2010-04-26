@@ -101,14 +101,16 @@ outerUnion:  expr '+' expr
 ;
 parExpr:     '(' expr ')'
 ;
-partition:  --dummy '#' problem in expr generator
-             content
-          |  '(' partition ')'
+partition:  
+            '(' partition ')'
           |  expr '#' expr
           |  partition '^' partition
           |  partition 'v' partition
-          |  partition '|' content 
-           
+          
+          --|  content
+          --|  partition '|' content      
+          |  tuple
+          |  partition '|' tuple      
 ;
 program:     assertion
           |  assignment

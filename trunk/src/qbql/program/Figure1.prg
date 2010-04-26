@@ -468,20 +468,6 @@ r#x < r#y & r#s < r#t
 
 */
 
---r < s & r#s < r#s`
-t = [p]
-     1
-;
-r = [p  q]
-     1  a
-     1  b
-     2  a
-;
-r # (r v t);
-r # (r v t)`;
--((r v t) ^ [] = [])-> 
-r # (r v t) < r # (r v t)`.
-
 /*
 z = [p  q]
      1  a
@@ -491,5 +477,24 @@ z = [p  q]
 y = [p]
      1
 ;
+y + z;
 y * z = y.
-(y * z = y <-> y + z = z) <- (y * z = z <-> y + z = y).*/
+- (y + z = z).
+- (y * z = z).
+- (y + z = y).
+*/
+y + z = z <-> y^[]=z^[] & y < z | z = R11 | y < [] & y^[]>z^[] | y = R01 & R11 < z.
+
+z = [p  q]
+     1  a
+     1  b
+     2  a
+;
+y = [p]
+     1
+;
+y ^ R11;
+z ^ R11;
+y * z = y -> y ^ R11 < z ^ R11.
+
+y * z = y <- y + z = z.

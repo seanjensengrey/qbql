@@ -37,12 +37,13 @@ public class ExprGen {
             "<",
             "=",
             "&",
+            "|"
     };
     public static void main( String[] args ) throws Exception {
         //String goal = "(x + (y * z)) ^ (x ^ (y v z))' = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
-        String goal = "(y * z = y <-> y + z = z) <-> boolean.";
+        String goal = "y * z = y <-> implication.";
         //String goal = "x * y = expr.";
         //String goal = "(x=y -> z=u) <-> boolean.";
         //String goal = "x ^ y = x ^ y ^ (((x /^ s) /^ y) /^ s) <-> boolean.";
