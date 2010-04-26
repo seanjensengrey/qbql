@@ -468,4 +468,28 @@ r#x < r#y & r#s < r#t
 
 */
 
---(y * z = y <-> y + z = z) <-> (y * z = z <-> y + z = y).
+--r < s & r#s < r#s`
+t = [p]
+     1
+;
+r = [p  q]
+     1  a
+     1  b
+     2  a
+;
+r # (r v t);
+r # (r v t)`;
+-((r v t) ^ [] = [])-> 
+r # (r v t) < r # (r v t)`.
+
+/*
+z = [p  q]
+     1  a
+     1  b
+     2  a
+;
+y = [p]
+     1
+;
+y * z = y.
+(y * z = y <-> y + z = z) <- (y * z = z <-> y + z = y).*/
