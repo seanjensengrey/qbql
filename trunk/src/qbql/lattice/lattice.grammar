@@ -99,8 +99,6 @@ namedValue:  attribute '=' value
 ;
 outerUnion:  expr '+' expr
 ;
-parBool:     '(' boolean ')'
-;
 parExpr:     '(' expr ')'
 ;
 partition:  --dummy '#' problem in expr generator

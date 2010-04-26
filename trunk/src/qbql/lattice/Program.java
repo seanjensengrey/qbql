@@ -202,7 +202,7 @@ public class Program {
                         return true;
                     else
                         return bool(child);
-                } else if( oper == minus )
+                } else if( oper == minus && !child.contains(openParen) )
                     return ! bool(child);
                 else if( oper == openParen )
                     return bool(child);
