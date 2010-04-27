@@ -18,13 +18,13 @@ public class ExprGen {
     
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
-            //"'",
-            //"`",
+            "'",
+            "`",
     };
     final static String[] binaryOps = new String[] {
             "^",
             "v",             
-            //"*",
+            "*",
             //"+",
             ///"/>",
             //"/<",
@@ -34,18 +34,19 @@ public class ExprGen {
             //"/1",
             //"/!",
             
-            "<",
-            "=",
-            "&",
-            "|"
+            //"<",
+            //"=",
+            //"!=",
+            //"&",
+            //"|"
     };
     public static void main( String[] args ) throws Exception {
         //String goal = "(x + (y * z)) ^ (x ^ (y v z))' = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
-        String goal = "y * z = y <-> implication.";
-        //String goal = "x * y = expr.";
-        //String goal = "(x=y -> z=u) <-> boolean.";
+        //String goal = "y * z = y <-> implication.";
+        String goal = "x /< y = expr.";
+        //String goal = "(x=R00 -> y=R00) <-> implication.";
         //String goal = "x ^ y = x ^ y ^ (((x /^ s) /^ y) /^ s) <-> boolean.";
         System.out.println("goal: "+goal);
         final String subgoal = subgoal(goal);
