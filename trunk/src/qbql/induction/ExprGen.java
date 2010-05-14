@@ -18,37 +18,19 @@ public class ExprGen {
     
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
-            //"'",
-            //"`",
+            "'",
+            "`",
     };
-    final static String[] binaryOps = new String[] {
-            "^",
-            "v",             
-            //"*",
-            //"+",
-            ///"/>",
-            //"/<",
-            //"/=",
-            //"/^",
-            //"/0",
-            //"/1",
-            //"/!",
-            
-            "<",
-            "=",
-            //"!=",
-            "&",
-            "|"
-    };
+    static String[] binaryRelsOps;
     public static void main( String[] args ) throws Exception {
-        //String goal = "(x + (y * z)) ^ (x ^ (y v z))' = expr.";
+        //String goal = "(x ^ y) v (x ^ (y`)') = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
-        String goal = "y * z = y <-> implication."; // Found: y * z = y <-> (((R11 ^ z) v (R00 ^ y)) = (z v y)).
+        //String goal = "y + z = y <-> implication."; // Found: y * z = y <-> (((R11 ^ z) v (R00 ^ y)) = (z v y)).
 
         //String goal = "x /< y = expr.";
         //String goal = "(x=R00 -> y=R00) <-> implication.";
-        //String goal = "x ^ y = x ^ y ^ (((x /^ s) /^ y) /^ s) <-> boolean.";
+        String goal = "x = y <-> R00 = expr.";
         System.out.println("goal: "+goal);
         final String subgoal = subgoal(goal);
         
@@ -56,6 +38,38 @@ public class ExprGen {
             "R00",
             "R11",             
         };
+        
+        final String[] binaryOps = new String[] {
+            "^",
+            "v",             
+            "*",
+            "+",
+            //"/>",
+            //"/<",
+            //"/=",
+            //"/^",
+            //"/0",
+            //"/1",
+            //"/!",
+        };
+        final String[] binaryRels = new String[] {
+        		"<",
+        		"=",
+        		//"!=",
+        		"&",
+        		"|"
+        };
+        binaryRelsOps = new String[binaryOps.length];
+        if( goal.contains("implication") )
+        	binaryRelsOps = new String[binaryOps.length+binaryRels.length];
+        for( int i = 0; i < binaryOps.length; i++ ) {
+        	binaryRelsOps[i] = binaryOps[i];
+        }
+        if( goal.contains("implication") )
+        	for( int i = 0; i < binaryRels.length; i++ ) {
+        		binaryRelsOps[i+binaryOps.length] = binaryRels[i];
+        	}
+        
         
         final Lex lex = new Lex();
         List<LexerToken> src =  lex.parse(goal);
@@ -132,8 +146,8 @@ public class ExprGen {
                         continue;
                     System.out.println("*** found *** ");
                     System.out.println(input);
-                    //System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
-                    //System.out.println("evalTime="+evalTime);
+                    System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
+                    System.out.println("evalTime="+evalTime);
                     return;
                 } while( ExprGen.next(n) );
                 //cnt++;
@@ -163,7 +177,7 @@ public class ExprGen {
                 node.label = unaryOps[0];
             else {
                 init(node.rgt);
-                node.label = binaryOps[0];
+                node.label = binaryRelsOps[0];
             }
         }
     }
@@ -201,12 +215,12 @@ public class ExprGen {
                     return true;
                 }
             } else {
-                int index = index(node.label,binaryOps)+1;
-                if( index == binaryOps.length )
+                int index = index(node.label,binaryRelsOps)+1;
+                if( index == binaryRelsOps.length )
                     return false;
                 else {
                     init(node);
-                    node.label = binaryOps[index];
+                    node.label = binaryRelsOps[index];
                     return true;
                 }
             }
