@@ -74,3 +74,4 @@ SUV = SV ^ U;
 --------- User Defined Operations ----------
 x @+ y = (x ^ R11) v (y ^ (x v R11)).
 x @* y = (x ^ R00) v (x ^ y) v (R00 ^ y).
+x @^ y = (x /^ y) ^ (x v y).
