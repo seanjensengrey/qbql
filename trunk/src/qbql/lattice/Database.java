@@ -18,7 +18,7 @@ import qbql.util.Util;
 public class Database {
 
     private Map<String,Predicate> lattice = new TreeMap<String,Predicate>();
-    public Predicate predicate( String name ) {
+    public Predicate getPredicate( String name ) {
         return lattice.get(name);
     }
     public void addPredicate( String name, Predicate relvar ) {
@@ -33,6 +33,17 @@ public class Database {
             if( lattice.get(pred) instanceof Relation )
                 ret.add(pred);
         return ret.toArray(new String[0]);
+    }   
+    
+    private Map<String,Expr> newOperations = new TreeMap<String,Expr>();
+    public Expr getOperation( String name ) {
+    	Expr ret = newOperations.get(name);
+    	if( ret == null )
+    		throw new AssertionError("Operation '"+name+"' definition missing");
+    	return ret;
+    }
+    public void addOperation( String name, Expr expr ) {
+    	newOperations.put(name, expr);
     }       
     
     public static Relation R00 = new Relation(new String[]{});
@@ -393,7 +404,7 @@ public class Database {
 
         // relations that requre complement can be built only after R10 and R11 are defined
         try {
-            database.addPredicate("UJADJBC'",database.complement((Relation)(database.predicate("UJADJBC"))));
+            database.addPredicate("UJADJBC'",database.complement((Relation)(database.getPredicate("UJADJBC"))));
         } catch( Exception e ) { // NPE if databaseFile is not Figure1.db
         }
         return database;

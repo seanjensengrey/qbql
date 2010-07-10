@@ -29,7 +29,7 @@ public class Lex {
     public LinkedList<LexerToken> tokenize( String sourceExpr ) {
 
         LinkedList<LexerToken> ret = new LinkedList<LexerToken>();
-        final String operation = "(){}[]^-~&|!*+.\\/><='`\",;:#";
+        final String operation = "(){}[]^-~&|!*+.\\/><='`\",;:#@";
         final String ws = " \n\r\t";
         StringTokenizer st = new StringTokenizer(sourceExpr,
                                                  operation + ws
@@ -153,9 +153,10 @@ public class Lex {
             //" ' multiline \n literal' 123 a1$ x# \n" +
             //" /* 3s5d7 \n asdsa multiline comment*/ \n" +
             //"a 3a --a3 ss 5<7  \n" +
-            "  3.5 /* ** / -- ' ' \" \" */\n" +
-            "'/* */'\"/*--*/\"   abc\n" +
-            "'Cannot find the key_id for key: \"'||p_key_name||'\" for table \"'||"+
+            //"  3.5 /* ** / -- ' ' \" \" */\n" +
+            //"'/* */'\"/*--*/\"   abc\n" +
+            "a @@ a " +
+            //"'Cannot find the key_id for key: \"'||p_key_name||'\" for table \"'||"+
             "";
 
         List<LexerToken> out = new Lex().parse(input,true);

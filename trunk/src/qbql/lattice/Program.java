@@ -30,9 +30,8 @@ public class Program {
     
     public static CYK cyk;
     public static int naturalJoin;
-    public static int innerJoin;
     public static int innerUnion;
-    static int outerUnion;
+    static int userDefined;
     static int unnamedJoin;
     static int unnamedMeet;
     static int setIX;
@@ -54,7 +53,8 @@ public class Program {
     static int partition;
     static int parExpr;
     public static int openParen;
-    static int bool;
+    static int implication;
+    static int proposition;
     static int lt;
     static int gt;
     static int amp;
@@ -83,9 +83,8 @@ public class Program {
                 }
             };
             naturalJoin = cyk.symbolIndexes.get("join");
-            innerJoin = cyk.symbolIndexes.get("innerJoin");
+            userDefined = cyk.symbolIndexes.get("userDefined");
             innerUnion = cyk.symbolIndexes.get("innerUnion");
-            outerUnion = cyk.symbolIndexes.get("outerUnion");
             unnamedJoin = cyk.symbolIndexes.get("unnamedJoin");
             unnamedMeet = cyk.symbolIndexes.get("unnamedMeet");
             setIX = cyk.symbolIndexes.get("setIX");
@@ -112,7 +111,8 @@ public class Program {
             partition = cyk.symbolIndexes.get("partition");
             parExpr = cyk.symbolIndexes.get("parExpr");
             openParen = cyk.symbolIndexes.get("'('");
-            bool = cyk.symbolIndexes.get("boolean");
+            implication = cyk.symbolIndexes.get("implication");
+            proposition = cyk.symbolIndexes.get("proposition");
             assertion = cyk.symbolIndexes.get("assertion");
             query = cyk.symbolIndexes.get("query");
             identifier = cyk.symbolIndexes.get("identifier");
@@ -307,9 +307,15 @@ public class Program {
     }
 
     public ParseNode assertion( ParseNode root, boolean outputVariables ) throws Exception {
+        for( ParseNode child : root.children() ) {
+        	if( isDeclaration(child) )
+        		return null;
+        	break;
+        }
+        
         ParseNode ret = null;
         Set<String> variables = variables(root);
-
+        
         String[] tables = database.relNames();
         int[] indexes = new int[variables.size()];
         for( int i = 0; i < indexes.length; i++ )
@@ -318,16 +324,16 @@ public class Program {
             int var = 0;
             for( String variable : variables ) {
 //System.out.println(variable+"="+tables[indexes[var]]);
-                database.addPredicate(variable, database.predicate(tables[indexes[var++]]));
+                database.addPredicate(variable, database.getPredicate(tables[indexes[var++]]));
             }
 
             for( ParseNode child : root.children() ) {
-                if( child.contains(bool) ) {
+                if( child.contains(implication) ) {
                     if( !bool(child) ) {
                         for( String variable : variables )
                             if( outputVariables )
                                 System.out.println(variable+" = "
-                                                   +database.predicate(variable).toString(variable.length()+3, false)
+                                                   +database.getPredicate(variable).toString(variable.length()+3, false)
                                                    +";");
                         ret = child;
                         for( String variable : variables )
@@ -345,7 +351,42 @@ public class Program {
         return ret;
     }
 
-    private Set<String> variables( ParseNode root, boolean notAssignedOnes ) throws Exception {
+	private boolean isDeclaration( ParseNode root ) throws AssertionError {
+        if( root.contains(proposition) ) {
+        	String lft = null;
+        	String operation = null;
+        	String rgt = null;
+        	boolean sawEQ = false;
+            for( ParseNode child : root.children() ) {
+            	if( !child.contains(userDefined) && operation == null )
+            		break;
+            	if( operation == null ) {
+            		for( ParseNode grandChild : child.children() ) {
+            			if( lft == null ) 
+            				lft = grandChild.content(src);
+            			else if( operation == null ) 
+            				operation = grandChild.content(src);
+            			else if( rgt == null ) 
+            				rgt = grandChild.content(src);
+            			else
+            				throw new AssertionError("Unexpected user defined expression");
+            		}
+            	} else if( !sawEQ ) {
+            		if( !child.contains(equality) ) 
+            			throw new AssertionError("Unexpected user defined expression");
+            		else 
+            			sawEQ = true;
+            	} else {
+            		database.addOperation(operation, Expr.convert(lft, rgt, child, src));
+            		return true;
+            	}
+            }
+        }
+        return false;
+	}
+
+
+	private Set<String> variables( ParseNode root, boolean notAssignedOnes ) throws Exception {
         Set<String> variables = new HashSet<String>();
         for( ParseNode descendant : root.descendants() ) {
             String id = descendant.content(src);
@@ -454,10 +495,8 @@ public class Program {
             return ret;
         }*/ else if( root.contains(naturalJoin) ) 
             return binaryOper(root,naturalJoin);
-        else if( root.contains(innerJoin) ) 
-            return binaryOper(root,innerJoin);
-        else if( root.contains(outerUnion) ) 
-            return binaryOper(root,outerUnion);
+        else if( root.contains(userDefined) ) 
+            return userDefined(root);
         else if( root.contains(innerUnion) ) 
             return binaryOper(root,innerUnion);
         else if( root.contains(unnamedJoin) ) 
@@ -498,7 +537,7 @@ public class Program {
     }
 
     private Predicate lookup( String name ) throws Exception {
-        Predicate ret = database.predicate(name);
+        Predicate ret = database.getPredicate(name);
         if( ret != null ) 
             return ret;
         try {
@@ -506,6 +545,27 @@ public class Program {
         } catch ( Exception e ) {
             return null;
         }
+    }
+    
+    private Predicate userDefined( ParseNode root ) throws Exception  {
+        Predicate left = null;
+        Predicate right = null;
+        String oper = null;
+        for( ParseNode child : root.children() ) {
+            if( left == null && child.contains(expr) )
+                left = expr(child);
+            else if( child.contains(expr) )                           
+                right = expr(child);
+            else
+            	oper = child.content(src);
+        }
+    	database.addPredicate("?lft",left);
+    	database.addPredicate("?rgt",right);
+    	Expr e = database.getOperation(oper);
+    	Predicate ret = e.eval(database);
+        database.removePredicate("?lft");
+        database.removePredicate("?rgt");
+        return ret;
     }
     
     private Predicate binaryOper( ParseNode root, int oper ) throws Exception  {
@@ -518,13 +578,9 @@ public class Program {
                 right = expr(child);
         }
         if( oper == naturalJoin )
-            return Relation.join(left,right);
-        else if( oper == innerJoin )
-            return Relation.innerJoin((Relation)left,(Relation)right);
+            return Predicate.join(left,right);
         else if( oper == innerUnion )
             return Predicate.innerUnion(left,right);
-        else if( oper == outerUnion )
-            return database.outerUnion((Relation)left,(Relation)right);
         else if( oper == unnamedJoin )
             return database.unnamedJoin((Relation)left,(Relation)right);
         else if( oper == unnamedMeet )
