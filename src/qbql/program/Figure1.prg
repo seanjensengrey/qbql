@@ -488,8 +488,9 @@ y * z = y.
 --x = y <-> R00 = (((y ^ x)' ^ (y v x))` ^ (y v x))`.
 
 -- Looking for orthomodular operations
-A @* C;
-A @+ C;
+x @* x = x.
+x @* y = y @* x.
+x @* (y @* z) = (x @* y) @* z.
 
 (x /^ x) ^ (x v x) = x.
 (x /= x) ^ (x v x) = x.

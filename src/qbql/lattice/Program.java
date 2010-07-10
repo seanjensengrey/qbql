@@ -364,9 +364,13 @@ public class Program {
             		for( ParseNode grandChild : child.children() ) {
             			if( lft == null ) 
             				lft = grandChild.content(src);
-            			else if( operation == null ) 
+            			else if( operation == null ) {
             				operation = grandChild.content(src);
-            			else if( rgt == null ) 
+            				try { 
+            					database.getOperation(operation);
+            					return false;
+            				} catch( AssertionError e ) {} 
+            			} else if( rgt == null ) 
             				rgt = grandChild.content(src);
             			else
             				throw new AssertionError("Unexpected user defined expression");
