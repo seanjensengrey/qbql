@@ -213,13 +213,6 @@ x` ^ y`    = (x * y)` + (x` * y`).
 
 
 
-% redefined set equality join; no longer valid: 
-x /|\ y = ((x`*y)+(y`*x)) ^ 
-(
- ((x`*y)+(y`*x)) *
- ((x'^y)v(y'^x))
-)'.
-
 
 %false: x \|/ y = (x * y`) ^ (x` * y).
 x \|/ y = (x ^ y) * (x` + y`).
@@ -317,8 +310,6 @@ xy |\ y;
 xy /| y;
 xy \|/ y;
 
-x < R00 ->
-x * (y * z) = (x * y) * z.
 
 (R00 ^ (x v y) = R00 ^ (x v z)) ->
 x ^ (y * z) = (x ^ y) * (x ^ z).
@@ -487,12 +478,21 @@ y * z = y.
 --(x ^ y) v (x ^ (y`)') = (y` ^ y')' * x.
 --x = y <-> R00 = (((y ^ x)' ^ (y v x))` ^ (y v x))`.
 
-x @* x = x.
-x @* y = y @* x.
---x @* (y @* z) = (x @* y) @* z.
+--x @+ x = x.
+--x @+ y = y @+ x.
+--x @+ (y @+ z) = (x @+ y) @+ z.
+--x ^ (y @+ z) = (x ^ y) @+ (x ^ z).
 
+
+--x @* x = x.
+--x @* y = y @* x.
+--x @* (y @* z) = (x @* y) @* z.
+--x @+ (x @* y) = x.
+--x @* (x @+ y) = x.
+--R00 ^ (x v y) = R00 ^ (y v z) -> x @* (y @* z) = (x @* y) @* z.
+x ^ (y ^ z) = (x ^ y) ^ z.
 
 -- Looking for orthomodular operations
-x @^ x = x.
-x @^ y = y @^ x.
-x @^ (y @^ z) = (x @^ y) @^ z.
+--x @^ x = x.
+--x @^ y = y @^ x.
+--x @^ (y @^ z) = (x @^ y) @^ z.

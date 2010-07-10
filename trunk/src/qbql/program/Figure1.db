@@ -72,6 +72,11 @@ S1V = S1 ^ V;
 SUV = SV ^ U;
 
 --------- User Defined Operations ----------
-x @+ y = (x ^ R11) v (y ^ (x v R11)).
-x @* y = (x ^ R00) v (x ^ y) v (R00 ^ y).
+x @+ y = --(x ^ R11) v (y ^ (x v R11)). -- x @+ (y @+ z) = (x @+ y) @+ z. 73 sec
+        --(R11 ^ y) v (x ^ y) v (x ^ R11). -- 112 sec
+        (x ^ (y v R11)) v (y ^ (x v R11)). -- 43 sec
+        --(x' ^ y')'. -- 70 sec
+        --((R00 ^ x) ^ y) v (R11 ^ y) v (x ^ R11). -- 113 sec
+x @* y = --(x ^ R00) v (x ^ y) v (R00 ^ y). -- 4.9 sec R00 ^ (x v y) = R00 ^ (y v z) -> x @* (y @* z) = (x @* y) @* z.
+         (x ^ y) v ((x v y) ^ R00). -- 4.9 sec (compared with join ^ associativity taking 3.7 sec)
 x @^ y = (x /^ y) ^ (x v y).
