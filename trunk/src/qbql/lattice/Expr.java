@@ -27,7 +27,7 @@ public class Expr {
         else if( "`".equals(type) )
             return d.inverse((Relation)lft.eval(d));
         else if( "/^".equals(type) )
-            return d.quantifier((Relation)lft.eval(d),(Relation)rgt.eval(d),Program.setIX);
+            return Predicate.setIX((Relation)lft.eval(d), (Relation)rgt.eval(d));
         else if( "/=".equals(type) )
             return d.quantifier((Relation)lft.eval(d),(Relation)rgt.eval(d),Program.setEQ);
         else if( "/<".equals(type) )
@@ -74,18 +74,29 @@ public class Expr {
 	    			return convert(l,r,child,src);
 	        }
 		
-		String oper = null; 
+		String oper = ""; 
 		Expr lft = null;
 		Expr rgt = null;
         for( ParseNode child : root.children() ) {
         	if( lft == null ) {
         		lft = convert(l,r,child,src);
-        	} else if( oper == null ) {
-        		oper = child.content(src);
-        	} else
+        	} else if( child.contains(Program.expr) ) {
         		rgt = convert(l,r,child,src);
+        	} else
+        		oper += child.content(src);        		
         }
 		return new Expr(oper,lft,rgt);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		if( lft != null )
+			sb.append('('+lft.toString()+')');
+		sb.append(type);
+		if( rgt != null )
+			sb.append('('+rgt.toString()+')');
+		return sb.toString();
 	}
 
 }

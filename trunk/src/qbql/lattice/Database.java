@@ -80,6 +80,9 @@ public class Database {
      * Generalized set intersection and set union
      */
     Relation quantifier( Relation x, Relation y, int type ) throws Exception {
+    	if( type == Program.setIX )
+    		throw new AssertionError("Wrong method for calcualting set intersection join");
+    	
         Set<String> headerXmY = new TreeSet<String>();
         headerXmY.addAll(x.header.keySet());
         headerXmY.removeAll(y.header.keySet());            

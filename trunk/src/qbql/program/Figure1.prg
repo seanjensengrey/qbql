@@ -487,16 +487,12 @@ y * z = y.
 --(x ^ y) v (x ^ (y`)') = (y` ^ y')' * x.
 --x = y <-> R00 = (((y ^ x)' ^ (y v x))` ^ (y v x))`.
 
--- Looking for orthomodular operations
 x @* x = x.
 x @* y = y @* x.
-x @* (y @* z) = (x @* y) @* z.
+--x @* (y @* z) = (x @* y) @* z.
 
-(x /^ x) ^ (x v x) = x.
-(x /= x) ^ (x v x) = x.
 
-(((x /^ y) ^ (x v y)) /^ z) ^ (((x /^ y) ^ (x v y)) v z) =
-(x /^ ((y /^ z) ^ (y v z))) ^ (x v ((y /^ z) ^ (y v z))).
-
---(((x /= y) ^ (x v y)) /= z) ^ (((x /= y) ^ (x v y)) v z) =
---(x /= ((y /= z) ^ (y v z))) ^ (x v ((y /= z) ^ (y v z))).
+-- Looking for orthomodular operations
+x @^ x = x.
+x @^ y = y @^ x.
+x @^ (y @^ z) = (x @^ y) @^ z.
