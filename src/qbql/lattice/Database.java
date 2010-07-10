@@ -70,11 +70,11 @@ public class Database {
     }
     
 
-    Relation outerUnion( Relation x, Relation y ) {
+    /*Relation outerUnion( Relation x, Relation y ) {
         return Relation.innerUnion( Relation.join(x, Relation.innerUnion(y, R11))
                                     , Relation.join(y, Relation.innerUnion(x, R11)) 
         );
-    }
+    }*/
 
     /**
      * Generalized set intersection and set union
