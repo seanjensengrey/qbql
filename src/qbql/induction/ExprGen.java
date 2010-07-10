@@ -23,6 +23,7 @@ public class ExprGen {
     };
     static String[] binaryRelsOps;
     public static void main( String[] args ) throws Exception {
+        String goal = "(x ^ y) /= (x v y) = expr.";
         //String goal = "(x ^ y) v (x ^ (y`)') = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
@@ -30,7 +31,7 @@ public class ExprGen {
 
         //String goal = "x /< y = expr.";
         //String goal = "(x=R00 -> y=R00) <-> implication.";
-        String goal = "x = y <-> R00 = expr.";
+        //String goal = "x = y <-> R00 = expr.";
         System.out.println("goal: "+goal);
         final String subgoal = subgoal(goal);
         

@@ -1,6 +1,6 @@
 almostDisj:  expr '/' '1' expr
 ;
-assertion:   boolean '.'
+assertion:   implication '.'
 ;
 assignment:  identifier '=' expr ';'
           |  identifier '=' partition ';'
@@ -8,9 +8,6 @@ assignment:  identifier '=' expr ';'
 attribute:   identifier
 ;
 big:         expr '/' '!' expr
-;
-boolean:     
-             implication
 ;
 
 implication: 
@@ -67,11 +64,9 @@ expr:        almostDisj
           |  contains
           |  disjoint
           |  identifier
-          |  innerJoin
           |  innerUnion
           |  inverse
           |  join
-          |  outerUnion
           |  parExpr
           |  relation
           |  setEQ
@@ -80,13 +75,12 @@ expr:        almostDisj
           |  transpCont
           |  unnamedJoin
           |  unnamedMeet
+          |  userDefined
 ;
 header:      identifier
           |  string_literal
           |  header identifier
           |  header ',' identifier
-;
-innerJoin:   expr '*' expr
 ;
 innerUnion:  expr 'v' expr
 ;
@@ -96,8 +90,6 @@ inverse:     identifier '`'
 join:        expr '^' expr
 ;
 namedValue:  attribute '=' value
-;
-outerUnion:  expr '+' expr
 ;
 parExpr:     '(' expr ')'
 ;
@@ -126,6 +118,8 @@ setEQ:       expr '/' '=' expr
 ;
 setIX:       expr '/' '^' expr
 ;
+specialSym:  '`' | '~' | '!' | '@' | '#' | '$' | '^' | '&' | '*' | '+' | 'qtSymbol' | '|'
+;
 table:       '[' ']'
           |  '[' header ']'
           |  '[' header ']' content
@@ -141,6 +135,11 @@ tuples:      tuple
 unnamedJoin:  expr '^' '~' expr
 ;
 unnamedMeet:  expr 'v' '~' expr
+;
+userDefined:  expr userOper expr
+;
+userOper:  '@' specialSym
+         | '@' specialSym specialSym
 ;
 value:       digits
           |  '-' digits

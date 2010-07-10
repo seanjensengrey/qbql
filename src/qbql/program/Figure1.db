@@ -70,3 +70,7 @@ W2=[p  s  t]
 SV = S ^ V;
 S1V = S1 ^ V;
 SUV = SV ^ U;
+
+--------- User Defined Operations ----------
+x @+ y = (x ^ R11) v (y ^ (x v R11)).
+x @* y = (x ^ R00) v (x ^ y) v (R00 ^ y).
