@@ -48,15 +48,17 @@ public class Database {
     public Set<String> operationNames() {
     	return newOperations.keySet();
     }   
-	public void restoreOperations( Set<String> databaseOperations ) {
-		if( newOperations.keySet().size() == databaseOperations.size() )
+	public void restoreOperations( Set<String> target ) {
+		if( newOperations.keySet().size() == target.size() )
 			return;
 		String extra = null;
 		for( String key : newOperations.keySet() )
-			if( !databaseOperations.contains(key) )
+			if( !target.contains(key) ) {
 				extra = key;
+				break;
+			}
 		newOperations.remove(extra);		
-		if( newOperations.keySet().size() != databaseOperations.size() )
+		if( newOperations.keySet().size() != target.size() )
 			throw new AssertionError("Only one extra operation is allowed");
 	}
    
