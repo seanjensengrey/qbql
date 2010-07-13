@@ -53,14 +53,14 @@ public class Program {
     static int partition;
     static int parExpr;
     public static int openParen;
-    static int implication;
+    public static int implication;
     static int proposition;
     static int lt;
     static int gt;
     static int amp;
     static int bar;
     static int excl;
-    static int assertion;
+    public static int assertion;
     static int query;
     public static int identifier;
 
@@ -392,7 +392,7 @@ public class Program {
 	}
 
 
-	private Set<String> variables( ParseNode root, boolean notAssignedOnes ) throws Exception {
+	private Set<String> variables( ParseNode root, boolean notAssignedOnes ) {
         Set<String> variables = new HashSet<String>();
         for( ParseNode descendant : root.descendants() ) {
             String id = descendant.content(src);
@@ -405,7 +405,7 @@ public class Program {
         }
         return variables;
     }
-    public Set<String> variables( ParseNode root ) throws Exception {
+    public Set<String> variables( ParseNode root ) {
     	return variables(root, true);
     }
 
@@ -542,7 +542,7 @@ public class Program {
         throw new Exception("Unknown case");
     }
 
-    private Predicate lookup( String name ) throws Exception {
+    private Predicate lookup( String name ) {
         Predicate ret = database.getPredicate(name);
         if( ret != null ) 
             return ret;

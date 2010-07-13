@@ -1,6 +1,7 @@
 package qbql.induction;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
@@ -23,17 +24,18 @@ public class ExprGen {
     };
     static String[] binaryRelsOps;
     public static void main( String[] args ) throws Exception {
-        //final String goal = "x@@y = expr. x@@x=x.";
+        //final String goal = "x@@y = expr. x@@x = x. x@@y = y@@x. x ^ (y @@ z) = (x^y) @@ (x^z).";
+        final String goal = "x@@y = expr. x@@x = x. x@@y = y@@x. x @@ (y @@ z) = (x @@ y) @@ z.";
         //String goal = "(x ^ y) v (x ^ (y`)') = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
         //String goal = "y + z = y <-> implication."; // Found: y * z = y <-> (((R11 ^ z) v (R00 ^ y)) = (z v y)).
 
-        String goal = "x @* y = expr.";
+        //String goal = "(((y)' v (x)'))' = expr.";
         //String goal = "(x=R00 -> y=R00) <-> implication.";
         //String goal = "x = y <-> R00 = expr.";
         System.out.println("goal: "+goal);
-        final String subgoal = subgoal(goal);
+        final int subgoal = Program.cyk.symbolIndexes.get(subgoal(goal));
         
         final String[] constants = new String[] {
             "R00",
@@ -43,8 +45,8 @@ public class ExprGen {
         final String[] binaryOps = new String[] {
             "^",
             "v",             
-            //"*",
-            //"+",
+            //"@*",
+            //"@+",
             //"/>",
             //"/<",
             //"/=",
@@ -61,12 +63,12 @@ public class ExprGen {
         		"|"
         };
         binaryRelsOps = new String[binaryOps.length];
-        if( subgoal.equals("implication") )
+        if( subgoal == Program.implication )
         	binaryRelsOps = new String[binaryOps.length+binaryRels.length];
         for( int i = 0; i < binaryOps.length; i++ ) {
         	binaryRelsOps[i] = binaryOps[i];
         }
-        if( subgoal.equals("implication") )
+        if( subgoal == Program.implication )
         	for( int i = 0; i < binaryRels.length; i++ ) {
         		binaryRelsOps[i+binaryOps.length] = binaryRels[i];
         	}
@@ -83,9 +85,10 @@ public class ExprGen {
             throw new Exception("!root.contains(program)" );     
         
         Program p = new Program(src,Database.init(Util.readFile(Run.class,"Figure1.db")));
-        Set<String> variables = p.variables(root);
-        variables.remove(subgoal);
-        Set<String> databaseOperations = p.database.operationNames();
+        Set<String> variables = extractVariables(root, p, subgoal);
+        variables.remove(subgoal(goal));
+        Set<String> databaseOperations = new HashSet<String>();
+        databaseOperations.addAll(p.database.operationNames());
         
         zilliaryOps = new String[variables.size()+constants.length];
         for( int i = 0; i < variables.size(); i++ ) {
@@ -132,7 +135,7 @@ public class ExprGen {
                     //if( n.toString().contains("(y * x) v y") )
                         //n.print();
                                         
-                    String input = goal.replace(subgoal, n.toString());
+                    String input = goal.replace(Program.cyk.allSymbols[subgoal], n.toString());
                     p.src =  lex.parse(input);
                     matrix = Program.cyk.initMatrixSubdiagonal(p.src);
                     size = matrix.size();
@@ -153,7 +156,7 @@ public class ExprGen {
                     System.out.println(input);
                     System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
                     System.out.println("evalTime="+evalTime);
-                    return;
+                    //return;
                 } while( ExprGen.next(n) );
                 //cnt++;
             } else {
@@ -163,6 +166,20 @@ public class ExprGen {
         //System.out.println(cnt);
         
     }
+
+	private static Set<String> extractVariables( ParseNode root, Program p, int subgoal ) {
+        if( root.contains(Program.assertion) ) {
+        	for( ParseNode d : root.descendants() )
+        		if( d.contains(subgoal) )
+        			return p.variables(root);
+        } 
+        for( ParseNode child : root.children() ) {
+        	Set<String> ret = extractVariables(child, p, subgoal);       
+            if( ret != null )
+                return ret;
+        }
+        return null;
+	}
 
     private static String subgoal( String goal ) {
         for( String symb : Program.cyk.allSymbols  ) {
