@@ -45,7 +45,21 @@ public class Database {
     public void addOperation( String name, Expr expr ) {
     	newOperations.put(name, expr);
     }       
-    
+    public Set<String> operationNames() {
+    	return newOperations.keySet();
+    }   
+	public void restoreOperations( Set<String> databaseOperations ) {
+		if( newOperations.keySet().size() == databaseOperations.size() )
+			return;
+		String extra = null;
+		for( String key : newOperations.keySet() )
+			if( !databaseOperations.contains(key) )
+				extra = key;
+		newOperations.remove(extra);		
+		if( newOperations.keySet().size() != databaseOperations.size() )
+			throw new AssertionError("Only one extra operation is allowed");
+	}
+   
     public static Relation R00 = new Relation(new String[]{});
     Relation R11;
     public static Relation R01 = new Relation(new String[]{});
@@ -430,6 +444,7 @@ public class Database {
         Database db = init(dbSrc);
         Program program = new Program(src,db); 
         long t1 = System.currentTimeMillis();
+        program.outputVariables = true;
         ParseNode exception = program.program(root);
         long t2 = System.currentTimeMillis();
         System.out.println("Time = "+(t2-t1)); 

@@ -306,7 +306,9 @@ public class Program {
             throw new Exception("Impossible case");             
     }
 
-    public ParseNode assertion( ParseNode root, boolean outputVariables ) throws Exception {
+    boolean outputVariables = false;
+    
+    public ParseNode assertion( ParseNode root ) throws Exception {
         for( ParseNode child : root.children() ) {
         	if( isDeclaration(child) )
         		return null;
@@ -427,7 +429,7 @@ public class Program {
      */
     public ParseNode program( ParseNode root ) throws Exception {
         if( root.contains(assertion) )
-            return assertion(root,true);
+            return assertion(root);
         if( root.contains(query) )
             return query(root);
         if( root.contains(assignment) ) {

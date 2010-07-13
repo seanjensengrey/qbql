@@ -23,13 +23,13 @@ public class ExprGen {
     };
     static String[] binaryRelsOps;
     public static void main( String[] args ) throws Exception {
-        String goal = "(x ^ y) /= (x v y) = expr.";
+        //final String goal = "x@@y = expr. x@@x=x.";
         //String goal = "(x ^ y) v (x ^ (y`)') = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
         //String goal = "y + z = y <-> implication."; // Found: y * z = y <-> (((R11 ^ z) v (R00 ^ y)) = (z v y)).
 
-        //String goal = "x /< y = expr.";
+        String goal = "x @* y = expr.";
         //String goal = "(x=R00 -> y=R00) <-> implication.";
         //String goal = "x = y <-> R00 = expr.";
         System.out.println("goal: "+goal);
@@ -43,8 +43,8 @@ public class ExprGen {
         final String[] binaryOps = new String[] {
             "^",
             "v",             
-            "*",
-            "+",
+            //"*",
+            //"+",
             //"/>",
             //"/<",
             //"/=",
@@ -61,12 +61,12 @@ public class ExprGen {
         		"|"
         };
         binaryRelsOps = new String[binaryOps.length];
-        if( goal.contains("implication") )
+        if( subgoal.equals("implication") )
         	binaryRelsOps = new String[binaryOps.length+binaryRels.length];
         for( int i = 0; i < binaryOps.length; i++ ) {
         	binaryRelsOps[i] = binaryOps[i];
         }
-        if( goal.contains("implication") )
+        if( subgoal.equals("implication") )
         	for( int i = 0; i < binaryRels.length; i++ ) {
         		binaryRelsOps[i+binaryOps.length] = binaryRels[i];
         	}
@@ -79,11 +79,14 @@ public class ExprGen {
         TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
         Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
         ParseNode root = Program.cyk.forest(size, matrix);
-        if( !root.contains(Program.cyk.symbolIndexes.get("assertion") ) )
-            throw new Exception("!root.contains(assertion)" );     
+        if( !root.contains(Program.cyk.symbolIndexes.get("program") ) )
+            throw new Exception("!root.contains(program)" );     
         
         Program p = new Program(src,Database.init(Util.readFile(Run.class,"Figure1.db")));
         Set<String> variables = p.variables(root);
+        variables.remove(subgoal);
+        Set<String> databaseOperations = p.database.operationNames();
+        
         zilliaryOps = new String[variables.size()+constants.length];
         for( int i = 0; i < variables.size(); i++ ) {
             zilliaryOps[i] = variables.toArray(new String[0])[i];
@@ -129,20 +132,21 @@ public class ExprGen {
                     //if( n.toString().contains("(y * x) v y") )
                         //n.print();
                                         
-                    String input = subgoal + n.toString() +".";
+                    String input = goal.replace(subgoal, n.toString());
                     p.src =  lex.parse(input);
                     matrix = Program.cyk.initMatrixSubdiagonal(p.src);
                     size = matrix.size();
                     skipRanges = new TreeMap<Integer,Integer>();
                     Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
                     root = Program.cyk.forest(size, matrix);
-                    if( !root.contains(Program.cyk.symbolIndexes.get("assertion") ) )
+                    if( !root.contains(Program.cyk.symbolIndexes.get("program") ) )
                         continue;     
                     
                     final long t2 = System.currentTimeMillis();
                     
-                    ParseNode eval = p.assertion(root, false);
+                    ParseNode eval = p.program(root);
                     evalTime += System.currentTimeMillis()-t2;
+                    p.database.restoreOperations(databaseOperations);
                     if( eval != null )
                         continue;
                     System.out.println("*** found *** ");
@@ -164,7 +168,7 @@ public class ExprGen {
         for( String symb : Program.cyk.allSymbols  ) {
             int ind = goal.indexOf(symb);
             if( ind > 0 )
-                return goal.substring(0,ind);
+                return symb;//goal.substring(0,ind);
         }
         throw new AssertionError("no subgoal?");
     }
