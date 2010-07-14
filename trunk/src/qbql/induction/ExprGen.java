@@ -24,18 +24,17 @@ public class ExprGen {
     };
     static String[] binaryRelsOps;
     public static void main( String[] args ) throws Exception {
-        //final String goal = "x@@y = expr. x@@x = x. x@@y = y@@x. x ^ (y @@ z) = (x^y) @@ (x^z).";
         final String goal = "x@@y = expr. x@@x = x. x@@y = y@@x. x @@ (y @@ z) = (x @@ y) @@ z.";
         //String goal = "(x ^ y) v (x ^ (y`)') = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
         //String goal = "y + z = y <-> implication."; // Found: y * z = y <-> (((R11 ^ z) v (R00 ^ y)) = (z v y)).
 
-        //String goal = "(((y)' v (x)'))' = expr.";
+        //String goal = "(x' ^ y)' ^ y = expr.";
+        //String goal = "x @* y = expr.";
         //String goal = "(x=R00 -> y=R00) <-> implication.";
         //String goal = "x = y <-> R00 = expr.";
         System.out.println("goal: "+goal);
-        final int subgoal = Program.cyk.symbolIndexes.get(subgoal(goal));
         
         final String[] constants = new String[] {
             "R00",
@@ -62,16 +61,6 @@ public class ExprGen {
         		"&",
         		"|"
         };
-        binaryRelsOps = new String[binaryOps.length];
-        if( subgoal == Program.implication )
-        	binaryRelsOps = new String[binaryOps.length+binaryRels.length];
-        for( int i = 0; i < binaryOps.length; i++ ) {
-        	binaryRelsOps[i] = binaryOps[i];
-        }
-        if( subgoal == Program.implication )
-        	for( int i = 0; i < binaryRels.length; i++ ) {
-        		binaryRelsOps[i+binaryOps.length] = binaryRels[i];
-        	}
         
         
         final Lex lex = new Lex();
@@ -84,9 +73,21 @@ public class ExprGen {
         if( !root.contains(Program.cyk.symbolIndexes.get("program") ) )
             throw new Exception("!root.contains(program)" );     
         
+        final int subgoal = subgoal(src);
+        binaryRelsOps = new String[binaryOps.length];
+        if( subgoal == Program.implication )
+        	binaryRelsOps = new String[binaryOps.length+binaryRels.length];
+        for( int i = 0; i < binaryOps.length; i++ ) {
+        	binaryRelsOps[i] = binaryOps[i];
+        }
+        if( subgoal == Program.implication )
+        	for( int i = 0; i < binaryRels.length; i++ ) {
+        		binaryRelsOps[i+binaryOps.length] = binaryRels[i];
+        	}
+        
         Program p = new Program(src,Database.init(Util.readFile(Run.class,"Figure1.db")));
         Set<String> variables = extractVariables(root, p, subgoal);
-        variables.remove(subgoal(goal));
+        variables.remove(Program.cyk.allSymbols[subgoal]);
         Set<String> databaseOperations = new HashSet<String>();
         databaseOperations.addAll(p.database.operationNames());
         
@@ -112,20 +113,21 @@ public class ExprGen {
                 continue;
             TreeNode n = num.decode(); 
             if( n != null ) {
-                if( n.isRightSkewed() )
-                    continue;
+                //if( n.isRightSkewed() ) // !!!conflicts with other variable assignments!!!
+                    //continue;
+            	
                 //System.out.println();
                 try {
                     init(n);
                 } catch( ArrayIndexOutOfBoundsException e ) { // no unary operations
                     continue;
                 }
-                n.print();
+                //n.print();
                 if( skip && "(((((z ^ z) ^ (z)`) ^ ((z ^ z))`) ^ ((z ^ z))`))`".equals(n.toString()) )
                     skip = false;
                 if( skip )
                     continue;
-                do {
+                do {                    
                     if( n.isRightSkewed() )
                         continue;
                     if( n.isAbsorpIdemp() )
@@ -136,6 +138,7 @@ public class ExprGen {
                         //n.print();
                                         
                     String input = goal.replace(Program.cyk.allSymbols[subgoal], n.toString());
+                    
                     p.src =  lex.parse(input);
                     matrix = Program.cyk.initMatrixSubdiagonal(p.src);
                     size = matrix.size();
@@ -156,7 +159,7 @@ public class ExprGen {
                     System.out.println(input);
                     System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
                     System.out.println("evalTime="+evalTime);
-                    //return;
+                    return;
                 } while( ExprGen.next(n) );
                 //cnt++;
             } else {
@@ -181,12 +184,12 @@ public class ExprGen {
         return null;
 	}
 
-    private static String subgoal( String goal ) {
-        for( String symb : Program.cyk.allSymbols  ) {
-            int ind = goal.indexOf(symb);
-            if( ind > 0 )
-                return symb;//goal.substring(0,ind);
-        }
+    private static int subgoal( List<LexerToken> src ) {
+    	for( LexerToken t : src )
+    		if( t.content.equals(Program.cyk.allSymbols[Program.implication]) )
+    			return Program.implication;
+    		else if( t.content.equals(Program.cyk.allSymbols[Program.expr]) )
+    			return Program.expr;
         throw new AssertionError("no subgoal?");
     }
     
