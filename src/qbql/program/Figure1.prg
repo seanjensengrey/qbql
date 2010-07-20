@@ -481,7 +481,7 @@ y * z = y.
 --x @+ x = x.
 --x @+ y = y @+ x.
 --x @+ (y @+ z) = (x @+ y) @+ z.
---x ^ (y @+ z) = (x ^ y) @+ (x ^ z).
+--?!x v (y @^ z) = (x v y) @^ (x v z).
 
 
 --x @* x = x.
@@ -492,9 +492,6 @@ y * z = y.
 --R00 ^ (x v y) = R00 ^ (y v z) -> x @* (y @* z) = (x @* y) @* z.
 
 
--- Looking for orthomodular operations
---x @^ x = x.
---x @^ y = y @^ x.
---x @^ (y @^ z) = (x @^ y) @^ z.
+x /^ (y ^ z) = (x /^ y) ^ (x /^ y).
 
 

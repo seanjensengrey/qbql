@@ -415,8 +415,8 @@ public class Database {
             throw new Exception("Parse Error");
         }
 
-        Program dbPrg = new Program(src,database);
-        dbPrg.program(root);
+        Program dbPrg = new Program(database);
+        dbPrg.program(root,src);
 
         database.buildR10();
         database.buildR11();
@@ -444,10 +444,10 @@ public class Database {
         }
 
         Database db = init(dbSrc);
-        Program program = new Program(src,db); 
+        Program program = new Program(db); 
         long t1 = System.currentTimeMillis();
         program.outputVariables = true;
-        ParseNode exception = program.program(root);
+        ParseNode exception = program.program(root,src);
         long t2 = System.currentTimeMillis();
         System.out.println("Time = "+(t2-t1)); 
         if( exception != null ) {
