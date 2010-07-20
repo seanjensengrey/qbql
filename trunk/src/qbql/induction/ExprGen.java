@@ -24,8 +24,7 @@ public class ExprGen {
     };
     static String[] binaryRelsOps;
     public static void main( String[] args ) throws Exception {
-        final String goal = "x@@y = expr. x@@x = x. x@@y = y@@x. x @@ (y @@ z) = (x @@ y) @@ z." +
-        		" @@ != ^. @@ != v. @@ != @^. @@ != @v. ";
+        final String goal = Util.readFile(ExprGen.class,"induction.prg");
         //String goal = "(x ^ y) v (x ^ (y`)') = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";

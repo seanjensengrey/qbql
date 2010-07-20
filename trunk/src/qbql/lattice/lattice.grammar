@@ -124,7 +124,7 @@ setEQ:       expr '/' '=' expr
 ;
 setIX:       expr '/' '^' expr
 ;
-specialSym:  '`' | '~' | '!' | '@' | '#' | '$' | '^' | 'v' | '&' | '*' | '+' | 'qtSymbol' | '|'
+specialSym:  '`' | '~' | '!' | '?' | '@' | '#' | '$' | '^' | 'v' | '&' | '*' | '+' | 'qtSymbol' | '|'
 ;
 table:       '[' ']'
           |  '[' header ']'
