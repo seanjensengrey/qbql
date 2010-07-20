@@ -75,8 +75,8 @@ public class ParseDb extends Database {
         }
         System.out.println("-------------------------------------");
 
-        Program program = new Program(src,db); 
-        ParseNode exception = program.program(root);
+        Program program = new Program(db); 
+        ParseNode exception = program.program(root,src);
         if( exception != null ) {
             System.out.println("*** False Assertion ***");
             System.out.println(prg.substring(src.get(exception.from).begin, src.get(exception.to-1).end));

@@ -31,6 +31,11 @@ conjunction:
           |   '-' '(' conjunction ')'
 ;
 
+oper:       '^'
+          | 'v'
+          | userOper
+;
+
 proposition:     
              expr '<' expr
           |  expr '=' expr
@@ -42,6 +47,7 @@ proposition:
           |  expr '!' '=' expr
           |  expr '<' '~' expr
           |  expr '>' '~' expr
+          |  oper '!' '=' oper
 ;
 
 
@@ -118,7 +124,7 @@ setEQ:       expr '/' '=' expr
 ;
 setIX:       expr '/' '^' expr
 ;
-specialSym:  '`' | '~' | '!' | '@' | '#' | '$' | '^' | '&' | '*' | '+' | 'qtSymbol' | '|'
+specialSym:  '`' | '~' | '!' | '@' | '#' | '$' | '^' | 'v' | '&' | '*' | '+' | 'qtSymbol' | '|'
 ;
 table:       '[' ']'
           |  '[' header ']'

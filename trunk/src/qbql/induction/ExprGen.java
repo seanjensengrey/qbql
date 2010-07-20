@@ -24,7 +24,8 @@ public class ExprGen {
     };
     static String[] binaryRelsOps;
     public static void main( String[] args ) throws Exception {
-        final String goal = "x@@y = expr. x@@x = x. x@@y = y@@x. x @@ (y @@ z) = (x @@ y) @@ z.";
+        final String goal = "x@@y = expr. x@@x = x. x@@y = y@@x. x @@ (y @@ z) = (x @@ y) @@ z." +
+        		" @@ != ^. @@ != v. @@ != @^. @@ != @v. ";
         //String goal = "(x ^ y) v (x ^ (y`)') = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
@@ -85,8 +86,8 @@ public class ExprGen {
         		binaryRelsOps[i+binaryOps.length] = binaryRels[i];
         	}
         
-        Program p = new Program(src,Database.init(Util.readFile(Run.class,"Figure1.db")));
-        Set<String> variables = extractVariables(root, p, subgoal);
+        Program p = new Program(Database.init(Util.readFile(Run.class,"Figure1.db")));
+        Set<String> variables = extractVariables(root, src, p, subgoal);
         variables.remove(Program.cyk.allSymbols[subgoal]);
         Set<String> databaseOperations = new HashSet<String>();
         databaseOperations.addAll(p.database.operationNames());
@@ -122,7 +123,7 @@ public class ExprGen {
                 } catch( ArrayIndexOutOfBoundsException e ) { // no unary operations
                     continue;
                 }
-                //n.print();
+                n.print();
                 if( skip && "(((((z ^ z) ^ (z)`) ^ ((z ^ z))`) ^ ((z ^ z))`))`".equals(n.toString()) )
                     skip = false;
                 if( skip )
@@ -139,8 +140,8 @@ public class ExprGen {
                                         
                     String input = goal.replace(Program.cyk.allSymbols[subgoal], n.toString());
                     
-                    p.src =  lex.parse(input);
-                    matrix = Program.cyk.initMatrixSubdiagonal(p.src);
+                    src =  lex.parse(input);
+                    matrix = Program.cyk.initMatrixSubdiagonal(src);
                     size = matrix.size();
                     skipRanges = new TreeMap<Integer,Integer>();
                     Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
@@ -150,7 +151,7 @@ public class ExprGen {
                     
                     final long t2 = System.currentTimeMillis();
                     
-                    ParseNode eval = p.program(root);
+                    ParseNode eval = p.program(root, src);
                     evalTime += System.currentTimeMillis()-t2;
                     p.database.restoreOperations(databaseOperations);
                     if( eval != null )
@@ -170,14 +171,14 @@ public class ExprGen {
         
     }
 
-	private static Set<String> extractVariables( ParseNode root, Program p, int subgoal ) {
+	private static Set<String> extractVariables( ParseNode root, List<LexerToken> src, Program p, int subgoal ) {
         if( root.contains(Program.assertion) ) {
         	for( ParseNode d : root.descendants() )
         		if( d.contains(subgoal) )
-        			return p.variables(root);
+        			return p.variables(root,src);
         } 
         for( ParseNode child : root.children() ) {
-        	Set<String> ret = extractVariables(child, p, subgoal);       
+        	Set<String> ret = extractVariables(child, src, p, subgoal);       
             if( ret != null )
                 return ret;
         }
@@ -259,5 +260,6 @@ public class ExprGen {
         }
         return ret;
     }
+    
 
 }
