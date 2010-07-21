@@ -81,4 +81,6 @@ x @* y = --(x ^ R00) v (x ^ y) v (R00 ^ y). -- 4.9 sec R00 ^ (x v y) = R00 ^ (y 
          (x ^ y) v ((x v y) ^ R00). -- 4.9 sec (compared with join ^ associativity taking 3.7 sec)
 x @^ y = (x' v y')'.
 
-x @# y = ((((y)` ^ (x)`))` ^ (y v x)).
+x @^v y = ((((y)` ^ (x)`))` ^ (y v x)).
+x @# y = (R11 /= (y /= x))` ^ y.
+x @? y = ((y ^ x)' /^ (y v x))` v y. 
