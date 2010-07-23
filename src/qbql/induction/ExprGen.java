@@ -85,13 +85,15 @@ public class ExprGen {
         		binaryRelsOps[i+binaryOps.length] = binaryRels[i];
         	}
         
-        Program quick = new Program(Database.init(Util.readFile(ExprGen.class,"Figure1.db")));       
-        Program full = new Program(Database.init(Util.readFile(Run.class,"Figure1.db")));
+        final Program quick = new Program(Database.init(Util.readFile(ExprGen.class,"Figure1.db")));       
+        final Program full = new Program(Database.init(Util.readFile(Run.class,"Figure1.db")));
         Set<String> variables = extractVariables(root, src, full, subgoal);
         variables.remove(Program.cyk.allSymbols[subgoal]);
         
-        Set<String> databaseOperations = new HashSet<String>();
-        databaseOperations.addAll(quick.database.operationNames());
+        final Set<String> databaseOperations = new HashSet<String>();
+        databaseOperations.addAll(full.database.operationNames());
+        for( String op : databaseOperations )
+        	quick.database.addOperation(op, full.database.getOperation(op));
         
         zilliaryOps = new String[variables.size()+constants.length];
         for( int i = 0; i < variables.size(); i++ ) {
@@ -107,13 +109,13 @@ public class ExprGen {
         
         //int cnt = 0; 
         final long startTime = System.currentTimeMillis();
-        long evalTime = 0;
+        final long evalTime = 0;
         //boolean skip = true;
         boolean skip = false;
         for( Polish num = new Polish(l); ; num.next() ) {
             if( !num.wellBuilt() )
                 continue;
-            TreeNode n = num.decode(); 
+            final TreeNode n = num.decode(); 
             if( n != null ) {
                 //if( n.isRightSkewed() ) // !!!conflicts with other variable assignments!!!
                     //continue;
@@ -129,44 +131,29 @@ public class ExprGen {
                     skip = false;
                 if( skip )
                     continue;
-                do {                    
-                    if( n.isRightSkewed() )
-                        continue;
-                    if( n.isAbsorpIdemp() )
-                        continue;
-                    if( n.isDoubleComplement() )
-                        continue;
-                    //if( n.toString().contains("(y * x) v y") )
-                        //n.print();
-                                        
-                    String input = goal.replace(Program.cyk.allSymbols[subgoal], n.toString());
-                    
-                    src =  lex.parse(input);
-                    matrix = Program.cyk.initMatrixSubdiagonal(src);
-                    size = matrix.size();
-                    skipRanges = new TreeMap<Integer,Integer>();
-                    Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-                    root = Program.cyk.forest(size, matrix);
-                    if( !root.contains(Program.cyk.symbolIndexes.get("program") ) )
-                        continue;     
-                    
-                    long t2 = System.currentTimeMillis();                   
-                    ParseNode eval = quick.program(root, src);
-                    evalTime += System.currentTimeMillis()-t2;
-                    quick.database.restoreOperations(databaseOperations);
-                    if( eval != null )
-                        continue;
-                    t2 = System.currentTimeMillis();                   
-                    eval = full.program(root, src);
-                    evalTime += System.currentTimeMillis()-t2;
-                    full.database.restoreOperations(databaseOperations);
-                    if( eval != null )
-                        continue;
-                    System.out.println("*** found *** ");
-                    System.out.println(input);
-                    System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
-                    System.out.println("evalTime="+evalTime);
-                    return;
+                do {  
+            		if( n.isRightSkewed() )
+            		    continue;
+            		if( n.isAbsorpIdemp() )
+            			continue;
+            		if( n.isDoubleComplement() )
+            			continue;
+            		//if( n.toString().contains("(y * x) v y") )
+            		    //n.print();
+            		final String node = n.toString();
+                	if( Thread.activeCount() <= 2 )
+                		new Thread("eval") {
+                		  public void run() {
+                			try {
+                				verify(goal, lex, subgoal, quick, full, databaseOperations,
+                						startTime, evalTime, node);
+                			} catch ( Exception e ) {
+                				System.out.println(e.getMessage());
+                			}						}              		
+                	    }.start();
+                	else
+						verify(goal, lex, subgoal, quick, full, databaseOperations,
+								startTime, evalTime, node);
                 } while( ExprGen.next(n) );
                 //cnt++;
             } else {
@@ -176,6 +163,40 @@ public class ExprGen {
         //System.out.println(cnt);
         
     }
+
+	private static void verify( final String goal, final Lex lex,
+			final int subgoal, Program quick, Program full,
+			Set<String> databaseOperations, final long startTime,
+			long evalTime, String node ) throws Exception {
+		String input = goal.replace(Program.cyk.allSymbols[subgoal], node);
+		
+		List<LexerToken> src =  lex.parse(input);
+		Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
+		int size = matrix.size();
+		TreeMap<Integer, Integer> skipRanges = new TreeMap<Integer,Integer>();
+		Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
+		ParseNode root = Program.cyk.forest(size, matrix);
+		if( !root.contains(Program.cyk.symbolIndexes.get("program") ) )
+		    return;
+		
+		long t2 = System.currentTimeMillis();                   
+		ParseNode eval = quick.program(root, src);
+		evalTime += System.currentTimeMillis()-t2;
+		quick.database.restoreOperations(databaseOperations);
+		if( eval != null )
+		    return;
+		t2 = System.currentTimeMillis();                   
+		eval = full.program(root, src);
+		evalTime += System.currentTimeMillis()-t2;
+		full.database.restoreOperations(databaseOperations);
+		if( eval != null )
+		    return;
+		System.out.println("*** found *** ");
+		System.out.println(input);
+		System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
+		System.out.println("evalTime="+evalTime);
+		System.exit(0);
+	}
 
 	private static Set<String> extractVariables( ParseNode root, List<LexerToken> src, Program p, int subgoal ) {
         if( root.contains(Program.assertion) ) {
