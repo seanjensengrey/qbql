@@ -48,7 +48,7 @@ public class ExprGen {
             //"@+",
             //"/>",
             //"/<",
-            //"/=",
+            "/=",
             "/^",
             //"/0",
             //"/1",
@@ -85,11 +85,13 @@ public class ExprGen {
         		binaryRelsOps[i+binaryOps.length] = binaryRels[i];
         	}
         
-        Program p = new Program(Database.init(Util.readFile(Run.class,"Figure1.db")));
-        Set<String> variables = extractVariables(root, src, p, subgoal);
+        Program quick = new Program(Database.init(Util.readFile(ExprGen.class,"Figure1.db")));       
+        Program full = new Program(Database.init(Util.readFile(Run.class,"Figure1.db")));
+        Set<String> variables = extractVariables(root, src, full, subgoal);
         variables.remove(Program.cyk.allSymbols[subgoal]);
+        
         Set<String> databaseOperations = new HashSet<String>();
-        databaseOperations.addAll(p.database.operationNames());
+        databaseOperations.addAll(quick.database.operationNames());
         
         zilliaryOps = new String[variables.size()+constants.length];
         for( int i = 0; i < variables.size(); i++ ) {
@@ -148,11 +150,16 @@ public class ExprGen {
                     if( !root.contains(Program.cyk.symbolIndexes.get("program") ) )
                         continue;     
                     
-                    final long t2 = System.currentTimeMillis();
-                    
-                    ParseNode eval = p.program(root, src);
+                    long t2 = System.currentTimeMillis();                   
+                    ParseNode eval = quick.program(root, src);
                     evalTime += System.currentTimeMillis()-t2;
-                    p.database.restoreOperations(databaseOperations);
+                    quick.database.restoreOperations(databaseOperations);
+                    if( eval != null )
+                        continue;
+                    t2 = System.currentTimeMillis();                   
+                    eval = full.program(root, src);
+                    evalTime += System.currentTimeMillis()-t2;
+                    full.database.restoreOperations(databaseOperations);
                     if( eval != null )
                         continue;
                     System.out.println("*** found *** ");
