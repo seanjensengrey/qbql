@@ -621,12 +621,18 @@ public class Program {
             else
             	oper = child.content(src);
         }
+        Predicate lft = database.getPredicate("?lft");
+        Predicate rgt = database.getPredicate("?rgt");
     	database.addPredicate("?lft",left);
     	database.addPredicate("?rgt",right);
     	Expr e = database.getOperation(oper);
     	Predicate ret = e.eval(database);
         database.removePredicate("?lft");
         database.removePredicate("?rgt");
+        if( lft != null )
+        	database.addPredicate("?lft",lft);
+        if( rgt != null )
+        	database.addPredicate("?rgt",rgt);
         return ret;
     }
     

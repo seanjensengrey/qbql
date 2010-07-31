@@ -48,8 +48,8 @@ public class ExprGen {
             //"@+",
             //"/>",
             //"/<",
-            "/=",
-            "/^",
+            //"/=",
+            //"/^",
             //"/0",
             //"/1",
             //"/!",
@@ -86,7 +86,7 @@ public class ExprGen {
         	}
         
         
-        final int threads = Runtime.getRuntime().availableProcessors()-1;
+        final int threads = Runtime.getRuntime().availableProcessors();
         System.out.println("Using " + threads + " threads");
         
         Verifier[] verifiers= new Verifier[threads];
@@ -148,12 +148,16 @@ public class ExprGen {
             		final String node = n.toString();
             		boolean launched = false;
             		do {
+            			if( verifiers.length == 1 ) {
+            				verifiers[0].exec(node);
+            				break;
+            			}
             			for( Verifier verifier : verifiers ) {
             				if( verifier.thread!=null && verifier.thread.isAlive() ) {
-                    			Thread.sleep(1);
+                    			Thread.yield();
             					continue;
             				}
-            				verifier.execNode(node);
+            				verifier.execThread(node);
             				launched = true;
             				break;
             			}
@@ -189,47 +193,50 @@ public class ExprGen {
 			this.databaseOperations = databaseOperations;
 		}
 		
-		public void execNode( final String node ) {
+		public void execThread( final String node ) {
 			thread = new Thread() {
 				public void run() {
-					try {
-						String input = goal.replace(Program.cyk.allSymbols[subgoal], node);
-
-						List<LexerToken> src =  lex.parse(input);
-						Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
-						int size = matrix.size();
-						TreeMap<Integer, Integer> skipRanges = new TreeMap<Integer,Integer>();
-						Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-						ParseNode root = Program.cyk.forest(size, matrix);
-						if( !root.contains(Program.cyk.symbolIndexes.get("program") ) )
-							return;
-
-						long t2 = System.currentTimeMillis();                   
-						ParseNode eval = quick.program(root, src);
-						evalTime += System.currentTimeMillis()-t2;
-						quick.database.restoreOperations(databaseOperations);
-						if( eval != null )
-							return;
-						t2 = System.currentTimeMillis();                   
-						eval = full.program(root, src);
-						evalTime += System.currentTimeMillis()-t2;
-						full.database.restoreOperations(databaseOperations);
-						if( eval != null )
-							return;
-						System.out.println("*** found *** ");
-						System.out.println(input);
-						System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
-						System.out.println("evalTime="+evalTime);
-						System.exit(0);
-					} catch (Exception e) {
-						e.printStackTrace();
-						System.exit(0);
-					} 
+					exec(node); 
 				}
 			};
 			thread.start();
 		}
 
+		public void exec( final String node ) {
+			try {
+				String input = goal.replace(Program.cyk.allSymbols[subgoal], node);
+
+				List<LexerToken> src =  lex.parse(input);
+				Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
+				int size = matrix.size();
+				TreeMap<Integer, Integer> skipRanges = new TreeMap<Integer,Integer>();
+				Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
+				ParseNode root = Program.cyk.forest(size, matrix);
+				if( !root.contains(Program.cyk.symbolIndexes.get("program") ) )
+					return;
+
+				long t2 = System.currentTimeMillis();                   
+				ParseNode eval = quick.program(root, src);
+				evalTime += System.currentTimeMillis()-t2;
+				quick.database.restoreOperations(databaseOperations);
+				if( eval != null )
+					return;
+				t2 = System.currentTimeMillis();                   
+				eval = full.program(root, src);
+				evalTime += System.currentTimeMillis()-t2;
+				full.database.restoreOperations(databaseOperations);
+				if( eval != null )
+					return;
+				System.out.println("*** found *** ");
+				System.out.println(input);
+				System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
+				System.out.println("evalTime="+evalTime);
+				System.exit(0);
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.exit(0);
+			}
+		}
 		
 		
     }

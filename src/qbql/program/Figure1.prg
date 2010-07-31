@@ -478,15 +478,13 @@ y * z = y.
 --(x ^ y) v (x ^ (y`)') = (y` ^ y')' * x.
 --x = y <-> R00 = (((y ^ x)' ^ (y v x))` ^ (y v x))`.
 
-x @v (x @^ y) = x.
-x @^ (x @v y) = x.
+x @/< y = y @/> x.
 
 
-(x @^v y) ^ R00 = (x v y) ^ R00.
-(x @# y) ^ R00 = (x ^ y) ^ R00.
-(x @? y) ^ R00 = (x v y) ^ R00.
-
-x v (x @# y) = x.
-x @# (x v y) = x.
-
+/*
+x = [t] 0 2;
+lex = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ LE ;
+--((x /< "[p<r]") /^ [p=r]) ^ x;
+(lex /^ [t=rgt]) /= x;
+*/
 
