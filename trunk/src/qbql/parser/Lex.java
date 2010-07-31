@@ -155,7 +155,7 @@ public class Lex {
             //"a 3a --a3 ss 5<7  \n" +
             //"  3.5 /* ** / -- ' ' \" \" */\n" +
             //"'/* */'\"/*--*/\"   abc\n" +
-            "a @@ a " +
+            "((x /< \"[p<r]\") /^ [p=r]) ^ x; " +
             //"'Cannot find the key_id for key: \"'||p_key_name||'\" for table \"'||"+
             "";
 

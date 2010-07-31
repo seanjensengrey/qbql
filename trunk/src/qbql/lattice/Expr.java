@@ -7,50 +7,57 @@ import qbql.parser.ParseNode;
 
 public class Expr {
 	String type; // operation name or variable
-	Expr lft;
-	Expr rgt;
+	Expr left;
+	Expr right;
 	
 	public Expr( String type, Expr lft, Expr rgt ) {
 		super();
 		this.type = type;
-		this.lft = lft;
-		this.rgt = rgt;
+		this.left = lft;
+		this.right = rgt;
 	}
 	
 	public Predicate eval( Database d ) throws Exception {
         if( "^".equals(type) )
-            return Predicate.join(lft.eval(d),rgt.eval(d));
+            return Predicate.join(left.eval(d),right.eval(d));
         else if( "v".equals(type) )
-            return Predicate.innerUnion(lft.eval(d),rgt.eval(d));
+            return Predicate.innerUnion(left.eval(d),right.eval(d));
         else if( "'".equals(type) )
-            return d.complement((Relation)lft.eval(d));
+            return d.complement((Relation)left.eval(d));
         else if( "`".equals(type) )
-            return d.inverse((Relation)lft.eval(d));
+            return d.inverse((Relation)left.eval(d));
         else if( "/^".equals(type) )
-            return Predicate.setIX((Relation)lft.eval(d), (Relation)rgt.eval(d));
+            return Predicate.setIX((Relation)left.eval(d), (Relation)right.eval(d));
         else if( "/=".equals(type) )
-            return d.quantifier((Relation)lft.eval(d),(Relation)rgt.eval(d),Program.setEQ);
+            return d.quantifier((Relation)left.eval(d),(Relation)right.eval(d),Program.setEQ);
         else if( "/<".equals(type) )
-            return d.quantifier((Relation)lft.eval(d),(Relation)rgt.eval(d),Program.contains);
+            return d.quantifier((Relation)left.eval(d),(Relation)right.eval(d),Program.contains);
         else if( "/>".equals(type) )
-            return d.quantifier((Relation)lft.eval(d),(Relation)rgt.eval(d),Program.transpCont);
+            return d.quantifier((Relation)left.eval(d),(Relation)right.eval(d),Program.transpCont);
         else if( "/0".equals(type) )
-            return d.quantifier((Relation)lft.eval(d),(Relation)rgt.eval(d),Program.disjoint);
+            return d.quantifier((Relation)left.eval(d),(Relation)right.eval(d),Program.disjoint);
         else if( "/1".equals(type) )
-            return d.quantifier((Relation)lft.eval(d),(Relation)rgt.eval(d),Program.almostDisj);
+            return d.quantifier((Relation)left.eval(d),(Relation)right.eval(d),Program.almostDisj);
         else if( "/!".equals(type) )
-            return d.quantifier((Relation)lft.eval(d),(Relation)rgt.eval(d),Program.big);
+            return d.quantifier((Relation)left.eval(d),(Relation)right.eval(d),Program.big);
         
         else if( type.startsWith("@") ) {
-        	throw new AssertionError("No nested defs for now");
         	
-        	/*Expr e = d.getOperation(type);
-        	d.addPredicate("?lft",d.getPredicate(lft.type));
-        	d.addPredicate("?rgt",d.getPredicate(rgt.type));
+        	Expr e = d.getOperation(type);
+        	Predicate lft = d.getPredicate("?lft");
+        	Predicate rgt = d.getPredicate("?rgt");
+            Predicate l = left.eval(d);
+            Predicate r = right.eval(d);
+        	d.addPredicate("?lft",l);
+        	d.addPredicate("?rgt",r);
         	Predicate ret = e.eval(d);
             d.removePredicate("?lft");
             d.removePredicate("?rgt");
-            return ret;*/
+            if( lft != null )
+            	d.addPredicate("?lft",lft);
+            if( rgt != null )
+            	d.addPredicate("?rgt",rgt);
+            return ret;
             
         } else  // variable
         	return d.getPredicate(type);
@@ -91,11 +98,11 @@ public class Expr {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		if( lft != null )
-			sb.append('('+lft.toString()+')');
+		if( left != null )
+			sb.append('('+left.toString()+')');
 		sb.append(type);
-		if( rgt != null )
-			sb.append('('+rgt.toString()+')');
+		if( right != null )
+			sb.append('('+right.toString()+')');
 		return sb.toString();
 	}
 

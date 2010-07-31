@@ -3,6 +3,7 @@ almostDisj:  expr '/' '1' expr
 assertion:   implication '.'
 ;
 assignment:  identifier '=' expr ';'
+          |  string_literal '=' expr ';'
           |  identifier '=' partition ';'
 ;
 attribute:   identifier
@@ -70,6 +71,7 @@ expr:        almostDisj
           |  contains
           |  disjoint
           |  identifier
+          |  string_literal
           |  innerUnion
           |  inverse
           |  join
@@ -124,7 +126,7 @@ setEQ:       expr '/' '=' expr
 ;
 setIX:       expr '/' '^' expr
 ;
-specialSym:  '`' | '~' | '!' | '?' | '@' | '#' | '$' | '^' | 'v' | '&' | '*' | '+' | 'qtSymbol' | '|'
+specialSym:  '`' | '~' | '!' | '?' | '@' | '#' | '$' | '^' | 'v' | '&' | '*' | '+' | 'qtSymbol' | '|' | '/' | '<' | '>'
 ;
 table:       '[' ']'
           |  '[' header ']'

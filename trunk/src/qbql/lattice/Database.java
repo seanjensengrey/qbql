@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -33,7 +34,7 @@ public class Database {
             if( lattice.get(pred) instanceof Relation )
                 ret.add(pred);
         return ret.toArray(new String[0]);
-    }   
+    }  
     
     private Map<String,Expr> newOperations = new TreeMap<String,Expr>();
     public Expr getOperation( String name ) {
