@@ -113,7 +113,7 @@ public class TreeNode {
         
         if( lft != null && rgt != null ) {
             if( label != null && // idempotence
-                ("^".equals(label) || "v".equals(label) || "*".equals(label) || "+".equals(label) ) ) 
+                ("^".equals(label) || "v".equals(label) || "@^".equals(label) || "@v".equals(label) ) ) 
                 if( lft.weight(true) == rgt.weight(true) )
                     return true;
             return lft.weight() < rgt.weight();
@@ -139,10 +139,9 @@ public class TreeNode {
                     if( ("^".equals(label)||"v".equals(label)) 
                      && ("^".equals(lft.label)||"v".equals(lft.label)) 
                     ) return true;
-                    if( "*".equals(label)&&"*".equals(lft.label)
-                     || "+".equals(label)&&"+".equals(lft.label)
-                     || "*".equals(label)&&"+".equals(lft.label)
-                    ) return true;
+                    if( ("@^".equals(label)||"@v".equals(label)) 
+                     && ("@^".equals(lft.label)||"@v".equals(lft.label)) 
+                           ) return true;
                 }
             }
             if( rgt.lft != null && rgt.rgt != null ) {
@@ -151,10 +150,9 @@ public class TreeNode {
                     if( ("^".equals(label)||"v".equals(label)) 
                      && ("^".equals(rgt.label)||"v".equals(rgt.label)) 
                     ) return true;
-                    if( "*".equals(label)&&"*".equals(rgt.label)
-                     || "+".equals(label)&&"+".equals(rgt.label)
-                     || "*".equals(label)&&"+".equals(rgt.label)
-                    ) return true;
+                    if( ("@^".equals(label)||"@v".equals(label)) 
+                     && ("@^".equals(rgt.label)||"@v".equals(rgt.label)) 
+                           ) return true;
                 }
             }
         }
