@@ -32,7 +32,7 @@ public class ExprGen {
 
         //String goal = "(x @^ y) @v (x @^ z) = expr.";
         //String goal = "x @* y = expr.";
-        String goal = "(x^y)v R00 = R00 -> (r#x < r#y <-> implication).";
+        String goal = "r#x < r#y <-> implication.";
         //String goal = "x = y <-> R00 = expr.";
         System.out.println("goal: "+goal);
         
@@ -44,13 +44,12 @@ public class ExprGen {
         final String[] binaryOps = new String[] {
             "^",
             "v", 
-            "#",
             //"@*",
             //"@+",
             //"/>",
             //"/<",
             //"/=",
-            //"/^",
+            "/^",
             //"/0",
             //"/1",
             //"/!",
@@ -63,6 +62,11 @@ public class ExprGen {
         		//"|"
         };
         
+        String quickFile = "FD.db";//"Figure1.db";
+		String quickDb = Util.readFile(ExprGen.class,quickFile);
+        String fullDb = quickDb;//Util.readFile(Run.class,"Figure1.db");
+        final int threads = 4;//Runtime.getRuntime().availableProcessors();
+        System.out.println("Using " + threads + " threads");
         
         final Lex lex = new Lex();
         List<LexerToken> src =  lex.parse(goal);
@@ -84,16 +88,12 @@ public class ExprGen {
         if( subgoal == Program.implication )
         	for( int i = 0; i < binaryRels.length; i++ ) {
         		binaryRelsOps[i+binaryOps.length] = binaryRels[i];
-        	}
-        
-        
-        final int threads = 1;//Runtime.getRuntime().availableProcessors();
-        System.out.println("Using " + threads + " threads");
+        	}              
         
         Verifier[] verifiers= new Verifier[threads];
         for( int i = 0; i < threads; i++ ) {
-            final Program quick = new Program(Database.init(Util.readFile(ExprGen.class,"Figure1.db")));       
-            final Program full = new Program(Database.init(Util.readFile(Run.class,"Figure1.db")));
+			final Program quick = new Program(Database.init(quickDb));       
+			final Program full = new Program(Database.init(fullDb));
             final Set<String> databaseOperations = new HashSet<String>();
             databaseOperations.addAll(full.database.operationNames());
             for( String op : databaseOperations )
