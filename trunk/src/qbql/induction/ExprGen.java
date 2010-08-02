@@ -24,15 +24,15 @@ public class ExprGen {
     };
     static String[] binaryRelsOps;
     public static void main( String[] args ) throws Exception {
-        final String goal = Util.readFile(ExprGen.class,"induction.prg");
+        //final String goal = Util.readFile(ExprGen.class,"induction.prg");
         //String goal = "(x ^ y) v (x ^ (y`)') = expr.";
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
         //String goal = "y + z = y <-> implication."; // Found: y * z = y <-> (((R11 ^ z) v (R00 ^ y)) = (z v y)).
 
-        //String goal = "(x' ^ y)' ^ y = expr.";
+        //String goal = "(x @^ y) @v (x @^ z) = expr.";
         //String goal = "x @* y = expr.";
-        //String goal = "(x=R00 -> y=R00) <-> implication.";
+        String goal = "(x^y)v R00 = R00 -> (r#x < r#y <-> implication).";
         //String goal = "x = y <-> R00 = expr.";
         System.out.println("goal: "+goal);
         
@@ -43,7 +43,8 @@ public class ExprGen {
         
         final String[] binaryOps = new String[] {
             "^",
-            "v",             
+            "v", 
+            "#",
             //"@*",
             //"@+",
             //"/>",
@@ -58,8 +59,8 @@ public class ExprGen {
         		"<",
         		"=",
         		//"!=",
-        		"&",
-        		"|"
+        		//"&",
+        		//"|"
         };
         
         
@@ -86,7 +87,7 @@ public class ExprGen {
         	}
         
         
-        final int threads = Runtime.getRuntime().availableProcessors();
+        final int threads = 1;//Runtime.getRuntime().availableProcessors();
         System.out.println("Using " + threads + " threads");
         
         Verifier[] verifiers= new Verifier[threads];
