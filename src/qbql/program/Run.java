@@ -1,5 +1,6 @@
 package qbql.program;
 
+import qbql.induction.ExprGen;
 import qbql.lattice.Database;
 import qbql.util.Util;
 
