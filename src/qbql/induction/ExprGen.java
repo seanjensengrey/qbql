@@ -16,6 +16,7 @@ import qbql.program.Run;
 import qbql.util.Util;
 
 public class ExprGen {
+	final static boolean singleSolution = true;
     
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
@@ -48,8 +49,8 @@ public class ExprGen {
             //"@^",
             //"/>",
             "/<",
-            "/=",
-            "/^",
+            //"/=",
+            //"/^",
             //"/0",
             //"/1",
             //"/!",
@@ -235,7 +236,8 @@ public class ExprGen {
 				System.out.println(input);
 				System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
 				System.out.println("evalTime="+evalTime);
-				System.exit(0);
+				if( singleSolution )
+					System.exit(0);
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(0);
