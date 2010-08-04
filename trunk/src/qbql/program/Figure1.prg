@@ -247,7 +247,7 @@ x /0 y = y /0 x.
 
 x /! y = y /! x.
 
-x /| y = y /> x.
+x /< y = y /> x.
 
 (y)' /0 x = x /< y.
 
@@ -499,5 +499,21 @@ x < y -> R00^x < R00^y.
 R00^x < R00^y -> R00^(x^z) < R00^(y^z).
 R00^x < R00^y & R00^y < R00^z -> R00^x < R00^z. 
 */
- 
-x < y & x @^ y = x <-> x /< y = R01. 
+
+/* 
+(x^[]=[p q] &  
+y^[]=[q r] & 
+z^[]=[p r]) 
+->(x /^ y < z <-> x < y /< z)
+.*/
+
+/* in partial order via /< set intersection join is galois connected with set containment join 
+(losely speaking relational division being inverse of cartesian product)
+x /< x = R01.
+x /< y = R01 & y /< x = R01 -> y=x.
+x /< y = R01 & y /< z = R01 -> x /< z = R01.
+(x /^ y) /< z = R01 <-> x /< (y /< z) = R01.
+false: (x /^ y) /< z = x /< (y /< z).
+*/
+
+
