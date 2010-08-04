@@ -31,8 +31,8 @@ public class ExprGen {
         //String goal = "y + z = y <-> implication."; // Found: y * z = y <-> (((R11 ^ z) v (R00 ^ y)) = (z v y)).
 
         //String goal = "(x @^ y) @v (x @^ z) = expr.";
-        //String goal = "x @* y = expr.";
-        String goal = "r#x < r#y <-> implication.";
+        String goal = "x /^ y = expr.";
+        //String goal = "r#x < r#y <-> implication.";
         //String goal = "x = y <-> R00 = expr.";
         System.out.println("goal: "+goal);
         
@@ -45,26 +45,29 @@ public class ExprGen {
             "^",
             "v", 
             //"@*",
-            //"@+",
+            "@^",
             //"/>",
             //"/<",
             //"/=",
-            "/^",
+            //"/^",
             //"/0",
             //"/1",
             //"/!",
         };
         final String[] binaryRels = new String[] {
         		"<",
-        		"=",
+        		//"=",
         		//"!=",
         		//"&",
         		//"|"
         };
         
-        String quickFile = "FD.db";//"Figure1.db";
+        //String quickFile = "FD.db";
+        String quickFile = "Figure1.db";
 		String quickDb = Util.readFile(ExprGen.class,quickFile);
-        String fullDb = quickDb;//Util.readFile(Run.class,"Figure1.db");
+        //String fullDb = quickDb;
+        String fullDb = Util.readFile(Run.class,"Figure1.db");
+        
         final int threads = 4;//Runtime.getRuntime().availableProcessors();
         System.out.println("Using " + threads + " threads");
         
