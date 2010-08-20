@@ -87,11 +87,6 @@ public class Database {
     }
     
 
-    /*Relation outerUnion( Relation x, Relation y ) {
-        return Relation.innerUnion( Relation.join(x, Relation.innerUnion(y, R11))
-                                    , Relation.join(y, Relation.innerUnion(x, R11)) 
-        );
-    }*/
 
     /**
      * Generalized set intersection and set union
@@ -114,8 +109,9 @@ public class Database {
         
         Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
                 
-        Relation X = Relation.innerUnion(R11,hdrXmY);
-        Relation Y = Relation.innerUnion(R11,hdrYmX);
+        Relation X = Relation.le(x, Relation.innerUnion(R11,x)) ? Relation.innerUnion(R11,hdrXmY) : Relation.innerUnion(x,hdrXmY);
+        Relation Y = Relation.le(y, Relation.innerUnion(R11,y)) ? Relation.innerUnion(R11,hdrYmX) : Relation.innerUnion(y,hdrYmX);
+        // (if R11 is wrong then calculate domain independent part of set join)  
         
         Relation hdrYX = Relation.innerUnion(Relation.join(R00,x),Relation.join(R00,y));
         for( Tuple xi : X.content ) {
@@ -128,9 +124,9 @@ public class Database {
                 Relation rgt = Relation.innerUnion(Relation.join(singleY,y),hdrYX);
                 if( type == Program.contains && Relation.le(lft, rgt) 
                  || type == Program.transpCont && Relation.ge(lft, rgt)   
-                 || type == Program.disjoint && Relation.le(lft, (Relation)complement(rgt)) 
+                 || type == Program.disjoint && Predicate.le(lft, complement(rgt)) 
                  || type == Program.almostDisj && Relation.join(lft, rgt).content.size()==1 
-                 || type == Program.big && Relation.ge(lft, (Relation)complement(rgt))   
+                 || type == Program.big && Predicate.ge(lft, complement(rgt))   
                  || type == Program.setEQ && lft.equals(rgt)
                 )
                     ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
@@ -153,8 +149,10 @@ public class Database {
         x' ^ x = x ^ R00.
         x' v x = x v R11.
      */
-    Predicate complement( Relation x ) {
-        for( String arg : x.colNames ) {
+    Predicate complement( Predicate x ) {
+        return new ComplementPredicate(x);
+        
+        /*for( String arg : x.colNames ) {
             Boolean isFinite = finiteDomains.get(arg);
             if( isFinite == null ) {
                 Relation a = Relation.innerUnion(R11,new Relation(new String[]{arg}));
@@ -177,7 +175,7 @@ public class Database {
             if( !matched )
                 ret.content.add(t);
         }
-        return ret;
+        return ret;*/
     }
 
     /**
@@ -422,11 +420,6 @@ public class Database {
         database.buildR10();
         database.buildR11();
 
-        // relations that requre complement can be built only after R10 and R11 are defined
-        try {
-            database.addPredicate("UJADJBC'",database.complement((Relation)(database.getPredicate("UJADJBC"))));
-        } catch( Exception e ) { // NPE if databaseFile is not Figure1.db
-        }
         return database;
     }
     
