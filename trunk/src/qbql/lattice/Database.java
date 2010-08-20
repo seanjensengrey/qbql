@@ -109,8 +109,12 @@ public class Database {
         
         Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
                 
-        Relation X = Relation.le(x, Relation.innerUnion(R11,x)) ? Relation.innerUnion(R11,hdrXmY) : Relation.innerUnion(x,hdrXmY);
-        Relation Y = Relation.le(y, Relation.innerUnion(R11,y)) ? Relation.innerUnion(R11,hdrYmX) : Relation.innerUnion(y,hdrYmX);
+        boolean isCoveredByR11 = R10.header.keySet().containsAll(x.header.keySet())
+                              && Relation.le(x, Relation.innerUnion(R11,x));
+        Relation X = isCoveredByR11 ? Relation.innerUnion(R11,hdrXmY) : Relation.innerUnion(x,hdrXmY);
+        isCoveredByR11 = R10.header.keySet().containsAll(y.header.keySet())
+                      && Relation.le(y, Relation.innerUnion(R11,y));
+        Relation Y = isCoveredByR11 ? Relation.innerUnion(R11,hdrYmX) : Relation.innerUnion(y,hdrYmX);
         // (if R11 is wrong then calculate domain independent part of set join)  
         
         Relation hdrYX = Relation.innerUnion(Relation.join(R00,x),Relation.join(R00,y));
