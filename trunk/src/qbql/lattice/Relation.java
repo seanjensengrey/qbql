@@ -173,42 +173,7 @@ public class Relation extends Predicate {
         return ret;
     }
 
-    public static Relation innerJoin( Relation x, Relation y ) {
-        Set<String> header = new TreeSet<String>();
-        header.addAll(x.header.keySet());
-        header.retainAll(y.header.keySet());		
-        Relation ret = new Relation(header.toArray(new String[0]));
-        for( Tuple tupleX: x.content ){
-            Object[] retTuple = new Object[header.size()];
-            for( String attr : ret.colNames ) {
-                retTuple[ret.header.get(attr)] = tupleX.data[x.header.get(attr)];
-            }
-            ret.content.add(new Tuple(retTuple));
-        }
-        Set<Tuple> content = new HashSet<Tuple>(); // TreeSet<Tuple>
-        for( Tuple tupleY: y.content ){
-            Object[] retTuple = new Object[header.size()];
-            for( String attr : ret.colNames ) {
-                retTuple[ret.header.get(attr)] = tupleY.data[y.header.get(attr)];
-            }
-            content.add(new Tuple(retTuple));
-        }
-        ret.content.retainAll(content);
-        return ret;
-    }
-
     
-    /**
-     * @param x
-     * @param y
-     * @return x < y (i.e. x ^ y = x)
-     */
-    public static boolean le( Relation x, Relation y ) {
-        return x.equals(join(x,y));
-    }
-    public static boolean ge( Relation x, Relation y ) {
-        return y.equals(join(x,y));
-    }
     public boolean equals( Object o ) {
         if( this == o )
             return true;

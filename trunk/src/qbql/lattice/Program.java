@@ -674,11 +674,11 @@ public class Program {
     }
     private Predicate unaryOper( ParseNode root, int oper, List<LexerToken> src ) throws Exception  {
         for( ParseNode child : root.children() ) {
-            Relation rel = (Relation)expr(child,src);
+            Predicate rel = expr(child,src);
             if( oper == complement )
                 return database.complement(rel);
             else if( oper == inverse )
-                return database.inverse(rel);
+                return database.inverse((Relation)rel);
         }
         throw new Exception("Unknown case");
     }

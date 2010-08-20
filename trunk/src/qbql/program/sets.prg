@@ -1,7 +1,7 @@
-AB /^ [_s=s1] * BC /= Sets;
+AB /^ [_s=s1] @* BC /= Sets;
 AB /^ [_s=s1] v BC /= Sets;
 (ABC * (AB v [m])') /= Sets;
-(ABC /^ [_s=s1] * AB') /= Sets;
+(ABC /^ [_s=s1] @* AB') /= Sets;
 
 -- Sets that have nonempty intersection with (some of) their elements:
 IMSets = Sets /^ [_s=s1] /^ Sets /^ [s1=m] ^ Sets;

@@ -23,7 +23,7 @@ public class Expr {
         else if( "v".equals(type) )
             return Predicate.innerUnion(left.eval(d),right.eval(d));
         else if( "'".equals(type) )
-            return d.complement((Relation)left.eval(d));
+            return d.complement(left.eval(d));
         else if( "`".equals(type) )
             return d.inverse((Relation)left.eval(d));
         else if( "/^".equals(type) )

@@ -187,6 +187,20 @@ public class Predicate {
         
         throw new Exception("x.className="+x.getClass().getSimpleName()+",y.className="+y.getClass().getSimpleName());
     }
+    
+    /**
+     * @param x
+     * @param y
+     * @return x < y (i.e. x ^ y = x)
+     * @throws Exception 
+     */
+    public static boolean le( Relation x, Predicate y ) throws Exception {
+        return x.equals(join(x,y));
+    }
+    public static boolean ge( Relation x, Predicate y ) throws Exception {
+        return y.equals(join(x,y));
+    }
+
 
     public String toString() {
         return toString(0, false);

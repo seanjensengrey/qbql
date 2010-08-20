@@ -294,27 +294,6 @@ x = [p]
 --r < x & r < y ->
 --(r @* (x ^ y)) /1 (x` v y) = x.
 
-x = [p  q]
-     0  a
-     0  c
-     1  a
-     2  b
-;
-
-y = [q  r] 
-     a  0 
-     a  1
-;
-
-xy = x^y;
-
-xy /! y;
-xy /0 y;
-xy /1 y;
-xy /= y;
-xy /> y;
-xy /< y;
-xy /^ y;
 
 
 (R00 ^ (x v y) = R00 ^ (x v z)) ->
@@ -484,14 +463,6 @@ y @* z = y.
 --(x ^ y) v (x ^ (y`)') = (y` ^ y')' @* x.
 --x = y <-> R00 = (((y ^ x)' ^ (y v x))` ^ (y v x))`.
 
-
-/* max
-x = [t] 0 2;
-lex = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ LE ;
---((x /< "[p<r]") /^ [p=r]) ^ x;
-(lex /^ [t=rgt]) /= x;
-*/
-
 --false:x /^ y < z <-> x < y /= z.
 
 /* simplest Armstrong-like dependency
@@ -514,6 +485,27 @@ x /< y = R01 & y /< x = R01 -> y=x.
 x /< y = R01 & y /< z = R01 -> x /< z = R01.
 (x /^ y) /< z = R01 <-> x /< (y /< z) = R01.
 false: (x /^ y) /< z = x /< (y /< z).
+Right cancellation:
+((y /< z) /^ y) /< z = R01.
+Upper-adjoint distribution:
+x /< (z v y) = (x /< z) v (x /< y).
 */
+
+
+(R11 ^ (ADvBC)') v (ADvBC ^ R00);
+R11 ^ (ADvBC)';
+
+x = [t] -4 0 1 5 7 23;
+/*x = [s t] 
+     a -1 
+     a 1 
+     b 0
+     b 5 
+     b 7
+;*/
+lex = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ LE ;
+--(lex /^ [t=lft]) /= x;
+lex ^ ([lft=rgt])';
+
 
 
