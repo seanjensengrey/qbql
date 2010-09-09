@@ -99,13 +99,28 @@ Now you are set. Just run the Run.main() and watch the console output. If the da
 
 `All Assertions are OK`
 
-otherwise it would print out the offending assertion and the values of the variables. This variables assigment can be literally copied and pasted into back to the assertion/program file, and you can also split the invalid assertion into smaller pieces to evaluate them individulally. Let's check the inner join associativity
+otherwise it would print out the offending assertion and the values of the variables. This variables assigment can be literally copied and pasted into back to the assertion/program file, and you can also split the invalid assertion into smaller pieces to evaluate them individulally. Let's check the inner join associativity.
+
+The inner join `x @* y` is classic relational algebra natural join projected onto the common set of attributes. It is user-defined operation in QBQL:
 
 {{{
-x * (y * z) = y * (x * z).
+x @* y = (x ^ y) v ((x v y) ^ []).
 }}}
 
-in `Figure1.db` example. Paste this assertion into `Figure1.prg`, and witness the output:
+User defined operations can be introduced as assertions at any point; the inner join is happened to be defined at the end of Figure1.db. Our goal here is to verify inner join associativity 
+
+{{{
+x @* (y @* z) = y @* (x @* z).
+}}}
+
+against the database defined in Figure1.db. Therefore, just paste this assertion into `Figure1.prg`, then run 
+
+{{{
+C:\> java -jar C:\qbql_trunk\dist\qbql.jar C:\qbql_tr
+unk\src\qbql\program\Figure1.db C:\qbql_trunk\src\qbql\program\Figure1.prg
+}}} 
+
+and witness the output
 
 {{{
 z = [q]
@@ -135,8 +150,10 @@ y = [p  q]
 x = [p]
      1
 ;
-y * z;
-x * z;
-x * (y * z);
-y * (x * z);
-}}}   
+y @* z;
+x @* z;
+x @* (y * z);
+y @* (x * z);
+}}}
+
+to see step-by step evaluations in the counterexample.   
