@@ -491,21 +491,23 @@ Upper-adjoint distribution:
 x /< (z v y) = (x /< z) v (x /< y).
 */
 
-
-(R11 ^ (ADvBC)') v (ADvBC ^ R00);
-R11 ^ (ADvBC)';
-
-x = [t] -4 0 1 5 7 23;
-/*x = [s t] 
+/*x = [t] -4 0 1 5 7 23;
+x = [s t] 
      a -1 
      a 1 
      b 0
      b 5 
      b 7
-;*/
-lex = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ LE ;
---(lex /^ [t=lft]) /= x;
-lex ^ ([lft=rgt])';
+;
+lex = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ LE;
+lex_ = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ LE';
+max = (lex ^ [rgt=zmax]) v (lex_ ^ [lft=zmax]); 
+(max /^ [t=lft]) /= x;
+plux = ((x /^ [t=x]) ^ (x /^ [t=y])) ^ Plus;
+--plux;
+--(plux /^ [t=x]) /= x;
+*/
 
+(x @')  @' = x.
 
-
+((x @') @v (y @')) @' = x ^ y. 
