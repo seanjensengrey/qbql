@@ -126,7 +126,9 @@ setEQ:       expr '/' '=' expr
 ;
 setIX:       expr '/' '^' expr
 ;
-specialSym:  '`' | '~' | '!' | '?' | '@' | '#' | '$' | '^' | 'v' | '&' | '*' | '+' | 'qtSymbol' | '|' | '/' | '<' | '>'
+specialSym1:  '`' | '~' | '!' | 'qtSymbol' 
+;
+specialSym2:  '?' | '@' | '#' | '$' | '^' | 'v' | '&' | '*' | '+' | '|' | '/' | '<' | '>'
 ;
 table:       '[' ']'
           |  '[' header ']'
@@ -144,10 +146,14 @@ unnamedJoin:  expr '^' '~' expr
 ;
 unnamedMeet:  expr 'v' '~' expr
 ;
-userDefined:  expr userOper expr
+userDefined:  expr userOper1
+           |  expr userOper2 expr
 ;
-userOper:  '@' specialSym
-         | '@' specialSym specialSym
+userOper1:  '@' specialSym1
+          | '@' specialSym1 specialSym1
+;
+userOper2:  '@' specialSym2
+          | '@' specialSym2 specialSym2
 ;
 value:       digits
           |  '-' digits

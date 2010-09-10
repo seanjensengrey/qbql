@@ -69,7 +69,7 @@ public class Expr {
 			String var = root.content(src);
 			if( l.equals(var) )
 				return new Expr("?lft",null,null);
-			else if( r.equals(var) )
+			else if( var.equals(r) )
 				return new Expr("?rgt",null,null);
 			else
 				return new Expr(var,null,null); // e.g. R00

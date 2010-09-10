@@ -106,4 +106,6 @@ x @? y = ((y ^ x)' /^ (y v x))` v y.
 x @/< y = ( (x v y)` @* (x ^ y') )'.
 x @/> y = ( (x v y)` @* (x'^ y) )'.
 
+x @' = (R11 v x) ^ x'. 
+-- same performance as: x @' = (R11 v (x^R00)) ^ x'. 
          
