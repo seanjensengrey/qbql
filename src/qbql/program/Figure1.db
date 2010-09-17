@@ -3,14 +3,20 @@
 -- Attributes are renamed: x -> p, y -> q, z -> r, because 
 -- elsewhere x, y, and z are relation variables!
 
-A = {<p=1>};		
-
-B = {<p=1>,<p=2>};
-		
-		
-C = {<q=a>};
-		
-D = {<q=a>,<q=b>};
+A=[p]
+   1
+;
+B=[p]
+   1
+   2
+;
+C=[q]
+   a
+;
+D=[q]
+   a
+   b
+;
 
 JAC = A ^ C;
 
@@ -40,8 +46,15 @@ D3 = [q] a b c;
 F =  [r] 0;
 F_ = [r];
 
-S = {<p=0,r=0>,<p=0,r=1>,<p=1,r=0>};
-S1 = {<p=0,r=0>,<p=1,r=0>};
+S=[p  r]
+   0  0
+   0  1
+   1  0
+;
+S1=[p  r]
+    0  0
+    1  0
+;
 
 S2 = [p r]   -- aka "[p=r]" 
            0 0
