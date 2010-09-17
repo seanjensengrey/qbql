@@ -20,7 +20,7 @@ public class ExprGen {
     
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
-            "'",
+            "@'",
             "`",
     };
     static String[] binaryRelsOps;

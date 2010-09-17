@@ -821,7 +821,9 @@ public class Program {
     }   
     private List<Object> values( ParseNode root, List<LexerToken> src ) throws Exception {
         List<Object> ret = new LinkedList<Object>();
-        if( root.from + 1 == root.to && src.get(root.from).type == Token.IDENTIFIER )
+        if( root.contains(parExpr) )
+            ret.add(parExpr(root, src));
+        else if( root.from + 1 == root.to && src.get(root.from).type == Token.IDENTIFIER ) 
             ret.add(root.content(src));
         else if( root.from + 1 == root.to && src.get(root.from).type == Token.DIGITS  
             ||   root.from + 2 == root.to && "-".equals(src.get(root.from).content) && src.get(root.from+1).type == Token.DIGITS )

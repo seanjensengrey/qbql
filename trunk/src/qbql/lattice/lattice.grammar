@@ -120,8 +120,9 @@ program:     assertion
 query:       expr ';'
           |  partition ';'
 ;
+/* set-theoretic notation; deprecated. 
 relation:    '{' tuples '}'
-;
+;*/
 setEQ:       expr '/' '=' expr
 ;
 setIX:       expr '/' '^' expr
@@ -159,6 +160,7 @@ value:       digits
           |  '-' digits
           |  identifier
           |  string_literal
+          |  /* nested relation */ parExpr          
 ;
 values:      namedValue
           |  values ',' namedValue
