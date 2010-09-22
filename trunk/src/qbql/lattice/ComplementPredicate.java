@@ -11,7 +11,7 @@ public class ComplementPredicate extends Predicate {
         this.src = src;
     }
     
-    public static Relation join( Relation x, ComplementPredicate y ) throws Exception {
+    public static Relation join( Relation x, ComplementPredicate y )  {
         if( !x.header.keySet().containsAll(y.header.keySet()) )
             throw new AssertionError("Unsafe join with complement");
         Relation ret = new Relation(x.colNames);

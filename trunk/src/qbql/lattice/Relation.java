@@ -81,7 +81,7 @@ public class Relation extends Predicate {
     }
 
 
-    public String toString( int ident, boolean isSetNotation ) {
+    public String toString( int ident ) {
         if( colNames.length == 0 ) {
             if( content.size() == 0 )
                 return "R00";
@@ -89,35 +89,22 @@ public class Relation extends Predicate {
                 return "R01";
         }
         StringBuffer ret = new StringBuffer("");
-        if( !isSetNotation ) {
-            //ret.append(header.keySet()+"\n");
-            // no commas
-            ret.append("[");
-            for( int i = 0; i < colNames.length; i++ )
-                ret.append((i>0?"  ":"")+colNames[i]);
-            ret.append("]\n");
-            for( Tuple tuple : orderedContent() ) {
-                boolean firstTuple = true;
-                for( int i = 0; i < tuple.data.length; i++ ) {
-                    ret.append((firstTuple?Util.identln(ident," "):"  ")+tuple.data[i]);
-                    firstTuple = false;
-                }
-                ret.append("\n");
-            }
-        } else {
-            ret.append("{");
-            boolean firstTuple = true;
-            String tupleSeparator = ",";
-            if( ident > 0 )
-                tupleSeparator = "\n"+Util.identln(ident,",");
-            for( Tuple tuple : orderedContent() ) {
-                ret.append((firstTuple?"":tupleSeparator)+"<");
-                firstTuple = false;
-                for( int i = 0; i < tuple.data.length; i++ )
-                    ret.append((i==0?"":",")+colNames[i]+"="+tuple.data[i]);
-                ret.append(">");
-            }
-            ret.append("}");
+        //ret.append(header.keySet()+"\n");
+        // no commas
+        ret.append("[");
+        for( int i = 0; i < colNames.length; i++ )
+        	ret.append((i>0?"  ":"")+colNames[i]);
+        ret.append("]\n");
+        for( Tuple tuple : orderedContent() ) {
+        	boolean firstTuple = true;
+        	for( int i = 0; i < tuple.data.length; i++ ) {
+        		String value = tuple.data[i].toString();
+        		if( tuple.data[i] instanceof Relation ) // nested relation
+        			value = "("+value.replace('\n', ' ')+")";
+        		ret.append((firstTuple?Util.identln(ident," "):"  ")+value);
+        		firstTuple = false;
+        	}
+        	ret.append("\n");
         }
         return ret.toString();
     }
