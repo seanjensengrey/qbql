@@ -122,7 +122,13 @@ query:       expr ';'
 ;
 /* set-theoretic notation; deprecated. 
 relation:    '{' tuples '}'
-;*/
+;
+tuple:       '<' values '>'
+;
+tuples:      tuple
+          |  tuples ',' tuple
+;
+*/
 setEQ:       expr '/' '=' expr
 ;
 setIX:       expr '/' '^' expr
@@ -137,11 +143,6 @@ table:       '[' ']'
           |  '[' identifier '=' identifier ']'
 ;
 transpCont:  expr '/' '>' expr
-;
-tuple:       '<' values '>'
-;
-tuples:      tuple
-          |  tuples ',' tuple
 ;
 unnamedJoin:  expr '^' '~' expr
 ;

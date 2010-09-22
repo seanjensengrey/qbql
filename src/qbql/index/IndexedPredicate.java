@@ -123,7 +123,7 @@ public class IndexedPredicate extends Predicate {
     }
 
     
-    public static Relation join( Relation x, IndexedPredicate y ) throws Exception {
+    public static Relation join( Relation x, IndexedPredicate y ) {
         Set<String> header = new TreeSet<String>();
         header.addAll(x.header.keySet());
         header.addAll(y.header.keySet());               
@@ -160,7 +160,10 @@ public class IndexedPredicate extends Predicate {
                 Object arglist[] = new Object[1];
                 arglist[0] = y.db;
                 o = ct.newInstance(arglist);
-            } catch( NoSuchMethodException e ) {}
+            } catch( NoSuchMethodException e ) {            	
+            } catch ( Exception e ) {
+				throw new RuntimeException(e);
+			}
             
             try {
                 o = m.invoke(o, args);
@@ -168,8 +171,10 @@ public class IndexedPredicate extends Predicate {
                 if( e.getCause() instanceof EmptySetException )
                     return ret;
                 else
-                    throw e;
-            }
+                	new RuntimeException(e);
+            } catch ( Exception e ) {
+				throw new RuntimeException(e);
+			}
             
             if( o instanceof NamedTuple ) {
                 Object[] retTuple = new Object[header.size()];
@@ -235,13 +240,13 @@ public class IndexedPredicate extends Predicate {
                         ret.content.add(new Tuple(retTuple));
                 }
             } else
-                throw new Exception("Wrong return type");
+                throw new RuntimeException("Wrong return type");
         }
         return ret;
     }
-    public static IndexedPredicate innerUnion( Relation x, IndexedPredicate y ) throws Exception {
+    public static IndexedPredicate innerUnion( Relation x, IndexedPredicate y )  {
         if( 0 < x.content.size() )
-            throw new Exception("Not a projection: TODO");
+            throw new AssertionError("Not a projection: TODO");
         IndexedPredicate ret = new IndexedPredicate(y);
         Set<String> columns = new HashSet<String>();
         columns.addAll(x.header.keySet());

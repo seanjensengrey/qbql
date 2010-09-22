@@ -46,7 +46,7 @@ public class EqualityPredicate extends Predicate {
         throw new AssertionError("Unexpected case");
     }
     
-    static Predicate join( Predicate x, EqualityPredicate y ) throws Exception {
+    static Predicate join( Predicate x, EqualityPredicate y )  {
         Predicate ret = x.clone();
         if( ret.header.containsKey(y.colX) && !x.header.containsKey(y.colY) ) {
             ret.eqInPlace(y.colX, y.colY);
@@ -56,7 +56,7 @@ public class EqualityPredicate extends Predicate {
             throw new AssertionError("Renaming columns are disjoint with target relation");
         return ret;       
     }
-    static Predicate join( Relation x, EqualityPredicate y ) throws Exception {
+    static Predicate join( Relation x, EqualityPredicate y )  {
         String colX = null;
         String colY = null;
         Set<String> hdrX = x.header.keySet();

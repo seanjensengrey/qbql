@@ -9,7 +9,7 @@ import java.util.TreeSet;
 import qbql.index.IndexedPredicate;
 import qbql.util.Util;
 
-public class Predicate {
+public class Predicate implements Comparable {
     public HashMap<String,Integer> header = new HashMap<String,Integer>();
     public String[] colNames;
     
@@ -83,7 +83,7 @@ public class Predicate {
             rgt.eqInPlace(from, to);
     }
     
-    public static Predicate join( Predicate x, Predicate y ) throws Exception {
+    public static Predicate join( Predicate x, Predicate y )  {
         if( x instanceof Relation && y instanceof Relation )
             return Relation.join((Relation)x, (Relation)y);
         
@@ -143,7 +143,7 @@ public class Predicate {
         return new Predicate(x,y,Program.naturalJoin);
     }
 
-    public static Predicate innerUnion( Predicate x, Predicate y ) throws Exception {
+    public static Predicate innerUnion( Predicate x, Predicate y )  {
         if( x instanceof Relation && y instanceof Relation )
             return Relation.innerUnion((Relation)x, (Relation)y);
         
@@ -194,18 +194,27 @@ public class Predicate {
      * @return x < y (i.e. x ^ y = x)
      * @throws Exception 
      */
-    public static boolean le( Relation x, Predicate y ) throws Exception {
+    public static boolean le( Predicate x, Predicate y )  {
         return x.equals(join(x,y));
     }
-    public static boolean ge( Relation x, Predicate y ) throws Exception {
+    public static boolean ge( Predicate x, Predicate y )  {
         return y.equals(join(x,y));
     }
+    public int compareTo( Object o ) {
+		if( this.equals(o) )
+			return 0;
+    	if( !(o instanceof Predicate) )
+    		throw new AssertionError("! o instanceof Predicate");
+		if( le(this,(Predicate)o) )
+			return -1;
+		return 1;
+	}
 
 
     public String toString() {
-        return toString(0, false);
+        return toString(0);
     }
-    public String toString( int ident, boolean dummy2 ) {
+    public String toString( int ident ) {
         StringBuffer ret = new StringBuffer("");
         ret.append("[");
         for( int i = 0; i < colNames.length; i++ )
@@ -225,5 +234,6 @@ public class Predicate {
         ret.oper = oper;
         return ret;
     }
+
 
 }

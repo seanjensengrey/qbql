@@ -69,8 +69,8 @@ public class Program {
     static int assignment;
     static int relation;
     static int table;
-    static int tuples;
-    static int tuple;
+    /*static int tuples;
+    static int tuple;*/
     static int header;
     static int content;
     public static int attribute;
@@ -123,8 +123,8 @@ public class Program {
             assignment = cyk.symbolIndexes.get("assignment");
             relation = cyk.symbolIndexes.get("relation");
             table = cyk.symbolIndexes.get("table");
-            tuples = cyk.symbolIndexes.get("tuples");
-            tuple = cyk.symbolIndexes.get("tuple");
+            /*tuples = cyk.symbolIndexes.get("tuples");
+            tuple = cyk.symbolIndexes.get("tuple");*/
             header = cyk.symbolIndexes.get("header");
             content = cyk.symbolIndexes.get("content");
             attribute = cyk.symbolIndexes.get("attribute");
@@ -341,7 +341,7 @@ public class Program {
                         for( String variable : variables )
                             if( outputVariables )
                                 System.out.println(variable+" = "
-                                                   +database.getPredicate(variable).toString(variable.length()+3, false)
+                                                   +database.getPredicate(variable).toString(variable.length()+3)
                                                    +";");
                         ret = child;
                         for( String variable : variables )
@@ -471,7 +471,7 @@ public class Program {
                 System.out.println(child.content(src)+"="+partition(child, src).toString()+";");
                 return null;
             } else if( child.contains(expr) ) {
-                System.out.println(child.content(src)+"="+expr(child, src).toString(child.content(src).length()+1, false)+";");
+                System.out.println(child.content(src)+"="+expr(child, src).toString(child.content(src).length()+1)+";");
                 return null;
             } 
         }
@@ -518,12 +518,12 @@ public class Program {
         database.addPredicate(left, right);
     }
     private Predicate expr( ParseNode root, List<LexerToken> src ) throws Exception {
-        if( root.contains(relation) ) {
+        /*if( root.contains(relation) ) {
             for( ParseNode child : root.children() ) {
                 if( child.contains(tuples) )
                     return tuples(child, src);
             }
-        } else if( root.contains(table) ) {
+        } else*/ if( root.contains(table) ) {
             Relation ret = Database.R00;
             String colX = null;
             for( ParseNode child : root.children() ) {
@@ -750,7 +750,7 @@ public class Program {
     }
 
     
-    private Relation tuples( ParseNode root, List<LexerToken> src ) throws Exception {
+    /*private Relation tuples( ParseNode root, List<LexerToken> src ) throws Exception {
         Set<String> attrs = new TreeSet<String>();
         for( ParseNode descendant: root.descendants() )
             if( descendant.contains(attribute) )
@@ -778,7 +778,8 @@ public class Program {
             }
         }
         throw new Exception("Unknown case");
-    }
+    }*/
+    
     private void values( Map<String,Object> tuple, ParseNode root, List<LexerToken> src ) {
         if( root.contains(namedValue) )
             value(tuple,root, src);
