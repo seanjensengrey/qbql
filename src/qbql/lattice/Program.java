@@ -54,6 +54,7 @@ public class Program {
     static int partition;
     static int parExpr;
     public static int openParen;
+    public static int closeParen;
     public static int implication;
     static int proposition;
     static int oper;
@@ -113,6 +114,7 @@ public class Program {
             partition = cyk.symbolIndexes.get("partition");
             parExpr = cyk.symbolIndexes.get("parExpr");
             openParen = cyk.symbolIndexes.get("'('");
+            closeParen = cyk.symbolIndexes.get("')'");
             implication = cyk.symbolIndexes.get("implication");
             proposition = cyk.symbolIndexes.get("proposition");
             oper = cyk.symbolIndexes.get("oper");
@@ -430,6 +432,8 @@ public class Program {
             				} catch( AssertionError e ) {} 
             			} else if( rgt == null ) 
             				rgt = grandChild.content(src);
+            			else if( grandChild.contains(closeParen) ) 
+            				;
             			else
             				throw new AssertionError("Unexpected user defined expression");
             		}
@@ -614,11 +618,14 @@ public class Program {
         Predicate right = null;
         String oper = null;
         for( ParseNode child : root.children() ) {
-            if( left == null && child.contains(expr) )
+            if( left == null && child.contains(openParen) )
+            	left = Database.R00; // e.g. ( <NOT> x )
+            else if( left == null && child.contains(expr) )
                 left = expr(child, src);
-            else if( child.contains(expr) )                           
+            else if( child.contains(expr) ) {                           
                 right = expr(child, src);
-            else
+                break;  // in order not to step on closing parenthesis
+            } else
             	oper = child.content(src);
         }
         Predicate lft = database.getPredicate("?lft");
