@@ -99,16 +99,21 @@ T_ = [q r];
 
 
 --------- User Defined Operations ----------
-x @v y = --(x ^ R11) v (y ^ (x v R11)). -- x @+ (y @+ z) = (x @+ y) @+ z. 73 sec
+TABLE_DUM = R00;
+TABLE_DEE = R01;
+
+x <AND> y = x ^ y.
+x <OR> y = --(x ^ R11) v (y ^ (x v R11)). -- x @+ (y @+ z) = (x @+ y) @+ z. 73 sec
         --(R11 ^ y) v (x ^ y) v (x ^ R11). -- 112 sec
         (x ^ (y v R11)) v (y ^ (x v R11)). -- 43 sec
         --(x' ^ y')'. -- 70 sec
         --((R00 ^ x) ^ y) v (R11 ^ y) v (x ^ R11). -- 113 sec
-x @* y = --(x ^ R00) v (x ^ y) v (R00 ^ y). -- 4.9 sec R00 ^ (x v y) = R00 ^ (y v z) -> x @* (y @* z) = (x @* y) @* z.
+x <InnerJoin> y = --(x ^ R00) v (x ^ y) v (R00 ^ y). -- 4.9 sec R00 ^ (x v y) = R00 ^ (y v z) -> x @* (y @* z) = (x @* y) @* z.
          (x ^ y) v ((x v y) ^ R00). -- 4.9 sec (compared with join ^ associativity taking 3.7 sec)
-x @^ y = (x' v y')'.
+x <FancyJoin> y = (x' v y')'.
 
-x @^v y =  --(y` ^ x`)` ^ (y v x). -- 62
+/*
+x <FancierJoin> y =  --(y` ^ x`)` ^ (y v x). -- 62
         --(R00 v (x` ^ y)) ^ (y v x).  -- 19
         --(R00 v x) ^ ((y` ^ x) v y). -- 20
         (((R00 v x) ^ y) v R00) ^ (y v x). -- 4.
@@ -118,7 +123,8 @@ x @? y = ((y ^ x)' /^ (y v x))` v y.
 
 x @/< y = ( (x v y)` @* (x ^ y') )'.
 x @/> y = ( (x v y)` @* (x'^ y) )'.
+*/
 
-x @' = (R11 v x) ^ x'. 
+( <NOT> x )  = (R11 v x) ^ x'. 
 -- same performance as: x @' = (R11 v (x^R00)) ^ x'. 
          
