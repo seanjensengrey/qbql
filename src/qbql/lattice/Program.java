@@ -33,6 +33,7 @@ public class Program {
     public static int naturalJoin;
     public static int innerUnion;
     static int userDefined;
+    static int userOper;
     static int unnamedJoin;
     static int unnamedMeet;
     static int setIX;
@@ -87,6 +88,7 @@ public class Program {
             };
             naturalJoin = cyk.symbolIndexes.get("join");
             userDefined = cyk.symbolIndexes.get("userDefined");
+            userOper = cyk.symbolIndexes.get("userOper");
             innerUnion = cyk.symbolIndexes.get("innerUnion");
             unnamedJoin = cyk.symbolIndexes.get("unnamedJoin");
             unnamedMeet = cyk.symbolIndexes.get("unnamedMeet");
@@ -460,6 +462,7 @@ public class Program {
                     && (descendant.contains(expr) || descendant.contains(identifier))
                     && !root.parent(descendant.from, descendant.to).contains(header)
                     && !root.parent(descendant.from, descendant.to).contains(table)
+                    && !root.parent(descendant.from, descendant.to).contains(userOper)
                     && (!notAssignedOnes || lookup(id) == null) ) 
                 variables.add(id);
         }
