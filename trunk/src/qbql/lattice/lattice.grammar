@@ -148,6 +148,7 @@ userDefined:  '(' userOper expr ')'
            |  expr userOper expr
 ;
 userOper:  '<' identifier '>'
+          | '<' string_literal '>'
 ;
 value:       digits
           |  '-' digits

@@ -517,5 +517,7 @@ y = [rgt t]
 x ^ y /^ IX;
 */
 
-(<NOT> x) <OR> (<NOT> y) = (<NOT> (x <AND> y)).
+(<NOT> x) <OR> (<NOT> y) = (<NOT> (x <AND> y)). 
 --x <OR> ( <NOT> x ) = x <OR> TABLE_DEE.
+
+--R <REMOVE> A = R 
