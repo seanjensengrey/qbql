@@ -110,22 +110,22 @@ public class Database {
         Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
                 
         boolean isCoveredByR11 = R10.header.keySet().containsAll(x.header.keySet())
-                              && Relation.le(x, Relation.innerUnion(R11,x));
-        Relation X = isCoveredByR11 ? Relation.innerUnion(R11,hdrXmY) : Relation.innerUnion(x,hdrXmY);
+                              && Relation.le(x, Relation.union(R11,x));
+        Relation X = isCoveredByR11 ? Relation.union(R11,hdrXmY) : Relation.union(x,hdrXmY);
         isCoveredByR11 = R10.header.keySet().containsAll(y.header.keySet())
-                      && Relation.le(y, Relation.innerUnion(R11,y));
-        Relation Y = isCoveredByR11 ? Relation.innerUnion(R11,hdrYmX) : Relation.innerUnion(y,hdrYmX);
+                      && Relation.le(y, Relation.union(R11,y));
+        Relation Y = isCoveredByR11 ? Relation.union(R11,hdrYmX) : Relation.union(y,hdrYmX);
         // (if R11 is wrong then calculate domain independent part of set join)  
         
-        Relation hdrYX = Relation.innerUnion(Relation.join(R00,x),Relation.join(R00,y));
+        Relation hdrYX = Relation.union(Relation.join(R00,x),Relation.join(R00,y));
         for( Tuple xi : X.content ) {
             Relation singleX = new Relation(X.colNames);
             singleX.content.add(xi);
-            Relation lft = Relation.innerUnion(Relation.join(singleX,x),hdrYX); 
+            Relation lft = Relation.union(Relation.join(singleX,x),hdrYX); 
             for( Tuple yi : Y.content ) {
                 Relation singleY = new Relation(Y.colNames);
                 singleY.content.add(yi);
-                Relation rgt = Relation.innerUnion(Relation.join(singleY,y),hdrYX);
+                Relation rgt = Relation.union(Relation.join(singleY,y),hdrYX);
                 if( type == Program.contains && Relation.le(lft, rgt) 
                  || type == Program.transpCont && Relation.ge(lft, rgt)   
                  || type == Program.disjoint && Predicate.le(lft, complement(rgt)) 
@@ -133,12 +133,12 @@ public class Database {
                  || type == Program.big && Predicate.ge(lft, complement(rgt))   
                  || type == Program.setEQ && lft.equals(rgt)
                 )
-                    ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
+                    ret = Relation.union(ret, Relation.join(singleX, singleY));
                 /*if( type == Grammar.unison && lft.equals(rgt) ) {
                     if( x.colNames.length != y.colNames.length )
                         return ret;
 
-                    ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
+                    ret = Relation.union(ret, Relation.join(singleX, singleY));
                 }*/
             }
         }        
@@ -155,31 +155,6 @@ public class Database {
      */
     Predicate complement( Predicate x ) {
         return new ComplementPredicate(x);
-        
-        /*for( String arg : x.colNames ) {
-            Boolean isFinite = finiteDomains.get(arg);
-            if( isFinite == null ) {
-                Relation a = Relation.innerUnion(R11,new Relation(new String[]{arg}));
-                isFinite = 0 < a.content.size() & R11.header.keySet().contains(arg);
-                finiteDomains.put(arg, isFinite);
-            }
-            if( !isFinite )
-                return new ComplementPredicate(x);
-        }
-        
-        Relation xvR11 = Relation.innerUnion(x, R11);
-        Relation ret = new Relation(x.colNames);
-        for( Tuple t : xvR11.content ) {
-            boolean matched = false;
-            for( Tuple tx : x.content )
-                if( t.equals(tx, x, ret) ) {
-                    matched = true;
-                    break;
-                }
-            if( !matched )
-                ret.content.add(t);
-        }
-        return ret;*/
     }
 
     /**
@@ -188,19 +163,8 @@ public class Database {
         x` ^ x = x ^ R11.
         x` v x = x v R00. 
     */ 
-    Relation inverse( Relation x ) {
-        String[] header = new String[R10.colNames.length-x.colNames.length];
-        int i = -1;
-        for( String attr : R10.colNames ) {
-            if( x.header.get(attr) == null ) {
-                i++;
-                header[i] = attr;
-            }
-        }
-        if( x.content.size() == 0 )
-            return new Relation(header);
-        else
-            return Relation.innerUnion(new Relation(header),R11);
+    Predicate inverse( Predicate x ) {
+        return new InversePredicate(x);
     }
     
     void buildR10() throws Exception {
@@ -289,7 +253,7 @@ public class Database {
             if( y.content.size() == 0  )
                 return x.content.size() == 0;
             else
-                return Relation.innerUnion(x,R11).equals(x);
+                return Relation.union(x,R11).equals(x);
         }
             
         int[] indexes = new int[x.colNames.length];

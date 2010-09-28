@@ -21,7 +21,7 @@ public class Expr {
         if( "^".equals(type) )
             return Predicate.join(left.eval(d),right.eval(d));
         else if( "v".equals(type) )
-            return Predicate.innerUnion(left.eval(d),right.eval(d));
+            return Predicate.union(left.eval(d),right.eval(d));
         else if( "'".equals(type) )
             return d.complement(left.eval(d));
         else if( "`".equals(type) )

@@ -244,7 +244,7 @@ public class IndexedPredicate extends Predicate {
         }
         return ret;
     }
-    public static IndexedPredicate innerUnion( Relation x, IndexedPredicate y )  {
+    public static IndexedPredicate union( Relation x, IndexedPredicate y )  {
         if( 0 < x.content.size() )
             throw new AssertionError("Not a projection: TODO");
         IndexedPredicate ret = new IndexedPredicate(y);
@@ -278,7 +278,7 @@ public class IndexedPredicate extends Predicate {
         
         Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
                 
-        Relation X = Relation.innerUnion(x,hdrXmY);
+        Relation X = Relation.union(x,hdrXmY);
         
         Set<String> headerXY = new TreeSet<String>();
         headerXY.addAll(x.header.keySet());
@@ -295,7 +295,7 @@ public class IndexedPredicate extends Predicate {
         for( Tuple xi : X.content ) {
             Relation singleX = new Relation(X.colNames);
             singleX.content.add(xi);
-            Relation lft = Relation.innerUnion(Relation.join(singleX,x),hdrYX);
+            Relation lft = Relation.union(Relation.join(singleX,x),hdrYX);
             
             Object o = null;
             try {
@@ -311,7 +311,7 @@ public class IndexedPredicate extends Predicate {
             for( String newName : y.renamed.keySet() )
                 singleY.renameInPlace(y.renamed.get(newName), newName );
             
-            ret = Relation.innerUnion(ret, Relation.join(singleX, singleY)); 
+            ret = Relation.union(ret, Relation.join(singleX, singleY)); 
         }        
         return ret;      
     }

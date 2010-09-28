@@ -107,7 +107,7 @@ public class Predicate implements Comparable {
                 for( String s : xry )
                     r.add(s);
                 if( l.equals(r) ) // SDC
-                    ret = innerUnion(join(x,y.lft),join(x,y.rgt));
+                    ret = union(join(x,y.lft),join(x,y.rgt));
             } else if( x == Database.R00 ) {
                 return new Relation(y.colNames);
             } else
@@ -143,18 +143,22 @@ public class Predicate implements Comparable {
         return new Predicate(x,y,Program.naturalJoin);
     }
 
-    public static Predicate innerUnion( Predicate x, Predicate y )  {
+    public static Predicate union( Predicate x, Predicate y )  {
         if( x instanceof Relation && y instanceof Relation )
-            return Relation.innerUnion((Relation)x, (Relation)y);
+            return Relation.union((Relation)x, (Relation)y);
         
-        if( !(y instanceof IndexedPredicate) ) {
+        if( !(y instanceof IndexedPredicate) 
+         && !(y instanceof InversePredicate)        
+        ) {
             Predicate tmp = x;
             x = y;
             y = tmp;
         }
         
+        if( x instanceof Relation && y instanceof InversePredicate ) 
+            return InversePredicate.union((Relation)x,(InversePredicate)y);
         if( x instanceof Relation && y instanceof IndexedPredicate ) 
-            return IndexedPredicate.innerUnion((Relation)x,(IndexedPredicate)y);
+            return IndexedPredicate.union((Relation)x,(IndexedPredicate)y);
         
         return new Predicate(x,y,Program.innerUnion);
     }
@@ -173,7 +177,7 @@ public class Predicate implements Comparable {
             return EqualityPredicate.setIX(x,(EqualityPredicate)y);
         
         Relation hdr = new Relation(Util.symmDiff(x.colNames, y.colNames));
-        return Relation.innerUnion(hdr,join(x, y));
+        return Relation.union(hdr,join(x, y));
     }
     public static Predicate setEQ( Predicate x, Predicate y ) throws Exception {
         if( x instanceof IndexedPredicate && !(y instanceof IndexedPredicate) ) {
