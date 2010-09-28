@@ -138,7 +138,7 @@ public class Relation extends Predicate {
         return ret;
     }
 
-    public static Relation innerUnion( Relation x, Relation y ) {
+    public static Relation union( Relation x, Relation y ) {
         Set<String> header = new TreeSet<String>();
         header.addAll(x.header.keySet());
         header.retainAll(y.header.keySet());		

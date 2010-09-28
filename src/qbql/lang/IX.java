@@ -10,7 +10,7 @@ public class IX {
     		throw new AssertionError("LE !lft/rgt instanceof Relation");
     	Relation l = (Relation) lft;
     	Relation r = (Relation) rgt;
-        return Relation.innerUnion(Relation.join(l,r),Database.R00);
+        return Relation.union(Relation.join(l,r),Database.R00);
     }  
 }
 

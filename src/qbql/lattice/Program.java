@@ -658,7 +658,7 @@ public class Program {
         if( oper == naturalJoin )
             return Predicate.join(left,right);
         else if( oper == innerUnion )
-            return Predicate.innerUnion(left,right);
+            return Predicate.union(left,right);
         else if( oper == unnamedJoin )
             return database.unnamedJoin((Relation)left,(Relation)right);
         else if( oper == unnamedMeet )
