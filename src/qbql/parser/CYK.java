@@ -67,8 +67,8 @@ public class CYK {
             //"x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";
             //"Tokens /^ [txt] item /^ [pos=down] /^ Links /^ [pos=up] ^ Vars;"
             //"( ( x v y ) ^ ( ( x ^ y ) v ( ( x v y ) ) ' ) )"
-            //"cat ^ [source] Hello World ^ [from] 3;"
-        	" x <\"and\"> y = x <\"and\"> y."
+            "include \"C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db\";\n"
+        	+"include udf.def;"
             //Util.readFile("c:/qbql_trunk/qbql/lang/parse/test.prg")
         ;
         long t1 = System.currentTimeMillis();

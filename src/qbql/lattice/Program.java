@@ -67,8 +67,13 @@ public class Program {
     static int excl;
     public static int assertion;
     static int query;
-    public static int identifier;
+    
     static int include;
+    static int filename;
+    
+    public static int identifier;
+    //public static int string_literal;
+
 
     static int assignment;
     static int relation;
@@ -124,8 +129,12 @@ public class Program {
             oper = cyk.symbolIndexes.get("oper");
             assertion = cyk.symbolIndexes.get("assertion");
             query = cyk.symbolIndexes.get("query");
-            identifier = cyk.symbolIndexes.get("identifier");
+
             include = cyk.symbolIndexes.get("include");
+            filename = cyk.symbolIndexes.get("filename");
+
+            identifier = cyk.symbolIndexes.get("identifier");
+            //string_literal = cyk.symbolIndexes.get("string_literal");
 
             assignment = cyk.symbolIndexes.get("assignment");
             relation = cyk.symbolIndexes.get("relation");
@@ -523,22 +532,31 @@ public class Program {
 
 
     private ParseNode include( ParseNode root, List<LexerToken> src ) {
-    	StringBuilder filename = new StringBuilder();
-    	for( int i = root.from+1; i < root.to; i++ ) 
-			filename.append(src.get(i).content);
-		
-        String prg;
+        String prg = null;	
+        String fname = null;
 		try {
-			prg = Util.readFile(Run.class,filename.toString());
-			System.out.println("Processing "+filename.toString()+" ...");
+	    	for( ParseNode n : root.children() ) {
+	    		if( n.contains(filename) ) {
+	    	    	StringBuilder fn = new StringBuilder();
+	    	    	for( int i = root.from+1; i < root.to; i++ ) 
+	    				fn.append(src.get(i).content);
+	    	    	fname = fn.toString();
+	    	    	if( fname.startsWith("\"") )
+						prg = Util.readFile(fname.substring(1,fname.length()-1));
+	    	    	else
+	    	    		prg = Util.readFile(Run.class,fname);
+		    		break;
+	    		}
+	    	}
+			System.out.println("Processing "+fname+" ...");
 		} catch ( Exception e ) {
-			throw new RuntimeException("failed to read the file "+filename.toString());
+			throw new RuntimeException("failed to read the file "+fname);
 		}
 		try {
 			run(prg);
 		} catch( AssertionError e ) {
 			if( Program.PARSE_ERROR_IN_ASSERTIONS_FILE.equals(e.getMessage()) ) {
-				System.out.println("^^^ Parse error in "+filename.toString());
+				System.out.println("^^^ Parse error in "+fname.toString());
 			}
 		}
 		return null;
