@@ -42,7 +42,7 @@ public class BNFGrammar {
     static int concat;
 
 
-    public static ParseNode parseGrammarFile( List<LexerToken> src, String input ) throws Exception {
+    public static ParseNode parseGrammarFile( List<LexerToken> src, String input ){
         Matrix ret = cyk.initMatrixSubdiagonal(src);
         int size = ret.size();
         cyk.closure(ret, 0,size+1, new TreeMap<Integer,Integer>(), -1);
@@ -51,7 +51,7 @@ public class BNFGrammar {
 
         if( !root.contains(grammar) ) { //$NON-NLS-1$
             CYK.printErrors(input, src, root);
-            throw new Exception("Parse error in grammar file"); //$NON-NLS-1$
+            throw new AssertionError("Parse error in grammar file"); //$NON-NLS-1$
         }
         return root;
     }

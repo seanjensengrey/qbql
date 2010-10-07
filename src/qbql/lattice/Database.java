@@ -81,13 +81,6 @@ public class Database {
     }
 
     public String pkg = null;    
-    /*public Database() {                         
-        addPredicate("R00",Database.R00); 
-        addPredicate("R01",Database.R01);
-        StackTraceElement[] stack = new Throwable().getStackTrace();
-        String createdInClass = stack[1].getClassName();
-        pkg = createdInClass.substring(0,createdInClass.lastIndexOf('.'));
-    }*/
     public Database( String pkg ) {                         
         addPredicate("R00",Database.R00); 
         addPredicate("R01",Database.R01);
@@ -95,11 +88,10 @@ public class Database {
     }
     
 
-
     /**
      * Generalized set intersection and set union
      */
-    Relation quantifier( Relation x, Relation y, int type ) throws Exception {
+    Relation quantifier( Relation x, Relation y, int type )  {
     	if( type == Program.setIX )
     		throw new AssertionError("Wrong method for calcualting set intersection join");
     	
@@ -384,53 +376,4 @@ public class Database {
         throw new RuntimeException("Not impl");
     }
     
-    public static Database init( String dbSource ) throws Exception {
-        Database database = new Database("qbql.lang");
-        List<LexerToken> src =  new Lex().parse(dbSource);
-        Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
-        int size = matrix.size();
-        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = Program.cyk.forest(size, matrix);
-
-        if( root.topLevel != null ) {
-            System.out.println("*** Parse Error in database file ***");
-            CYK.printErrors(dbSource, src, root);
-            throw new Exception("Parse Error");
-        }
-
-        Program dbPrg = new Program(database);
-        dbPrg.program(root,src);
-
-        return database;
-    }
-    
-    public static Database run( String dbSrc, String prg ) throws Exception {
-        List<LexerToken> src =  new Lex().parse(prg);
-        Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
-        int size = matrix.size();
-        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = Program.cyk.forest(size, matrix);
-
-        if( root.topLevel != null ) {
-            System.out.println("*** Parse Error in assertions file ***");
-            CYK.printErrors(prg, src, root);
-            return null;
-        }
-
-        Database db = init(dbSrc);
-        Program program = new Program(db); 
-        long t1 = System.currentTimeMillis();
-        program.outputVariables = true;
-        ParseNode exception = program.program(root,src);
-        long t2 = System.currentTimeMillis();
-        System.out.println("Time = "+(t2-t1)); 
-        if( exception != null ) {
-            System.out.println("*** False Assertion ***");
-            System.out.println(prg.substring(src.get(exception.from).begin, src.get(exception.to-1).end));
-        }
-        return db;
-    }
-
 }

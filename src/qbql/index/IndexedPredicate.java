@@ -263,7 +263,7 @@ public class IndexedPredicate extends Predicate {
         ret.colNames = newColNames;
         return ret; 
     }
-    public static Relation setEQ( Relation x, IndexedPredicate y ) throws Exception {
+    public static Relation setEQ( Relation x, IndexedPredicate y ) {
         Set<String> headerXmY = new TreeSet<String>();
         headerXmY.addAll(x.header.keySet());
         headerXmY.removeAll(y.header.keySet());            
@@ -305,13 +305,16 @@ public class IndexedPredicate extends Predicate {
                 Object arglist[] = new Object[1];
                 arglist[0] = y.db;
                 o = ct.newInstance(arglist);
-            } catch( NoSuchMethodException e ) {}
             
-            Relation singleY = ((NamedTuple)m.invoke(o, new Object[] {lft})).toRelation();
-            for( String newName : y.renamed.keySet() )
-                singleY.renameInPlace(y.renamed.get(newName), newName );
-            
-            ret = Relation.union(ret, Relation.join(singleX, singleY)); 
+                Relation singleY = ((NamedTuple)m.invoke(o, new Object[] {lft})).toRelation();
+                for( String newName : y.renamed.keySet() )
+                	singleY.renameInPlace(y.renamed.get(newName), newName );
+
+                ret = Relation.union(ret, Relation.join(singleX, singleY)); 
+            } catch( NoSuchMethodException e ) {            	
+            } catch ( Exception e ) {
+            	throw new AssertionError(e);
+			}
         }        
         return ret;      
     }
