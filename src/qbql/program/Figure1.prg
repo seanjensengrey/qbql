@@ -10,14 +10,14 @@
 --(x v y) ^ (x v z) > x v (y ^ z).
 --(x <OR> y) ^ (x <OR> z) = x <OR> (y ^ z).
 
---(x @* y) <OR> (x @* z) > x @* (y <OR> z).
---(x <OR> y) @* (x <OR> z) < x <OR> (y @* z).
---(x ^ (y v z)) < (x <OR> (y @* z)).
---(x ^ y) v (x ^ z) < (x <OR> y) @* (x <OR> z).
+--(x <and> y) <OR> (x <and> z) > x <and> (y <OR> z).
+--(x <OR> y) <and> (x <OR> z) < x <OR> (y <and> z).
+--(x ^ (y v z)) < (x <OR> (y <and> z)).
+--(x ^ y) v (x ^ z) < (x <OR> y) <and> (x <OR> z).
 
---(x ^ (y v z)) < ((x <OR> y) @* (x <OR> z)).
+--(x ^ (y v z)) < ((x <OR> y) <and> (x <OR> z)).
 
---x @* y > x @^ y.
+--x <and> y > x @^ y.
 
 --(x <OR> y) @^ (x <OR> z) > (x ^ y) v (x ^ z).
 
@@ -25,18 +25,18 @@
 
 /*
 ((x ^ y) v (x ^ z)) v y = ((z ^ x) v y).
-((x <OR> y) @* (x <OR> z)) v y = (((R11 v z) ^ x) v y).
+((x <OR> y) <and> (x <OR> z)) v y = (((R11 v z) ^ x) v y).
 (x v (y ^ z)) v y = (y v x).
 (x v (y ^ z)) ^ y = (((z ^ y) v x) ^ y).
-((x <OR> y) @* (x <OR> z)) ^ y = (((y <OR> x) @* z) <OR> x) ^ y.
-((x <OR> y) @* (x <OR> z)) ^ y > (x ^ y) v (x ^ z).
-doublechecked: (((R11 v x) ^ y) ^ z) v (x^y) = ((x <OR> y) @* (x <OR> z)) ^ y.
-expected implication the other way: ((R11 v x) ^ y) ^ z = x ^ y ^ z <- (x <OR> y) @* (x <OR> z) = (x ^ y) v (x ^ z).
-(x <OR> (y @* z)) ^ (z v y) = (((z @* y) <OR> x) ^ (z v y)).
-(x <OR> (y @* z)) v (z v y) = ((R11 ^ x) v y) v z.
-(x v y)^(y v z) > y ^ ((x<OR>y)@*(x<OR>z)).
+((x <OR> y) <and> (x <OR> z)) ^ y = (((y <OR> x) <and> z) <OR> x) ^ y.
+((x <OR> y) <and> (x <OR> z)) ^ y > (x ^ y) v (x ^ z).
+doublechecked: (((R11 v x) ^ y) ^ z) v (x^y) = ((x <OR> y) <and> (x <OR> z)) ^ y.
+expected implication the other way: ((R11 v x) ^ y) ^ z = x ^ y ^ z <- (x <OR> y) <and> (x <OR> z) = (x ^ y) v (x ^ z).
+(x <OR> (y <and> z)) ^ (z v y) = (((z <and> y) <OR> x) ^ (z v y)).
+(x <OR> (y <and> z)) v (z v y) = ((R11 ^ x) v y) v z.
+(x v y)^(y v z) > y ^ ((x<OR>y)<and>(x<OR>z)).
 (x v y)^(y v z) < (x v y) ^ (((R11 ^ x) v y) v z).
-(x v y)^(y v z) ^ (y v ((x <OR> y) @* (x <OR> z))) = (((z v y) ^ x) v y).
+(x v y)^(y v z) ^ (y v ((x <OR> y) <and> (x <OR> z))) = (((z v y) ^ x) v y).
 */
 
 
@@ -72,9 +72,9 @@ x ^ (y v z) = (x ^ (z v (R00 ^ y))) v (x ^ (y v (R00 ^ z))).
 (x ^ y) v (x ^ z) =  x ^ ( ((x v z) ^ y) v ((x v y) ^ z) ).
 y v z > y <OR> z. --x ^ (y v z) < x ^ (y <OR> z).
 x v y > x <OR> y.
-x ^ y < x @* y.
+x ^ y < x <and> y.
 x <OR> y > x ^ y.
-x v y > x @* y.
+x v y > x <and> y.
 (x ^ y) v (x ^ z) > x ^ (y <OR> z).
 
 
@@ -94,15 +94,15 @@ x ^ (y v z) = (x ^ y) v (x ^ z) v ((x ^ (y v z)) ^ ((x ^ y) v (x ^ z))').
 --(x ^ y) v (x ^ z) = (x ^ (y <OR> z)) v (((x ^ y) v (x ^ z)) ^ R00).
 
 
-x @* (x @* y) = x @* y.
+x <and> (x <and> y) = x <and> y.
 
---false:x @* (y @* z) = y @* (x @* z).
+--false:x <and> (y <and> z) = y <and> (x <and> z).
 
-x <OR> y = y -> x @* y = x.
+x <OR> y = y -> x <and> y = x.
 
 x v R11 = x -> (x ^ y) v ((x v y) ^ R00) = (x^R00) v y.
 
-x @* y = (x ^ y) v ((x v y) ^ R00).
+x <and> y = (x ^ y) v ((x v y) ^ R00).
 x <OR> y = (x' ^ y')'.
 
 
@@ -117,7 +117,7 @@ x` v x = x v R00.
 
 a ^ x = b &
 a v R00=x v R00 &
-(a v x)^ R00 = R00 -> x = b @* a`.
+(a v x)^ R00 = R00 -> x = b <and> a`.
 
 x` v y` = (x <OR> y)`.
 x' ^ y' = (x <OR> y)'.
@@ -138,19 +138,19 @@ x`=y`-> x v R00 = y v R00.
 (x` v y`) ^ (y` v x`)=(x ^ y)` v (x v y)`.
 
 
-(x'^y) @* (x v y`) = R00 <-> x > y.
+(x'^y) <and> (x v y`) = R00 <-> x > y.
 x < y <-> R00 = ((y' ^ x)` ^ x)`.
-x = y <-> R00 = ((((y)' @* x))` v ((x)' ^ y)).
+x = y <-> R00 = ((((y)' <and> x))` v ((x)' ^ y)).
 
 x < y & x @^ y = x <-> x /< y = R01.
 
 
-x = (x <OR> y) @* (x <OR> (y`)').
+x = (x <OR> y) <and> (x <OR> (y`)').
 x = (x ^ y) v (x ^ (y')`). 
 
 
 
-x = y <-> R00 = ((((y)' @* x))` v ((x)' ^ y)).
+x = y <-> R00 = ((((y)' <and> x))` v ((x)' ^ y)).
 
 (x')` = (x`)' <-> R00 > x | x > R11.
 
@@ -158,7 +158,7 @@ x ^ R00 = R00 -> x = R00 | x = R00'.
 
 (x`)` = x <-> (x')` = (x`)'.
 
-(x ^ x') @* (x v x`) = R00.
+(x ^ x') <and> (x v x`) = R00.
 
 R00'=R11`.
 
@@ -175,8 +175,8 @@ x' v x` = R01.
 x < y -> (x`)` < (y`)`. % `` is closure
 ((x`)`)` = (x)`.        % (x``)``=x``
 
-x v R00 = R01 & y v R00 = R01 -> y`@*x = (y^R00)` v x.
-(x`@*y)^(y`@*x) = (x v (y^R00)`) ^ (y v (x^R00)`).
+x v R00 = R01 & y v R00 = R01 -> y`<and>x = (y^R00)` v x.
+(x`<and>y)^(y`<and>x) = (x v (y^R00)`) ^ (y v (x^R00)`).
 
 
 x ^ (y v z) > (x ^ y) v (x ^ z).
@@ -192,42 +192,42 @@ x = x v ( R00 ^ ( R11 ^ ( y ) ` ) ).
 (((x)`)')` = ( x ) ' ^ ( ( x v R00 ) ) '.
 (x`)` = (x v R11) ^ (x v R00). 
 
-x <OR> (x @* y) > x.
+x <OR> (x <and> y) > x.
 x <OR> (x ^ y) < x.
 (x <OR> (x ^ y))^R11 = x^R11.
 (x <OR> (x ^ y))v(x)` =  (x)` v (x ^ y).
 
 x<OR>y = (R11 ^ y) v (x ^ y) v (x ^ R11).
-x@*y = (x ^ R00) v (x ^ y) v (R00 ^ y).
+x<and>y = (x ^ R00) v (x ^ y) v (R00 ^ y).
 
 x<OR>y = (R00 ^ (x ^ y)) v (R11 ^ y) v (x ^ R11).
-x@*y = (x ^ y ^ R11) v ((x v y) ^ R00).
+x<and>y = (x ^ y ^ R11) v ((x v y) ^ R00).
 
 
---false:x@*y = (x' v y')' v (x` ^ y`)`.
+--false:x<and>y = (x' v y')' v (x` ^ y`)`.
 x<OR>y = (x' ^ y')' ^ (x` v y`)`.
 x<OR>y = (x' ^ y')' ^ (x v y).
-x@*y = (x' v y')' v (x ^ y).
+x<and>y = (x' v y')' v (x ^ y).
 
 
 x = (x ^ (y')`) v (x ^ y).
-x` ^ y`    = (x @* y)` <OR> (x` @* y`).
-(x` ^ y`)` = (x @* y) v (x` @* y`)`.
+x` ^ y`    = (x <and> y)` <OR> (x` <and> y`).
+(x` ^ y`)` = (x <and> y) v (x` <and> y`)`.
 (x' ^ y')' = (x <OR> y) <OR> (x' <OR> y')'.
 
 
 
 
-%false: x /^ y = (x @* y`) ^ (x` @* y).
-x /^ y = (x ^ y) @* (x` <OR> y`).
-x /^ y = (x ^ y) @* (x` ^ y`).
-x /^ y = (x ^ y) @* (x v y)`.
+%false: x /^ y = (x <and> y`) ^ (x` <and> y).
+x /^ y = (x ^ y) <and> (x` <OR> y`).
+x /^ y = (x ^ y) <and> (x` ^ y`).
+x /^ y = (x ^ y) <and> (x v y)`.
 x /^ y = (y @^ x)` v (y ^ x). 
 x /^ y = (R00 ^ (y v x))` v (y ^ x).
-x /< y = ( (x v y)` @* (x ^ y') )'.
+x /< y = ( (x v y)` <and> (x ^ y') )'.
 x /< y = ( (y' @^ x)` v (y' ^ x) )'.
 x /= y = (x /< y) ^ (x /> y).
-x /= y = ( (x v y)` @* ((x'^ y) v (x ^ y')) )'.
+x /= y = ( (x v y)` <and> ((x'^ y) v (x ^ y')) )'.
 
 x = y <-> x /= y = R01.
 x = y ^ R01 <-> x /= y = R01.
@@ -237,11 +237,11 @@ x = y ^ R01 <-> x /= y = R01.
 
 x = y' <-> (x /! y)^(x /0 y) = R01.
 
-x /0 y = ( (x v y)` @* (x ^ y) )'.
+x /0 y = ( (x v y)` <and> (x ^ y) )'.
 
 x /! y = x' /0 y'.
 
-x /! y = ( (x' v y')` @* (x' ^ y') )'.
+x /! y = ( (x' v y')` <and> (x' ^ y') )'.
 
 x /0 y = y /0 x.
 
@@ -253,16 +253,16 @@ x /< y = y /> x.
 
 [_reflexivity_];
 x < y & x = r v (x^R00) & y = r v (y^R00) ->  
-(r @* (x ^ y)) /1 (x` v y) = x.
+(r <and> (x ^ y)) /1 (x` v y) = x.
 [_augmentation_];
 x = r v (x^R00) & y = r v (y^R00) & z = r v (z^R00) &  
-(r @* (x ^ y)) /1 (x` v y) = x ->
-(r @* (x^z^y)) /1 ((x^z)` v (y^z) ) = (x^z)@*r.
+(r <and> (x ^ y)) /1 (x` v y) = x ->
+(r <and> (x^z^y)) /1 ((x^z)` v (y^z) ) = (x^z)<and>r.
 [_transitivity_];
 x = r v (x^R00) & y = r v (y^R00) & z = r v (z^R00) &
-(r @* (x ^ y)) /1 (x` v y) = x &
-(r @* (y ^ z)) /1 (y` v z) = y ->
-(r @* (x ^ z)) /1 (x` v z) = x.
+(r <and> (x ^ y)) /1 (x` v y) = x &
+(r <and> (y ^ z)) /1 (y` v z) = y ->
+(r <and> (x ^ z)) /1 (x` v z) = x.
 
 -- FD example:  
 r = [p  q]
@@ -277,7 +277,7 @@ y = r v [q];
 
 --x = r v (x^R00) & y = r v (y^R00) &
 r < x & r < y &
-(r @* (x ^ y)) /1 (x` v y) = x -> r = (r @* (x ^ y)) ^ (r @* (x ^ y`)).
+(r <and> (x ^ y)) /1 (x` v y) = x -> r = (r <and> (x ^ y)) ^ (r <and> (x ^ y`)).
 
 r = [p  q  r  s  t]
 ;
@@ -287,25 +287,25 @@ y = [p]
 x = [p]
      1
 ;
-(r @* (x ^ y));
+(r <and> (x ^ y));
 (x` v y);
-(r @* (x ^ y)) /1 (x` v y);
+(r <and> (x ^ y)) /1 (x` v y);
 
 --r < x & r < y ->
---(r @* (x ^ y)) /1 (x` v y) = x.
+--(r <and> (x ^ y)) /1 (x` v y) = x.
 
 
 
 (R00 ^ (x v y) = R00 ^ (x v z)) ->
-x ^ (y @* z) = (x ^ y) @* (x ^ z).
+x ^ (y <and> z) = (x ^ y) <and> (x ^ z).
 
-x @* (x <OR> y) = x.
-x <OR> (x @* y) > x.
-x ^ (x @* y) < x.
+x <and> (x <OR> y) = x.
+x <OR> (x <and> y) > x.
+x ^ (x <and> y) < x.
 x < R00 | y < R00 ->
-x <OR> (x @* y) = x.
+x <OR> (x <and> y) = x.
 x < R00 | R11 < y ->
-x ^ (x @* y) = x.
+x ^ (x <and> y) = x.
 
 
 x = [p  q]
@@ -350,7 +350,7 @@ dy < x v z &             -- ditto
 -> dx = dy ^ x. 
 
 
-y /^ z = (y v z)` @* (y ^ z).
+y /^ z = (y v z)` <and> (y ^ z).
 y /^ z = ((R00 ^ z)` ^ y`) v (y ^ z).
 
 (x v y v z)^R00=R00 ->   
@@ -362,9 +362,9 @@ x ^ (y /^ z) = (x ^ (R00 ^ z)` ^ y`) v (x ^ y ^ z).
 
 --R00 ^ (x v y) = R00 ^ (x v z) -> x /^ (y v z) = (x /^ y) v (x /^ z).
 
---R00 ^ (x v y) = R00 ^ (y v z) -> x @* (y @* z) = (x @* y) @* z.
+--R00 ^ (x v y) = R00 ^ (y v z) -> x <and> (y <and> z) = (x <and> y) <and> z.
 
---[] < x v y` -> x <OR> (x @* y) = x.
+--[] < x v y` -> x <OR> (x <and> y) = x.
 
 [] < x v y v z ->   
 x /^ (y /^ z) = (R00 ^ ((x`^ y`) v (y`^ z`) v (x`^ z`)) ) v (x ^ y ^ z).
@@ -403,7 +403,7 @@ s v R11 = s
 s v R11 = s 
 & s v y = R01
 ->
-(x ^ s) @* y = x @* y
+(x ^ s) <and> y = x <and> y
 .  
 
 s v R11 = s 
@@ -455,12 +455,12 @@ y = [p]
      1
 ;
 y <OR> z;
-y @* z = y.
+y <and> z = y.
 - (y <OR> z = z).
-- (y @* z = z).
+- (y <and> z = z).
 - (y <OR> z = y).
 */
---(x ^ y) v (x ^ (y`)') = (y` ^ y')' @* x.
+--(x ^ y) v (x ^ (y`)') = (y` ^ y')' <and> x.
 --x = y <-> R00 = (((y ^ x)' ^ (y v x))` ^ (y v x))`.
 
 --false:x /^ y < z <-> x < y /= z.
@@ -491,43 +491,53 @@ Upper-adjoint distribution:
 x /< (z v y) = (x /< z) v (x /< y).
 */
 
+
 /*
-x = [t] (A) (B) (C) (D);
-x;
+E=[p]
+   2
+; 
+
+x = [t] (A) (B) (C) (D) (E);
+lex = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ LE;
+--lex;
+--(x /^ [t=lft]) /=  lex;
+
 --lex = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ LE;
 --lex;
 GE = LE' v [lft=rgt];
-GE;
-lex_ = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ GE;
-lex_;
-(x /^ [t=rgt]) /<  lex_; -- or /=
+gex = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ GE;
+(x /^ [t=rgt]) /=  gex; -- or /<
 --plux = ((x /^ [t=x]) ^ (x /^ [t=y])) ^ Plus;
 --plux;
 --(plux /^ [t=x]) /= x;
 */
 
 /*
-x = [s lft] 
-"{0}" ([m] 0) 
-"{0,1}" ([m] 0 1) 
-"{2}" ([m] 2) ;
-y = [rgt t] 
-([m] 0 1) "{0,1}" 
-([m] 0 2) "{0,2}";
-x ^ y /^ IX;
+(<NOT>x) ^ x = x ^ R00.
+(<NOT>x) v x = x v R11. 
+
+
+(<INV>x) ^ x = x ^ R11.
+(<INV>x) v x = x v R00. 
+
+["------INV AXIOMS -----"];
+
+(<INV>x) v (<INV>y) = <INV>(x <OR> y).
+(<NOT>x) ^ (<NOT>y) = <NOT>(x <OR> y).
+(<INV>x) <OR> (<INV>y) = <INV>(x v y).
+
+["------De Morgan -----"];
+
+
+x ^ ((<INV>y) v (<INV>z)) = (x ^ (<INV>y)) v (x ^ (<INV>z)).
+
+["------Distributivity -----"];
 */
 
+--x /= y = (x /< y) ^ (x /> y).
+x /= y = <NOT>( ((y ^ <NOT>x) v (x ^ <NOT>y)) <and> <INV>(x v y) ).
 
 
-R <REMOVE> A = R v (R00 ^ A)`.
-
-R= [p1 r1]   
-           0 0
-           0 1
-           0 2
-           1 1
-           1 2
-;
 
 
-R11 v ([p])`;
+

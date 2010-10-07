@@ -20,7 +20,15 @@ public class Database {
 
     private Map<String,Predicate> lattice = new TreeMap<String,Predicate>();
     public Predicate getPredicate( String name ) {
-        return lattice.get(name);
+    	Predicate ret = lattice.get(name);
+    	if( ret == null ) { 
+    		if( "R11".equals(name) ) {
+    			buildR10();
+    			return buildR11();
+    		} else if( "R10".equals(name) )
+    			return buildR10();
+    	}
+    	return ret;
     }
     public void addPredicate( String name, Predicate relvar ) {
         lattice.put(name, relvar);
@@ -64,9 +72,9 @@ public class Database {
 	}
    
     public static Relation R00 = new Relation(new String[]{});
-    Relation R11;
+    private Relation R11;
     public static Relation R01 = new Relation(new String[]{});
-    Predicate R10;
+    private Predicate R10;
 
     static {
         R01.addTuple(new TreeMap<String,Object>());
@@ -94,6 +102,11 @@ public class Database {
     Relation quantifier( Relation x, Relation y, int type ) throws Exception {
     	if( type == Program.setIX )
     		throw new AssertionError("Wrong method for calcualting set intersection join");
+    	
+    	if( R11 == null ) {
+    		buildR10();
+    		buildR11();
+    	}
     	
         Set<String> headerXmY = new TreeSet<String>();
         headerXmY.addAll(x.header.keySet());
@@ -167,15 +180,17 @@ public class Database {
         return new InversePredicate(x);
     }
     
-    void buildR10() throws Exception {
+    private Predicate buildR10() {
         Predicate ret = new Relation(new String[]{});
-        for( Predicate r : lattice.values() )
-            ret = Predicate.join(ret, r);
+        for( Predicate rel : lattice.values() )
+            if( rel instanceof Relation )
+            	ret = Predicate.join(ret, rel);
         R10 = ret;
         lattice.put("R10",ret);
+        return ret;
     }
 
-    void buildR11() {
+    private Predicate buildR11() {
         Map<String, Relation> domains = new HashMap<String, Relation>();
         for( String col : R10.colNames )
             domains.put(col, new Relation(new String[]{col}));
@@ -223,6 +238,8 @@ public class Database {
         }        
         R11 = ret;
         lattice.put("R11",ret);
+        
+        return ret;
     }    
     private boolean next( Map<String, Integer> state, Map<String, Object[]> doms ) {
         for( String pos: state.keySet() ) {
@@ -253,7 +270,7 @@ public class Database {
             if( y.content.size() == 0  )
                 return x.content.size() == 0;
             else
-                return Relation.union(x,R11).equals(x);
+                return Relation.union(x,getPredicate("R11")).equals(x);
         }
             
         int[] indexes = new int[x.colNames.length];
@@ -384,9 +401,6 @@ public class Database {
 
         Program dbPrg = new Program(database);
         dbPrg.program(root,src);
-
-        database.buildR10();
-        database.buildR11();
 
         return database;
     }

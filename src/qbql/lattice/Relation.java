@@ -162,20 +162,11 @@ public class Relation extends Predicate {
 
     
     public boolean equals( Object o ) {
-        if( this == o )
-            return true;
-        Relation src = (Relation) o;
-        if( colNames.length != src.colNames.length )
+        if( !super.equals(o) )
             return false;
+        Relation src = (Relation) o;
         if( content.size() != src.content.size() )
             return false;
-        
-        for( String colName : header.keySet() ) {
-            Integer j = src.header.get(colName);
-            if( j == null )
-                return false;
-        }
-
         LinkedList<Tuple> list = new LinkedList<Tuple>();
         for( Tuple t : content )
             list.add(t);

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import qbql.util.Util;
+
 public class Lex {
 
     public boolean isPercentLineComment = false; // Prover9 comments
@@ -155,12 +157,20 @@ public class Lex {
             //"a 3a --a3 ss 5<7  \n" +
             //"  3.5 /* ** / -- ' ' \" \" */\n" +
             //"'/* */'\"/*--*/\"   abc\n" +
-            "((x /< \"[p<r]\") /^ [p=r]) ^ x; " +
+            //"((x /< \"[p<r]\") /^ [p=r]) ^ x; " +
             //"'Cannot find the key_id for key: \"'||p_key_name||'\" for table \"'||"+
-            "";
+            //""
+        	Util.readFile("C:/Documents and Settings/Dim/Desktop/movies.list")
+        	;
 
         List<LexerToken> out = new Lex().parse(input,true);
-        LexerToken.print(out);
+        
+        int i = 0;
+        for( LexerToken t : out) {
+        	if( i > 1000 )
+        		break;
+        	System.out.println(t.content);
+        }
         //System.out.print(out); // (authorized)
     }
 

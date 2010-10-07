@@ -424,7 +424,10 @@ public class Program {
             		break;
             	if( operation == null ) {
             		for( ParseNode grandChild : child.children() ) {
-            			if( lft == null ) 
+            			if( lft == null && grandChild.contains(userOper) ) {
+            				lft = "R00";
+            				operation = grandChild.content(src);
+            			} else if( lft == null ) 
             				lft = grandChild.content(src);
             			else if( operation == null ) {
             				operation = grandChild.content(src);
@@ -621,9 +624,10 @@ public class Program {
         Predicate right = null;
         String oper = null;
         for( ParseNode child : root.children() ) {
-            if( left == null && child.contains(openParen) )
-            	left = Database.R00; // e.g. ( <NOT> x )
-            else if( left == null && child.contains(expr) )
+            if( left == null && child.contains(userOper) ) { // e.g. ( <NOT> x )
+            	left = Database.R00; 
+            	oper = child.content(src);
+            } else if( left == null && child.contains(expr) )
                 left = expr(child, src);
             else if( child.contains(expr) ) {                           
                 right = expr(child, src);
