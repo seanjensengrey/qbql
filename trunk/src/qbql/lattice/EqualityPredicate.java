@@ -15,7 +15,7 @@ public class EqualityPredicate extends Predicate {
         this.colY = colY;
     }
     
-    static Predicate setIX( Predicate x, EqualityPredicate y ) throws Exception  {
+    static Predicate setIX( Predicate x, EqualityPredicate y )   {
         if( x instanceof Relation ) {
             if( x.header.containsKey(y.colY) && x.header.containsKey(y.colX) ) {
             	Set<String> header = new HashSet<String>();

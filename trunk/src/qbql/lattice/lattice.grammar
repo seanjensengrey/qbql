@@ -19,6 +19,20 @@ implication:
           |  '(' implication ')'
 ;
 
+filename:
+           identifier
+         | identifier '.' identifier
+         | string_literal
+;
+
+include: 'include' filename
+;
+
+includes: 
+          include ';'
+       |  include ';' includes
+;
+
 disjunction: 
              conjunction '|' disjunction
           |  conjunction 
@@ -115,6 +129,7 @@ partition:
 program:     assertion
           |  assignment
           |  query
+          |  includes
           |  program program
 ;
 query:       expr ';'

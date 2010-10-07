@@ -166,7 +166,7 @@ public class Predicate implements Comparable {
     /*
      * Set intersection join
      */
-    public static Predicate setIX( Predicate x, Predicate y ) throws Exception {
+    public static Predicate setIX( Predicate x, Predicate y )  {
         if( x instanceof EqualityPredicate && !(y instanceof EqualityPredicate) ) {
             Predicate tmp = x;
             x = y;
@@ -179,7 +179,7 @@ public class Predicate implements Comparable {
         Relation hdr = new Relation(Util.symmDiff(x.colNames, y.colNames));
         return Relation.union(hdr,join(x, y));
     }
-    public static Predicate setEQ( Predicate x, Predicate y ) throws Exception {
+    public static Predicate setEQ( Predicate x, Predicate y ) {
         if( x instanceof IndexedPredicate && !(y instanceof IndexedPredicate) ) {
             Predicate tmp = x;
             x = y;
@@ -189,7 +189,7 @@ public class Predicate implements Comparable {
         if( x instanceof Relation && y instanceof IndexedPredicate ) 
             return IndexedPredicate.setEQ((Relation)x,(IndexedPredicate)y);
         
-        throw new Exception("x.className="+x.getClass().getSimpleName()+",y.className="+y.getClass().getSimpleName());
+        throw new AssertionError("x.className="+x.getClass().getSimpleName()+",y.className="+y.getClass().getSimpleName());
     }
     
     @Override

@@ -18,11 +18,12 @@ import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.parser.RuleTuple;
 import qbql.parser.Token;
+import qbql.program.Run;
 import qbql.util.Util;
 
 public class Program {
 
-    public static void main( String[] args ) throws Exception {
+	public static void main( String[] args ) throws Exception {
         Set<RuleTuple> rules = latticeRules();
         RuleTuple.printRules(rules);
     }
@@ -67,6 +68,7 @@ public class Program {
     public static int assertion;
     static int query;
     public static int identifier;
+    static int include;
 
     static int assignment;
     static int relation;
@@ -123,6 +125,7 @@ public class Program {
             assertion = cyk.symbolIndexes.get("assertion");
             query = cyk.symbolIndexes.get("query");
             identifier = cyk.symbolIndexes.get("identifier");
+            include = cyk.symbolIndexes.get("include");
 
             assignment = cyk.symbolIndexes.get("assignment");
             relation = cyk.symbolIndexes.get("relation");
@@ -140,8 +143,13 @@ public class Program {
         }
     }
     
-    private static Set<RuleTuple> latticeRules() throws Exception {
-        String input = Util.readFile(Program.class, "lattice.grammar");
+    private static Set<RuleTuple> latticeRules()  {
+        String input;
+		try {
+			input = Util.readFile(Program.class, "lattice.grammar");
+		} catch (Exception e) {
+			throw new AssertionError("Faikled to read lattice.grammar file");
+		}
         HashMap<String, String> specialSymbols = new HashMap<String, String>();
         specialSymbols.put("qtSymbol", "'");
         List<LexerToken> src = new Lex(
@@ -160,16 +168,16 @@ public class Program {
         this.database = db;
     }
 
-    private boolean bool( ParseNode root, List<LexerToken> src ) throws Exception {
+    private boolean bool( ParseNode root, List<LexerToken> src ) {
         for( ParseNode child : root.children() ) 
             if( child.contains(expr) || child.contains(partition) )
                 return atomicProposition(root,src);
             else 
                 return logical(root,src);
-        throw new Exception("Impossible exception, no children??"+root.content(src));
+        throw new AssertionError("Impossible exception, no children??"+root.content(src));
     }
 
-    private boolean logical( ParseNode root, List<LexerToken> src ) throws Exception {
+    private boolean logical( ParseNode root, List<LexerToken> src )  {
         Boolean left = null;
         int oper = -1;
         boolean impl = false;
@@ -232,10 +240,10 @@ public class Program {
                     return left == bool(child, src);
             }
         }
-        throw new Exception("Unknown boolean operation "+oper);
+        throw new AssertionError("Unknown boolean operation "+oper);
     }
 
-    private boolean atomicProposition( ParseNode root, List<LexerToken> src ) throws Exception {
+    private boolean atomicProposition( ParseNode root, List<LexerToken> src ) {
         for( ParseNode child : root.children() ) {
             if( child.contains(partition) )
                 return partitionProposition(root, src);
@@ -243,9 +251,9 @@ public class Program {
                 return relationalProposition(root,src);
             break;
         }
-        throw new Exception("VT: neither relational not partitional proposition");
+        throw new AssertionError("VT: neither relational not partitional proposition");
     }
-    private boolean partitionProposition( ParseNode root, List<LexerToken> src ) throws Exception {
+    private boolean partitionProposition( ParseNode root, List<LexerToken> src ) {
         int oper = -1;
         Partition left = null;
         Partition right = null;
@@ -268,9 +276,9 @@ public class Program {
         if( oper == equality )
             return left.equals(right);
 
-        throw new Exception("Impossible case");             
+        throw new AssertionError("Impossible case");             
     }
-    private boolean relationalProposition( ParseNode root, List<LexerToken> src ) throws Exception {
+    private boolean relationalProposition( ParseNode root, List<LexerToken> src ) {
         int oper = -1;
         Predicate left = null;
         Predicate right = null;
@@ -308,12 +316,12 @@ public class Program {
         else if( oper == equality )
             return not ? !left.equals(right) : left.equals(right);
 
-            throw new Exception("Impossible case");             
+            throw new AssertionError("Impossible case");             
     }
 
     boolean outputVariables = false;
     
-    public ParseNode assertion( ParseNode root, List<LexerToken> src ) throws Exception {
+    public ParseNode assertion( ParseNode root, List<LexerToken> src ) {
         ParseNode ret = null;
         for( ParseNode child : root.children() ) {
         	if( isDeclaration(child, src) )
@@ -354,7 +362,7 @@ public class Program {
                     } 
                     break;
                 } else
-                	throw new Exception("Non boolean assertion???"); 
+                	throw new AssertionError("Non boolean assertion???"); 
             }
         } while( Util.next(indexes,tables.length) );
 
@@ -362,7 +370,7 @@ public class Program {
             database.removePredicate(variable);
         return ret;
     }
-    private String[] operIneqArgs( ParseNode root, List<LexerToken> src ) throws Exception {
+    private String[] operIneqArgs( ParseNode root, List<LexerToken> src )  {
         if( root.contains(proposition) ) {
         	String[] ret = new String[2];
         	boolean sawEq = false;
@@ -399,7 +407,7 @@ public class Program {
         }
 		return null;
 	}
-	private boolean assertEqOp( String op1, String op2 ) throws Exception {
+	private boolean assertEqOp( String op1, String op2 ) {
         String input = "x "+op1+" y = x "+op2+" y.";
         
         LinkedList<LexerToken> src = new Lex().parse(input);
@@ -475,7 +483,7 @@ public class Program {
     	return variables(root, src, true);
     }
 
-    private ParseNode query( ParseNode root, List<LexerToken> src ) throws Exception {
+    private ParseNode query( ParseNode root, List<LexerToken> src )  {
         for( ParseNode child : root.children() ) {
             if( child.contains(partition) ) {
                 System.out.println(child.content(src)+"="+partition(child, src).toString()+";");
@@ -485,15 +493,17 @@ public class Program {
                 return null;
             } 
         }
-        throw new Exception("No expr/partition in statement?");
+        throw new AssertionError("No expr/partition in statement?");
     }
     /**
      * @param root
      * @param src
      * @return node that violates assertion
-     * @throws Exception
+     * @
      */
-    public ParseNode program( ParseNode root, List<LexerToken> src ) throws Exception {
+    public ParseNode program( ParseNode root, List<LexerToken> src ) {
+        if( root.contains(include) )
+            return include(root, src);
         if( root.contains(assertion) )
             return assertion(root, src);
         if( root.contains(query) )
@@ -512,7 +522,29 @@ public class Program {
     }
 
 
-    private void createPredicate( ParseNode root, List<LexerToken> src ) throws Exception {
+    private ParseNode include( ParseNode root, List<LexerToken> src ) {
+    	StringBuilder filename = new StringBuilder();
+    	for( int i = root.from+1; i < root.to; i++ ) 
+			filename.append(src.get(i).content);
+		
+        String prg;
+		try {
+			prg = Util.readFile(Run.class,filename.toString());
+			System.out.println("Processing "+filename.toString()+" ...");
+		} catch ( Exception e ) {
+			throw new RuntimeException("failed to read the file "+filename.toString());
+		}
+		try {
+			run(prg);
+		} catch( AssertionError e ) {
+			if( Program.PARSE_ERROR_IN_ASSERTIONS_FILE.equals(e.getMessage()) ) {
+				System.out.println("^^^ Parse error in "+filename.toString());
+			}
+		}
+		return null;
+	}
+
+	private void createPredicate( ParseNode root, List<LexerToken> src )  {
         String left = null;
         Predicate right = null;
         for( ParseNode child : root.children() ) {
@@ -527,7 +559,7 @@ public class Program {
         }
         database.addPredicate(left, right);
     }
-    private Predicate expr( ParseNode root, List<LexerToken> src ) throws Exception {
+    private Predicate expr( ParseNode root, List<LexerToken> src ) {
         /*if( root.contains(relation) ) {
             for( ParseNode child : root.children() ) {
                 if( child.contains(tuples) )
@@ -560,7 +592,7 @@ public class Program {
             }
             Relation ret = Relation.join(lookup(relName),Database.R01); // clone
             if( columns.size() != ret.colNames.length )
-                throw new RuntimeException();
+                throw new RuntimeAssertionError();
             for( int i = 0; i < ret.colNames.length; i++ ) {
                 ret.renameInPlace(ret.colNames[i], columns.get(i));
             }
@@ -601,11 +633,11 @@ public class Program {
             String name = src.get(root.from).content;
             Predicate candidate = lookup(name);
             if( candidate == null )
-                throw new Exception("Predicate/Table '"+name+"' not in the database");
+                throw new AssertionError("Predicate/Table '"+name+"' not in the database");
 			return candidate;
         }
                     
-        throw new Exception("Unknown case");
+        throw new AssertionError("Unknown case");
     }
 
     private Predicate lookup( String name ) {
@@ -619,7 +651,7 @@ public class Program {
         }
     }
     
-    private Predicate userDefined( ParseNode root, List<LexerToken> src ) throws Exception  {
+    private Predicate userDefined( ParseNode root, List<LexerToken> src )   {
         Predicate left = null;
         Predicate right = null;
         String oper = null;
@@ -650,7 +682,7 @@ public class Program {
         return ret;
     }
     
-    private Predicate binaryOper( ParseNode root, List<LexerToken> src, int oper ) throws Exception  {
+    private Predicate binaryOper( ParseNode root, List<LexerToken> src, int oper )   {
         Predicate left = null;
         Predicate right = null;
         for( ParseNode child : root.children() ) {
@@ -684,9 +716,9 @@ public class Program {
             return database.quantifier((Relation)left,(Relation)right,almostDisj);
         else if( oper == big ) 
             return database.quantifier((Relation)left,(Relation)right,big);
-        throw new Exception("Unknown case");
+        throw new AssertionError("Unknown case");
     }
-    private Predicate unaryOper( ParseNode root, int oper, List<LexerToken> src ) throws Exception  {
+    private Predicate unaryOper( ParseNode root, int oper, List<LexerToken> src )   {
         for( ParseNode child : root.children() ) {
             Predicate rel = expr(child,src);
             if( oper == complement )
@@ -694,10 +726,10 @@ public class Program {
             else if( oper == inverse )
                 return database.inverse((Relation)rel);
         }
-        throw new Exception("Unknown case");
+        throw new AssertionError("Unknown case");
     }
         
-    private Predicate parExpr( ParseNode root, List<LexerToken> src ) throws Exception {
+    private Predicate parExpr( ParseNode root, List<LexerToken> src )  {
         boolean parenthesis = false;
         for( ParseNode child : root.children() ) {
             if( child.contains(openParen) ) {
@@ -707,11 +739,11 @@ public class Program {
             if( parenthesis ) 
                 return expr(child,src);           
         }
-        throw new Exception("No parenthesis found");
+        throw new AssertionError("No parenthesis found");
     }
 
             
-    private Partition partition( ParseNode root, List<LexerToken> src ) throws Exception {
+    private Partition partition( ParseNode root, List<LexerToken> src ) {
         boolean parenthesis = false;
         for( ParseNode child : root.children() ) {
             if( child.contains(openParen) ) {
@@ -726,9 +758,9 @@ public class Program {
                 return relPart(root, src);
             break;
         }
-        throw new Exception("Unknown case");
+        throw new AssertionError("Unknown case");
     }
-    private Partition partPart( ParseNode root, List<LexerToken> src ) throws Exception {
+    private Partition partPart( ParseNode root, List<LexerToken> src ) {
         Partition left = null;
         Partition right = null;
         int oper = -1;
@@ -747,9 +779,9 @@ public class Program {
         if( oper == meet )
             return Partition.intersect(left,right);
 
-        throw new Exception("Impossible case");             
+        throw new AssertionError("Impossible case");             
     }
-    private Partition relPart( ParseNode root, List<LexerToken> src ) throws Exception {
+    private Partition relPart( ParseNode root, List<LexerToken> src )  {
         Relation left = null;
         Relation right = null;
         for( ParseNode child : root.children() ) {
@@ -764,7 +796,7 @@ public class Program {
     }
 
     
-    /*private Relation tuples( ParseNode root, List<LexerToken> src ) throws Exception {
+    /*private Relation tuples( ParseNode root, List<LexerToken> src )  {
         Set<String> attrs = new TreeSet<String>();
         for( ParseNode descendant: root.descendants() )
             if( descendant.contains(attribute) )
@@ -774,7 +806,7 @@ public class Program {
         addTuples(ret,root, src);            
         return ret;
     }
-    private void addTuples( Relation ret, ParseNode root, List<LexerToken> src ) throws Exception {
+    private void addTuples( Relation ret, ParseNode root, List<LexerToken> src )  {
         if( root.contains(tuple) ) 
             ret.addTuple(tuple(root, src));
         else for( ParseNode child : root.children() )
@@ -783,7 +815,7 @@ public class Program {
             else if( child.contains(tuples) )
                 addTuples(ret,child, src);
     }
-    private Map<String,Object> tuple( ParseNode root, List<LexerToken> src ) throws Exception {
+    private Map<String,Object> tuple( ParseNode root, List<LexerToken> src )  {
         for( ParseNode child : root.children() ) {
             if( child.contains(values) ) {
                 Map<String,Object> tuple = new TreeMap<String,Object>(); 
@@ -791,7 +823,7 @@ public class Program {
                 return tuple;
             }
         }
-        throw new Exception("Unknown case");
+        throw new AssertionError("Unknown case");
     }*/
     
     private void values( Map<String,Object> tuple, ParseNode root, List<LexerToken> src ) {
@@ -823,18 +855,18 @@ public class Program {
         tuple.put(left, right);
     }
 
-    private List<String> strings( ParseNode root, List<LexerToken> src ) throws Exception {
+    private List<String> strings( ParseNode root, List<LexerToken> src )  {
         List<String> ret = new LinkedList<String>();
         if( root.from + 1 == root.to && src.get(root.from).type == Token.IDENTIFIER )
             ret.add(root.content(src));
         else if( root.from + 1 == root.to && src.get(root.from).type == Token.DIGITS )
-            throw new Exception("Got number while expected string");
+            throw new AssertionError("Got number while expected string");
         else
             for( ParseNode child : root.children() )
                 ret.addAll(strings(child,src));
         return ret;
     }   
-    private List<Object> values( ParseNode root, List<LexerToken> src ) throws Exception {
+    private List<Object> values( ParseNode root, List<LexerToken> src ) {
         List<Object> ret = new LinkedList<Object>();
         if( root.contains(parExpr) )
             ret.add(parExpr(root, src));
@@ -850,7 +882,7 @@ public class Program {
                 ret.addAll(values(child,src));
         return ret;
     }   
-    private void addContent( Relation ret, ParseNode root, List<LexerToken> src ) throws Exception {
+    private void addContent( Relation ret, ParseNode root, List<LexerToken> src ) {
         int i = 0;
         Object[] t = new Object[ret.colNames.length];
         for( Object elem : values(root, src) ) {
@@ -862,4 +894,34 @@ public class Program {
             i++;
         }
     }
+    
+    
+    static final String FALSE_ASSERTION = "*** False Assertion ***";
+	static final String PARSE_ERROR_IN_ASSERTIONS_FILE = "*** Parse Error in assertions file ***";
+    public void run( String prg ) {
+        List<LexerToken> src =  new Lex().parse(prg);
+        Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
+        int size = matrix.size();
+        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
+        Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
+        ParseNode root = Program.cyk.forest(size, matrix);
+
+        if( root.topLevel != null ) {
+            System.out.println(PARSE_ERROR_IN_ASSERTIONS_FILE);
+            CYK.printErrors(prg, src, root);
+            throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);
+        }
+
+        long t1 = System.currentTimeMillis();
+        outputVariables = true;
+        ParseNode exception = program(root,src);
+        long t2 = System.currentTimeMillis();
+        System.out.println("Time = "+(t2-t1)); 
+        if( exception != null ) {
+            System.out.println(FALSE_ASSERTION);
+            System.out.println(prg.substring(src.get(exception.from).begin, src.get(exception.to-1).end));
+            throw new AssertionError(FALSE_ASSERTION);
+        }
+    }
+
 }

@@ -17,7 +17,7 @@ public class Expr {
 		this.right = rgt;
 	}
 	
-	public Predicate eval( Database d ) throws Exception {
+	public Predicate eval( Database d ) {
         if( "^".equals(type) )
             return Predicate.join(left.eval(d),right.eval(d));
         else if( "v".equals(type) )
