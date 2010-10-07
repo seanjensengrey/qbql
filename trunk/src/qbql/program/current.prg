@@ -1,4 +1,4 @@
-include Figure1.db;
+include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
 include udf.def;
 
 /*
