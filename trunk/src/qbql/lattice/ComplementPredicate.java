@@ -12,6 +12,8 @@ public class ComplementPredicate extends Predicate {
     }
     
     public static Relation join( Relation x, ComplementPredicate y )  {
+        if( !(y.src instanceof Relation ))
+            throw new AssertionError("!(y.src instanceof Relation )");
         if( !x.header.keySet().containsAll(y.header.keySet()) )
             throw new AssertionError("Unsafe join with complement");
         Relation ret = new Relation(x.colNames);

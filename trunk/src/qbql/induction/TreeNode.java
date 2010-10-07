@@ -113,7 +113,7 @@ public class TreeNode {
         
         if( lft != null && rgt != null ) {
             if( label != null && // idempotence
-                ("^".equals(label) || "v".equals(label) || "@^".equals(label) || "@v".equals(label) ) ) 
+                ("^".equals(label) || "v".equals(label) || "<AND>".equals(label) || "<OR>".equals(label) ) ) 
                 if( lft.weight(true) == rgt.weight(true) )
                     return true;
             return lft.weight() < rgt.weight();
@@ -139,8 +139,8 @@ public class TreeNode {
                     if( ("^".equals(label)||"v".equals(label)) 
                      && ("^".equals(lft.label)||"v".equals(lft.label)) 
                     ) return true;
-                    if( ("@^".equals(label)||"@v".equals(label)) 
-                     && ("@^".equals(lft.label)||"@v".equals(lft.label)) 
+                    if( ("<AND>".equals(label)||"<OR>".equals(label)) 
+                     && ("<AND>".equals(lft.label)||"<OR>".equals(lft.label)) 
                            ) return true;
                 }
             }
@@ -150,8 +150,8 @@ public class TreeNode {
                     if( ("^".equals(label)||"v".equals(label)) 
                      && ("^".equals(rgt.label)||"v".equals(rgt.label)) 
                     ) return true;
-                    if( ("@^".equals(label)||"@v".equals(label)) 
-                     && ("@^".equals(rgt.label)||"@v".equals(rgt.label)) 
+                    if( ("<AND>".equals(label)||"<OR>".equals(label)) 
+                     && ("<AND>".equals(rgt.label)||"<OR>".equals(rgt.label)) 
                            ) return true;
                 }
             }

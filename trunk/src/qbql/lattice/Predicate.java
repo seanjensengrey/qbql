@@ -192,7 +192,27 @@ public class Predicate implements Comparable {
         throw new Exception("x.className="+x.getClass().getSimpleName()+",y.className="+y.getClass().getSimpleName());
     }
     
-    /**
+    @Override
+	public boolean equals( Object obj ) {
+        if( this == obj )
+            return true;
+        Predicate src = (Predicate) obj;
+        if( colNames.length != src.colNames.length )
+            return false;
+        
+        for( String colName : header.keySet() ) {
+            Integer j = src.header.get(colName);
+            if( j == null )
+                return false;
+        }
+        
+        if( src instanceof Predicate || this instanceof Predicate ) 
+        	if( getClass() != src.getClass() )
+        		throw new AssertionError("Can't compare predicate content"); 
+        	
+        return true;
+	}
+	/**
      * @param x
      * @param y
      * @return x < y (i.e. x ^ y = x)

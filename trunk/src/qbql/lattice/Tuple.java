@@ -38,6 +38,18 @@ public class Tuple implements Comparable {
         }
         return true;
     }
+    public boolean matches( Object obj, Relation th, Relation sr ) {
+        Tuple src = (Tuple) obj;
+        for( int i = 0; i < data.length; i++ ) {
+            String colName = th.colNames[i];
+            Integer j = sr.header.get(colName);
+            if( j == null )
+            	continue;
+            if( !data[i].equals(src.data[j]) )
+                return false;
+        }
+        return true;
+    }
 
     public int hashCode() {
         if( data.length == 0 )

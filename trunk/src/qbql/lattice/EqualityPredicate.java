@@ -1,5 +1,6 @@
 package qbql.lattice;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import qbql.index.IndexedPredicate;
@@ -16,6 +17,14 @@ public class EqualityPredicate extends Predicate {
     
     static Predicate setIX( Predicate x, EqualityPredicate y ) throws Exception  {
         if( x instanceof Relation ) {
+            if( x.header.containsKey(y.colY) && x.header.containsKey(y.colX) ) {
+            	Set<String> header = new HashSet<String>();
+            	header.addAll(x.header.keySet());
+            	header.remove(y.colX);
+            	header.remove(y.colY);
+            	Relation tmp = new Relation(header.toArray(new String[0]));
+                return Predicate.union(Predicate.join(x, y),tmp);
+            }
             Relation ret = (Relation)Relation.join(x, Database.R01); // clone
             if( x.header.containsKey(y.colX) && !x.header.containsKey(y.colY) )
                 ret.renameInPlace(y.colX, y.colY);

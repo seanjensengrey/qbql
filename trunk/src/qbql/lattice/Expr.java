@@ -41,7 +41,7 @@ public class Expr {
         else if( "/!".equals(type) )
             return d.quantifier((Relation)left.eval(d),(Relation)right.eval(d),Program.big);
         
-        else if( type.startsWith("@") ) {
+        else if( type.startsWith("<") ) {
         	
         	Expr e = d.getOperation(type);
         	Predicate lft = d.getPredicate("?lft");
@@ -85,7 +85,10 @@ public class Expr {
 		Expr lft = null;
 		Expr rgt = null;
         for( ParseNode child : root.children() ) {
-        	if( lft == null ) {
+        	if( lft == null && child.contains(Program.userOper) ) {
+				lft = new Expr("R00",null,null);
+				oper = child.content(src);
+			} else if( lft == null ) {
         		lft = convert(l,r,child,src);
         	} else if( child.contains(Program.expr) ) {
         		rgt = convert(l,r,child,src);

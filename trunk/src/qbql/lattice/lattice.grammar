@@ -144,8 +144,8 @@ unnamedJoin:  expr '^' '~' expr
 ;
 unnamedMeet:  expr 'v' '~' expr
 ;
-userDefined:  '(' userOper expr ')'
-           |  expr userOper expr
+userDefined:  userOper expr -- prefix
+           |  expr userOper expr -- infix
 ;
 userOper:  '<' identifier '>'
           | '<' string_literal '>'
