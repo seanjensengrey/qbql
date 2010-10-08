@@ -77,7 +77,7 @@ or complex assertions built with boolean operations out of primitive equalities 
 
 Now you are set. Just run the Run.main() and watch the console output. It would print out all the query outputs and all the offending assertion (together with the values of free variables that make counterexample). This variables assigment can be literally copied and pasted into back to the program file, and you can also split the invalid assertion into smaller pieces to evaluate them individulally. Let's check the inner join associativity.
 
-The inner join `x @* y` is classic relational algebra natural join projected onto the common set of attributes. It is user-defined operation in QBQL:
+The inner join `x <and> y` is classic relational algebra natural join projected onto the common set of attributes. It is user-defined operation in QBQL:
 
 {{{
 x <and> y = (x ^ y) v ((x v y) ^ []).
