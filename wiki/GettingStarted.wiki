@@ -45,7 +45,7 @@ N=[p]
 ;
 }}}
 
-creates a new anonymous unary relation with the header `{p}`, and containing two tuples `{<1>,<2>}`, then joins it with the relation `A`, which is assumed to exist in the database, and assigns the resulting value to new relation variable `N`. 
+creates a new anonymous unary relation with the header `{p}` containing two tuples `{<1>,<2>}`, then joins it with the relation `A`, which is assumed to exist in the database and, finally, assigns the resulting value to new relation variable `N`. 
 
 The query
 
