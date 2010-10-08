@@ -8,8 +8,7 @@ QBQL is implemented in java. Therefore, for java person the most natural way to 
 Alternatively, you can download [http://qbql.googlecode.com/svn/trunk/dist/qbql.jar qbql.jar] and run it from the command line as follows:
 
 {{{
-C:\> java -jar C:\qbql_trunk\dist\qbql.jar C:\qbql_tr
-unk\src\qbql\program\strings.db C:\qbql_trunk\src\qbql\program\strings.prg
+C:\> java -jar C:\qbql_trunk\dist\qbql.jar C:\qbql_trunk\src\qbql\program\current.prg
 }}} 
 
 Before proceeding to the next section (which is written in cookbook style) a reader is advised to read QBQL introductory articles 
@@ -19,45 +18,44 @@ Before proceeding to the next section (which is written in cookbook style) a rea
 
 == Database ==
 
-To create a _database_ you need to describe it in a text file. Sometimes you don't need any relations, or would like to create them on-the-fly, then you create an empty database definition file. For example, `strings.db` -- file containing string manipuluation examples from [http://vadimtropashko.wordpress.com/relational-programming-with-qbql/manipulating-strings-in-qbql/ Programming QBQL series, part 2] is empty, because the discussion revolves around predicates and not relations. The file name is supplied as the first argument to QBQL program; if there is no argument, then QBQL defaults to database name hardcoded in the Run.java.
+Database is a set of named relations. Relations are typically created with assigment statements like this
 
-The syntax for [http://code.google.com/p/qbql/source/browse/trunk/src/qbql/lattice/lattice.grammar QBQL grammar] allows defining relations in the following format
+{{{
+A=[p]
+   1
+;
+}}}
+
+which creates new unary relation `A` with the header `{p}`, and containing one tuple `<1>`. A reader is encouraged to familiarize yourself with a [http://code.google.com/p/qbql/source/browse/trunk/src/qbql/program/Figure1.db typical database initialization file]. Database initialization is optional, a user is free to run a probgram over the empty database, and initilalize all the auxiliary relations on the fly. If one needs a database initilized in adedicated file, one uses `include` directive, for example
+
+{{{
+include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
+}}}
+
  
-{{{
-relation_var = [ attribute1 attribute2 ...] value1 value2 ...;
-}}}
-
-For example, the fragment
-
-{{{
-Blocks=[name  shape  size]
-        a     tet    small
-        b     cube   small
-        c     cube   medium
-        d     cube   large
-        e     dodec  large
-        f     tet    large
-;
-
-Large=[size]
-       large
-;
-}}}
-
-specifies two relations named `Blocks` and `Large` from `Wittgenstein.db` for a database of geometric shapes borrowed from [http://ggww2.stanford.edu/GUS/lpl/ Language, Proof, and Logic] textbook.
-
-After definining several relations, you may build new relations from the existing ones by applying [http://vadimtropashko.wordpress.com/relational-lattice/ relational lattice] operations. The files with the `.db` extension in the qbql/program package are database definition files:
- * `Wittgenstein.db` - a small introductory database of geometric shapes borrowed from LPL textbook
- * `Figure1.db` - relational lattice instance from the Figure 1 http://arxiv1.library.cornell.edu/pdf/0807.3795
- * `Sims.db` - less abstract database of people mainly used for researching set joins.
- * `strings.db` - string examples from [http://vadimtropashko.wordpress.com/relational-programming-with-qbql/manipulating-strings-in-qbql/ Programming QBQL series, part 2] (empty). 
- * `Aggregate.db` - database dedicated to studying aggregates containing the familiar EMP and DEPT tables from oracle database. (Currently it fails to initialize due to the size of the universal relation `R11`). 
-
-Watch out for [http://code.google.com/p/qbql/wiki/CurrentLimitations pitfalls]. 
-
 == Assertions/Program ==
  
-A program is a sequence of _assignment operations_ and _assertions_. Assertions are either equalities 
+A program is a sequence of _assignment operations_, queries, and _assertions_ mixed together. Assignment operations introduce new relation variables (and record their names and values in the database). For example, 
+
+{{{
+N=[p]
+   1
+   2
+^ A
+;
+}}}
+
+creates a new anonymous unary relation with the header `{p}`, and containing two tuples `{<1>,<2>}`, then joins it with the relation `A`, which is assumed to exist in the database, and assigns the resulting value to new relation variable `N`. 
+
+The query
+
+{{{
+N;
+}}}
+
+outputs the value of `N` to the console.
+
+Assertions are used to verify relational lattice laws, or just establish some propositions against certain database. They are either equalities 
 
 {{{
 expr1 = expr2.
@@ -73,51 +71,28 @@ expr3 > expr4.
 ...
 }}}
 
-or complex assertions built with boolean operations out of primitive equalities and inequalities. Each expression on left-hand and right-hand side of an equality or inequality is either a relation/predicate variable, or a term built via operations of join `^`, inner union `v`, outer union `+`, inner join `*`, negation `'`, or set join applied to relations/predicates. See [http://code.google.com/p/qbql/source/browse/trunk/src/qbql/lattice/lattice.grammar QBQL grammar] for the details.
-
-For example, the `Wittgenstein.assertions` file 
-
-{{{
-(Blocks ^ D) v Size = Large.
-(Blocks ^ A) v Size = Small.
-(((A ^ Left) v Comparison) ^ (D ^ Right)) v R00 = R01.
-}}} 
-   
-claims the following propositions
-
-{{{
-"D is a Large Block"
-"A is a Small Block"
-"A is smaller than D"
-}}}
-
-The name of the database assertions/program text file is specified as the second argument to QBQL program, otherwise the one hard coded in the beginning of `Run.java` file is used. 
+or complex assertions built with boolean operations out of primitive equalities and inequalities. Each expression on left-hand and right-hand side of an equality or inequality is either a relation/predicate variable, or a term built via operations of join `^`, inner union `v`, complement `'`, set join, or _user-defined_ operation applied to either relations or predicates. See [http://code.google.com/p/qbql/source/browse/trunk/src/qbql/lattice/lattice.grammar QBQL grammar] for the details. 
 
 == Run the program ==
 
-Now you are set. Just run the Run.main() and watch the console output. If the database satisfies all the assertions then the expected output is
-
-`All Assertions are OK`
-
-otherwise it would print out the offending assertion and the values of the variables. This variables assigment can be literally copied and pasted into back to the assertion/program file, and you can also split the invalid assertion into smaller pieces to evaluate them individulally. Let's check the inner join associativity.
+Now you are set. Just run the Run.main() and watch the console output. It would print out all the query outputs and all the offending assertion (together with the values of free variables that make counterexample). This variables assigment can be literally copied and pasted into back to the program file, and you can also split the invalid assertion into smaller pieces to evaluate them individulally. Let's check the inner join associativity.
 
 The inner join `x @* y` is classic relational algebra natural join projected onto the common set of attributes. It is user-defined operation in QBQL:
 
 {{{
-x @* y = (x ^ y) v ((x v y) ^ []).
+x <and> y = (x ^ y) v ((x v y) ^ []).
 }}}
 
-User defined operations can be introduced as assertions at any point; the inner join is happened to be defined at the end of Figure1.db. Our goal here is to verify inner join associativity 
+User defined operations can be introduced as assertions at any point; the inner join is happened to be defined in the file `udf.def`. Our goal here is to verify inner join associativity 
 
 {{{
-x @* (y @* z) = y @* (x @* z).
+x <and> (y <and> z) = y <and> (x <and> z).
 }}}
 
-against the database defined in Figure1.db. Therefore, just paste this assertion into `Figure1.prg`, then run 
+against the database defined in Figure1.db. Therefore, just paste this assertion into `current.prg`, then run 
 
 {{{
-C:\> java -jar C:\qbql_trunk\dist\qbql.jar C:\qbql_tr
-unk\src\qbql\program\Figure1.db C:\qbql_trunk\src\qbql\program\Figure1.prg
+C:\> java -jar C:\qbql_trunk\dist\qbql.jar C:\qbql_trunk\src\qbql\program\current.prg
 }}} 
 
 and witness the output
@@ -150,10 +125,10 @@ y = [p  q]
 x = [p]
      1
 ;
-y @* z;
-x @* z;
-x @* (y * z);
-y @* (x * z);
+y <and> z;
+x <and> z;
+x <and> (y <and> z);
+y <and> (x <and> z);
 }}}
 
-to see step-by step evaluations in the counterexample.   
+to see the last four queries evaluated step-by-step.   
