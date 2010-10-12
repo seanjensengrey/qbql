@@ -444,6 +444,10 @@ public class Program {
             			if( lft == null && grandChild.contains(userOper) ) {
             				lft = "R00";
             				operation = grandChild.content(src);
+            				try { 
+            					database.getOperation(operation);
+            					return false;
+            				} catch( AssertionError e ) {} 
             			} else if( lft == null ) 
             				lft = grandChild.content(src);
             			else if( operation == null ) {
