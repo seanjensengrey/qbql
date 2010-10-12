@@ -44,7 +44,8 @@ x ^ ((<INV>y) v (<INV>z)) = (x ^ (<INV>y)) v (x ^ (<INV>z)).
 */
 
 --x /= y = (x /< y) ^ (x /> y).
-x /= y = <NOT>( ((y ^ <NOT>x) v (x ^ <NOT>y)) <and> <INV>(x v y) ).
+--x /= y = <NOT>( ((y ^ <NOT>x) v (x ^ <NOT>y)) <and> <INV>(x v y) ).
 
-A ^ B;
-A <and> B;
+<NOT>( ((y ^ <NOT>x) v (x ^ <NOT>y)) <and> <INV>(x v y) ) = 
+<NOT>( ((y ^ <NOT>x) v (x ^ <NOT>y)) <and> <INV>(x v y) ).
+
