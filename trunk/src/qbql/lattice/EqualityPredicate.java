@@ -9,6 +9,7 @@ public class EqualityPredicate extends Predicate {
     private String[] colsX;
     private String[] colsY;
     public EqualityPredicate( String[] colsX, String[] colsY ) {
+    	assertDisjointSets(colsX, colsY);
     	if( colsX.length != colsY.length )
     		throw new AssertionError("Skewed equality predicate");
     	//-----super-----
@@ -174,6 +175,21 @@ public class EqualityPredicate extends Predicate {
             ret.content.add(new Tuple(o));
         }
         return ret;
+    }
+    
+    void assertDisjointSets( String[] arg1, String[] arg2 ) {
+    	for( String s1 : arg1 )
+        	for( String s2 : arg2 )
+        		if( s1.equals(s2) )
+        			throw new AssertionError("assertDisjointSets: common element "+s1);
+    	for( String s1 : arg1 )
+        	for( String s2 : arg1 )
+        		if( s1!=s2 && s1.equals(s2) )
+        			throw new AssertionError("assertDisjointSets: repeated element "+s1);
+    	for( String s1 : arg2 )
+        	for( String s2 : arg2 )
+        		if( s1!=s2 && s1.equals(s2) )
+        			throw new AssertionError("assertDisjointSets: repeated element "+s1);
     }
 
 }
