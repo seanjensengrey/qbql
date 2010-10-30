@@ -1,128 +1,25 @@
-/*
-Sets /! Sets1;
-Sets /0 Sets1;
-Sets /1 Sets1;
-Sets /= Sets1;
-Sets /> Sets1;
-Sets /< Sets1;
-Sets /^ Sets1;
-*/
-Sets /! Sets1=[_s  s1]
-.
-Sets /0 Sets1=[_s  s1]
-             "{a,b}"  "{c}"
-             "{a}"  "{b,c}"
-             "{a}"  "{b}"
-             "{a}"  "{c}"
-             "{b,c}"  "{a}"
-             "{b}"  "{a}"
-             "{b}"  "{c}"
-             "{c}"  "{a,b}"
-             "{c}"  "{a}"
-             "{c}"  "{b}"
-             "{}"  "{a,b,c}"
-             "{}"  "{a,b}"
-             "{}"  "{a}"
-             "{}"  "{b,c}"
-             "{}"  "{b}"
-             "{}"  "{c}"
-.
-Sets /1 Sets1=[_s  s1]
-             "{a,b,c}"  "{a}"
-             "{a,b,c}"  "{b}"
-             "{a,b,c}"  "{c}"
-             "{a,b}"  "{a}"
-             "{a,b}"  "{b,c}"
-             "{a,b}"  "{b}"
-             "{a}"  "{a,b,c}"
-             "{a}"  "{a,b}"
-             "{a}"  "{a}"
-             "{b,c}"  "{a,b}"
-             "{b,c}"  "{b}"
-             "{b,c}"  "{c}"
-             "{b}"  "{a,b,c}"
-             "{b}"  "{a,b}"
-             "{b}"  "{b,c}"
-             "{b}"  "{b}"
-             "{c}"  "{a,b,c}"
-             "{c}"  "{b,c}"
-             "{c}"  "{c}"
-.
-Sets /= Sets1=[_s  s1]
-             "{a,b,c}"  "{a,b,c}"
-             "{a,b}"  "{a,b}"
-             "{a}"  "{a}"
-             "{b,c}"  "{b,c}"
-             "{b}"  "{b}"
-             "{c}"  "{c}"
-.
-Sets /> Sets1=[_s  s1]
-             "{a,b,c}"  "{a,b,c}"
-             "{a,b,c}"  "{a,b}"
-             "{a,b,c}"  "{a}"
-             "{a,b,c}"  "{b,c}"
-             "{a,b,c}"  "{b}"
-             "{a,b,c}"  "{c}"
-             "{a,b}"  "{a,b}"
-             "{a,b}"  "{a}"
-             "{a,b}"  "{b}"
-             "{a}"  "{a}"
-             "{b,c}"  "{b,c}"
-             "{b,c}"  "{b}"
-             "{b,c}"  "{c}"
-             "{b}"  "{b}"
-             "{c}"  "{c}"
-.
-Sets /< Sets1=[_s  s1]
-             "{a,b,c}"  "{a,b,c}"
-             "{a,b}"  "{a,b,c}"
-             "{a,b}"  "{a,b}"
-             "{a}"  "{a,b,c}"
-             "{a}"  "{a,b}"
-             "{a}"  "{a}"
-             "{b,c}"  "{a,b,c}"
-             "{b,c}"  "{b,c}"
-             "{b}"  "{a,b,c}"
-             "{b}"  "{a,b}"
-             "{b}"  "{b,c}"
-             "{b}"  "{b}"
-             "{c}"  "{a,b,c}"
-             "{c}"  "{b,c}"
-             "{c}"  "{c}"
-             "{}"  "{a,b,c}"
-             "{}"  "{a,b}"
-             "{}"  "{a}"
-             "{}"  "{b,c}"
-             "{}"  "{b}"
-             "{}"  "{c}"
-.
-Sets /^ Sets1=[_s  s1]
-             "{a,b,c}"  "{a,b,c}"
-             "{a,b,c}"  "{a,b}"
-             "{a,b,c}"  "{a}"
-             "{a,b,c}"  "{b,c}"
-             "{a,b,c}"  "{b}"
-             "{a,b,c}"  "{c}"
-             "{a,b}"  "{a,b,c}"
-             "{a,b}"  "{a,b}"
-             "{a,b}"  "{a}"
-             "{a,b}"  "{b,c}"
-             "{a,b}"  "{b}"
-             "{a}"  "{a,b,c}"
-             "{a}"  "{a,b}"
-             "{a}"  "{a}"
-             "{b,c}"  "{a,b,c}"
-             "{b,c}"  "{a,b}"
-             "{b,c}"  "{b,c}"
-             "{b,c}"  "{b}"
-             "{b,c}"  "{c}"
-             "{b}"  "{a,b,c}"
-             "{b}"  "{a,b}"
-             "{b}"  "{b,c}"
-             "{b}"  "{b}"
-             "{c}"  "{a,b,c}"
-             "{c}"  "{b,c}"
-             "{c}"  "{c}"
-.
+include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
+include udf.def;
 
+(<NOT>x) ^ x = x ^ R00.
+(<NOT>x) v x = x v R11. 
+
+
+(<INV>x) ^ x = x ^ R11.
+(<INV>x) v x = x v R00. 
+
+<NOT>R00= <INV>R11.
+
+["------INV AXIOMS -----"];
+
+(<INV>x) v (<INV>y) = <INV>(x <OR> y).
+(<NOT>x) ^ (<NOT>y) = <NOT>(x <OR> y).
+(<INV>x) <OR> (<INV>y) = <INV>(x v y).
+
+["------De Morgan -----"];
+
+
+x ^ ((<INV>y) v (<INV>z)) = (x ^ (<INV>y)) v (x ^ (<INV>z)).
+
+["------Distributivity -----"];
 

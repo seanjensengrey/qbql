@@ -133,9 +133,9 @@ public class Database {
                 Relation rgt = Relation.union(Relation.join(singleY,y),hdrYX);
                 if( type == Program.contains && Relation.le(lft, rgt) 
                  || type == Program.transpCont && Relation.ge(lft, rgt)   
-                 || type == Program.disjoint && Predicate.le(lft, complement(rgt)) 
+                 || type == Program.disjoint && Predicate.le(lft, Predicate.join(Predicate.union(R11,rgt),complement(rgt))) 
                  || type == Program.almostDisj && Relation.join(lft, rgt).content.size()==1 
-                 || type == Program.big && Predicate.ge(lft, complement(rgt))   
+                 || type == Program.big && Predicate.ge(lft, Predicate.join(Predicate.union(R11,rgt),complement(rgt)))   
                  || type == Program.setEQ && lft.equals(rgt)
                 )
                     ret = Relation.union(ret, Relation.join(singleX, singleY));

@@ -1,3 +1,11 @@
+Sets /! Sets1;
+Sets /0 Sets1;
+Sets /1 Sets1;
+Sets /= Sets1;
+Sets /> Sets1;
+Sets /< Sets1;
+Sets /^ Sets1;
+
 AB /^ [_s=s1] @* BC /= Sets;
 AB /^ [_s=s1] v BC /= Sets;
 (ABC * (AB v [m])') /= Sets;

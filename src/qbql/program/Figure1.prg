@@ -112,17 +112,10 @@ a^R00=x^R00 &
 
 
 
-x` ^ x = x ^ R11.
-x` v x = x v R00. 
-
 a ^ x = b &
 a v R00=x v R00 &
 (a v x)^ R00 = R00 -> x = b <and> a`.
 
-x` v y` = (x <OR> y)`.
-x' ^ y' = (x <OR> y)'.
-
-x` <OR> y` = (x v y)`.
 
 
 ((x' ^ y')')` = x` v y`.
@@ -491,6 +484,25 @@ Upper-adjoint distribution:
 x /< (z v y) = (x /< z) v (x /< y).
 */
 
+/*
+E=[p]
+   2
+; 
+
+x = [t] (A) (B) (C) (D) (E);
+lex = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ LE;
+--lex;
+--(x /^ [t=lft]) /=  lex;
+
+--lex = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ LE;
+--lex;
+GE = LE' v [lft=rgt];
+gex = ((x /^ [t=lft]) ^ (x /^ [t=rgt])) ^ GE;
+(x /^ [t=rgt]) /=  gex; -- or /<
+--plux = ((x /^ [t=x]) ^ (x /^ [t=y])) ^ Plus;
+--plux;
+--(plux /^ [t=x]) /= x;
+*/
 
 
 

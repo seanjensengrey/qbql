@@ -10,7 +10,7 @@ public class Run {
     public static void main( String[] args ) throws Exception {
         String prg = null;
         if( args.length == 1 ) {
-            prg = Util.readFile(args[1]);
+            prg = Util.readFile(args[0]);
         } else {
             //prg = Util.readFile(Run.class,"strings.prg");
             prg = Util.readFile(Run.class,"current.prg");     
