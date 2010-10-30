@@ -12,18 +12,18 @@ Points = [x y]
           5 0
           6 3
 ;
-/* unit test
+/* unit test */
 AtOneSide 
-/^ ([x1]0 ^ [y1]1
-^ [x2]2 ^ [y2]2
-^ [xa]0 ^ [ya]3
-^ [xb]3 ^ [yb]1) = R00.
+/^ ([x1 y1] 0 1
+ ^  [x2 y2] 2 2
+ ^  [xa ya] 0 3
+ ^  [xb yb] 3 1) = R00.
 AtOneSide 
-/^ ([x1]0 ^ [y1]1
-^ [x2]2 ^ [y2]2
-^ [xa]0 ^ [ya]3
-^ [xb]3 ^ [yb]3) = R01.
-*/
+/^ ([x1 y1] 0 1
+ ^  [x2 y2] 2 2
+ ^  [xa ya] 0 3
+ ^  [xb yb] 3 3) = R01.
+
 
 
 R = (
