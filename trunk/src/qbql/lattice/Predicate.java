@@ -88,16 +88,18 @@ public class Predicate implements Comparable {
             return Relation.join((Relation)x, (Relation)y);
         
         if( x instanceof Relation && y.lft != null ) {
-            Predicate ret = null;
-            if( y.oper == Program.naturalJoin )
+            if( y.oper == Program.naturalJoin ) {
                 try {
-                    ret = join(join(x,y.lft),y.rgt);
-                    if( !(ret instanceof Relation) )
-                        ret = join(join(x,y.rgt),y.lft);
-                } catch( AssertionError e ) {
-                    ret = join(join(x,y.rgt),y.lft);
-                }
-            else if( y.oper == Program.innerUnion ) {
+                	Predicate test = join(x,y.lft);
+                	if( test instanceof Relation )
+                		return join(test,y.rgt);
+                } catch( AssertionError e ) {}
+                try {
+                	Predicate test = join(x,y.rgt);
+                	if( test instanceof Relation )
+                		return join(test,y.lft);
+                } catch( AssertionError e ) {}
+            } else if( y.oper == Program.innerUnion ) {
                 String[] xly = Util.intersect(x.colNames, y.lft.colNames);
                 String[] xry = Util.intersect(x.colNames, y.rgt.colNames);
                 Set<String> l = new HashSet<String>();
@@ -107,12 +109,14 @@ public class Predicate implements Comparable {
                 for( String s : xry )
                     r.add(s);
                 if( l.equals(r) ) // SDC
-                    ret = union(join(x,y.lft),join(x,y.rgt));
+                    return union(join(x,y.lft),join(x,y.rgt));
+            } else if( y.oper == Program.setIX  ) {
+                Relation hdr = new Relation(Util.symmDiff(y.lft.colNames, y.rgt.colNames));
+            	return join(x,Relation.union(hdr,join(y.lft, y.rgt)));
             } else if( x == Database.R00 ) {
                 return new Relation(y.colNames);
             } else
                 throw new AssertionError("Unknown operation");
-            return ret;
         } else if( y instanceof Relation && x.lft != null ) 
             return join(y,x);
         
@@ -127,11 +131,11 @@ public class Predicate implements Comparable {
         }
         
         if( x instanceof Relation && y instanceof IndexedPredicate ) 
-            try {
+            //try {
                 return IndexedPredicate.join((Relation)x,(IndexedPredicate)y);
-            } catch( AssertionError e ) {
-                return new Predicate(x,y,Program.naturalJoin);
-            }           
+            //} catch( AssertionError e ) {
+                //return new Predicate(x,y,Program.naturalJoin);
+            //}           
         if( x instanceof Relation && y instanceof ComplementPredicate ) 
             return ComplementPredicate.join((Relation)x,(ComplementPredicate)y);
         if( x instanceof Relation && y instanceof EqualityPredicate ) 
@@ -176,8 +180,68 @@ public class Predicate implements Comparable {
         if( y instanceof EqualityPredicate ) 
             return EqualityPredicate.setIX(x,(EqualityPredicate)y);
         
-        Relation hdr = new Relation(Util.symmDiff(x.colNames, y.colNames));
-        return Relation.union(hdr,join(x, y));
+        if( x instanceof Relation && y instanceof Relation ) {
+            Relation hdr = new Relation(Util.symmDiff(x.colNames, y.colNames));
+        	return Relation.union(hdr,join(x, y));
+        }
+        
+        if( x instanceof Relation && y.lft != null ) {
+        	//final String oper = Program.cyk.allSymbols[y.oper];
+        	boolean notAll3Intersect = Util.intersect(Util.intersect(x.colNames, y.lft.colNames),y.rgt.colNames).length==0;
+			if( y.oper == Program.setIX && notAll3Intersect ) {
+                // conditional associativity: 
+				// http://vadimtropashko.wordpress.com/relational-lattice/the-laws-of-renaming/
+                try {
+                	Predicate test = setIX(x,y.lft);
+                	if( test instanceof Relation )
+                		return setIX(test,y.rgt);
+                	if( test.lft instanceof Relation &&
+                	    Util.intersect(Util.intersect(y.rgt.colNames, test.lft.colNames),test.rgt.colNames).length==0
+                	) {
+                    	Predicate test2 = setIX(y.rgt,test.lft);
+                    	if( test2 instanceof Relation )
+                    		return setIX(test2,test.rgt);           		
+                	}
+                } catch( AssertionError e ) {}
+                try {
+                	Predicate test = setIX(x,y.rgt);
+                	if( test instanceof Relation )
+                		return setIX(test,y.lft);
+                } catch( AssertionError e ) {}
+			} else if( y.oper == Program.naturalJoin && notAll3Intersect ) {
+            	String[] lftHdr = Util.symmDiff(x.colNames, Util.union(y.lft.colNames, y.rgt.colNames));
+            	String[] rgtHdr = Util.union(Util.symmDiff(x.colNames, y.lft.colNames), Util.symmDiff(x.colNames, y.rgt.colNames));
+            	if( Util.symmDiff(lftHdr,rgtHdr).length == 0 )
+            		return join(setIX(x,y.lft),setIX(x,y.rgt));
+            } else if( y.oper == Program.innerUnion ) {
+                String[] xly = Util.intersect(x.colNames, y.lft.colNames);
+                String[] xry = Util.intersect(x.colNames, y.rgt.colNames);
+                Set<String> l = new HashSet<String>();
+                for( String s : xly )
+                    l.add(s);
+                Set<String> r = new HashSet<String>();
+                for( String s : xry )
+                    r.add(s);
+                if( l.equals(r) ) // SDC
+                    return union(setIX(x,y.lft),setIX(x,y.rgt));
+            } else if( x == Database.R00 ) {
+                return new Relation(y.colNames);
+            } else
+                throw new AssertionError("Unknown operation");
+        } else if( y instanceof Relation && x.lft != null ) 
+            return setIX(y,x);
+                        
+        Predicate ret = null;
+        try {
+            Relation hdr = new Relation(Util.symmDiff(x.colNames, y.colNames));
+        	ret = Relation.union(hdr,join(x, y));
+        } catch( AssertionError e ) {        	
+        }
+        if( ret instanceof Relation )
+        	return ret;
+        
+        return new Predicate(x,y,Program.setIX);
+
     }
     public static Predicate setEQ( Predicate x, Predicate y ) {
         if( x instanceof IndexedPredicate && !(y instanceof IndexedPredicate) ) {
