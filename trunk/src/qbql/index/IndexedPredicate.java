@@ -171,7 +171,7 @@ public class IndexedPredicate extends Predicate {
                 if( e.getCause() instanceof EmptySetException )
                     return ret;
                 else
-                	new RuntimeException(e);
+                	throw new RuntimeException(e);
             } catch ( Exception e ) {
 				throw new RuntimeException(e);
 			}
