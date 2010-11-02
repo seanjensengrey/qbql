@@ -6,7 +6,7 @@ TABLE_DUM = R00;
 TABLE_DEE = R01;
 
 x <AND> y = x ^ y.
-x <OR> y = --(x ^ R11) v (y ^ (x v R11)). -- x @+ (y @+ z) = (x @+ y) @+ z. 73 sec
+x <OR> y = --(x ^ R11) v (y ^ (x v R11)). -- x <OR> (y <OR> z) = (x <OR> y) <OR> z. 73 sec
         --(R11 ^ y) v (x ^ y) v (x ^ R11). -- 112 sec
         (x ^ (y v R11)) v (y ^ (x v R11)). -- 43 sec
         --(x' ^ y')'. -- 70 sec
@@ -37,14 +37,14 @@ x @/> y = ( (x v y)` @* (x'^ y) )'.
 
 <INV> x  = (R11 ^ x) v x`. 
 
-x <"and"> y = (<NOT>((<NOT>x) v (<NOT>y))).
+x <"and"> y = <NOT>((<NOT>x) v (<NOT>y)).
 
 -----------------------------------------------------------------------
 Mult = 
-(Exp /^ [x=r]) /^
-([x=y] /^ (Exp /^ [x=s])) /^
-(Plus /^ [x=r] /^ [y=s]) /^
-[z=t] /^  ([x=t] /^ Exp /^ [y=z]);
+(Exp /^ [x=r] /^ [y=f1]) /^
+(Exp /^ [x=s] /^ [y=f2]) /^
+(Exp /^ [x=t] /^ [y=p]) /^
+(Plus /^ [x=r] /^ [y=s] /^ [z=t]);
 
 Substr = 
 (Cat /^ [from=to] /^ [prefix=_1])

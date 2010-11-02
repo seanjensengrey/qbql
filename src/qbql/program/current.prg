@@ -1,4 +1,4 @@
---include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
+include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
 include udf.def;
 
 Points = [x y]
@@ -26,7 +26,10 @@ AtOneSide
 
 Exp /^ [y] 1 "2.7";
 
-Mult /^ [x y] 3 2;
+Mult /^ [f1 f2] 3 2;
+
+Mult /^ [f1 p] 3 6;
+
 
 R = (
      (Points /^ [x=x1] /^ [y=y1]) 
