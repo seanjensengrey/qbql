@@ -23,7 +23,7 @@ AtOneSide
  ^  [x2 y2] 2 2
  ^  [xa ya] 0 3
  ^  [xb yb] 3 3) = R01.
-
+ 
 Exp /^ [y] 1 "2.7";
 
 Mult /^ [f1 f2] 3 2;

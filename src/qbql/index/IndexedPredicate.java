@@ -244,6 +244,7 @@ public class IndexedPredicate extends Predicate {
         }
         return ret;
     }
+    
     public static IndexedPredicate union( Relation x, IndexedPredicate y )  {
         if( 0 < x.content.size() )
             throw new AssertionError("Not a projection: TODO");
@@ -263,6 +264,7 @@ public class IndexedPredicate extends Predicate {
         ret.colNames = newColNames;
         return ret; 
     }
+    
     public static Relation setEQ( Relation x, IndexedPredicate y ) {
         Set<String> headerXmY = new TreeSet<String>();
         headerXmY.addAll(x.header.keySet());
