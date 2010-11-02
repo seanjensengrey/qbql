@@ -39,3 +39,16 @@ x @/> y = ( (x v y)` @* (x'^ y) )'.
 
 x <"and"> y = (<NOT>((<NOT>x) v (<NOT>y))).
 
+-----------------------------------------------------------------------
+Mult = 
+(Exp /^ [x=r]) /^
+([x=y] /^ (Exp /^ [x=s])) /^
+(Plus /^ [x=r] /^ [y=s]) /^
+[z=t] /^  ([x=t] /^ Exp /^ [y=z]);
+
+Substr = 
+(Cat /^ [from=to] /^ [prefix=_1])
+/^
+(Cat /^ [source=_1] /^ [postfix=fragment])
+;
+

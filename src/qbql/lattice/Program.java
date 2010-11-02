@@ -539,19 +539,14 @@ public class Program {
         String prg = null;	
         String fname = null;
 		try {
-	    	for( ParseNode n : root.children() ) {
-	    		if( n.contains(filename) ) {
-	    	    	StringBuilder fn = new StringBuilder();
-	    	    	for( int i = root.from+1; i < root.to; i++ ) 
-	    				fn.append(src.get(i).content);
-	    	    	fname = fn.toString();
-	    	    	if( fname.startsWith("\"") )
-						prg = Util.readFile(fname.substring(1,fname.length()-1));
-	    	    	else
-	    	    		prg = Util.readFile(Run.class,fname);
-		    		break;
-	    		}
-	    	}
+			StringBuilder fn = new StringBuilder();
+			for( int i = root.from+1; i < root.to-1; i++ ) 
+				fn.append(src.get(i).content);
+			fname = fn.toString();
+			if( fname.startsWith("\"") )
+				prg = Util.readFile(fname.substring(1,fname.length()-1));
+			else
+				prg = Util.readFile(Run.class,fname);
 			System.out.println("Processing "+fname+" ...");
 		} catch ( Exception e ) {
 			throw new RuntimeException("failed to read the file "+fname);
@@ -562,6 +557,7 @@ public class Program {
 			if( Program.PARSE_ERROR_IN_ASSERTIONS_FILE.equals(e.getMessage()) ) {
 				System.out.println("^^^ Parse error in "+fname.toString());
 			}
+			throw e;
 		}
 		return null;
 	}

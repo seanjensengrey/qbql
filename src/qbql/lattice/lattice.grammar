@@ -25,13 +25,9 @@ filename:
          | string_literal
 ;
 
-include: 'include' filename
+include: 'include' filename ';'
 ;
 
-includes: 
-          include ';'
-       |  include ';' includes
-;
 
 disjunction: 
              conjunction '|' disjunction
@@ -129,7 +125,7 @@ partition:
 program:     assertion
           |  assignment
           |  query
-          |  includes
+          |  include
           |  program program
 ;
 query:       expr ';'

@@ -1,28 +1,51 @@
 package qbql.lang;
 
+import java.math.BigDecimal;
+
 import qbql.index.NamedTuple;
 
 public class Plus {
 
     public static NamedTuple x_y_z( 
-            int x, int y 
+            Object x, Object y 
     ) {
         String[] columns = new String[]{"z"};
-        Object[] data = new Object[]{x+y};
-        return new NamedTuple(columns,data);
+        if( x instanceof Integer & y instanceof Integer )
+        	return new NamedTuple(columns,new Object[]{(Integer)x+(Integer)y});
+        if( x instanceof Float & y instanceof Float )
+        	return new NamedTuple(columns,new Object[]{(Float)x+(Float)y});
+        if( x instanceof Double & y instanceof Double )
+        	return new NamedTuple(columns,new Object[]{(Double)x+(Double)y});
+        if( x instanceof BigDecimal & y instanceof BigDecimal )
+        	return new NamedTuple(columns,new Object[]{((BigDecimal)x).add((BigDecimal)y)});
+        throw new AssertionError("? + ?");
     }
     public static NamedTuple x_z_y( 
-            int x, int z 
+    		Object x, Object z 
     ) {
         String[] columns = new String[]{"y"};
-        Object[] data = new Object[]{z-x};
-        return new NamedTuple(columns,data);
+        if( x instanceof Integer & z instanceof Integer )
+        	return new NamedTuple(columns,new Object[]{(Integer)z-(Integer)x});
+        if( x instanceof Float & z instanceof Float )
+        	return new NamedTuple(columns,new Object[]{(Float)z-(Float)x});
+        if( x instanceof Double & z instanceof Double )
+        	return new NamedTuple(columns,new Object[]{(Double)z-(Double)x});
+        if( x instanceof BigDecimal & z instanceof BigDecimal )
+        	return new NamedTuple(columns,new Object[]{((BigDecimal)z).subtract((BigDecimal)x)});
+        throw new AssertionError("? - ?");
     }
     public static NamedTuple y_z_x( 
-            int y, int z 
+    		Object y, Object z 
     ) {
         String[] columns = new String[]{"x"};
-        Object[] data = new Object[]{z-y};
-        return new NamedTuple(columns,data);
+        if( y instanceof Integer & z instanceof Integer )
+        	return new NamedTuple(columns,new Object[]{(Integer)z-(Integer)y});
+        if( y instanceof Float & z instanceof Float )
+        	return new NamedTuple(columns,new Object[]{(Float)z-(Float)y});
+        if( y instanceof Double & z instanceof Double )
+        	return new NamedTuple(columns,new Object[]{(Double)z-(Double)y});
+        if( y instanceof BigDecimal & z instanceof BigDecimal )
+        	return new NamedTuple(columns,new Object[]{((BigDecimal)z).subtract((BigDecimal)y)});
+        throw new AssertionError("? - ?");
     }
 }
