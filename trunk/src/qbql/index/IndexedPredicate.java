@@ -305,15 +305,24 @@ public class IndexedPredicate extends Predicate {
                 Object arglist[] = new Object[1];
                 arglist[0] = y.db;
                 o = ct.newInstance(arglist);
+            } catch( NoSuchMethodException e ) {            	
+            } catch ( Exception e ) {
+				throw new RuntimeException(e);
+			}
             
+            try {
                 Relation singleY = ((NamedTuple)m.invoke(o, new Object[] {lft})).toRelation();
                 for( String newName : y.renamed.keySet() )
                 	singleY.renameInPlace(y.renamed.get(newName), newName );
 
                 ret = Relation.union(ret, Relation.join(singleX, singleY)); 
-            } catch( NoSuchMethodException e ) {            	
+            } catch( InvocationTargetException e ) {
+                /*if( e.getCause() instanceof EmptySetException )
+                    return ret;
+                else*/
+                	throw new RuntimeException(e);
             } catch ( Exception e ) {
-            	throw new AssertionError(e);
+				throw new RuntimeException(e);
 			}
         }        
         return ret;      
