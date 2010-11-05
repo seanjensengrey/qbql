@@ -648,7 +648,8 @@ public class Program {
             return parExpr(root, src);
         
         else if( root.contains(identifier) || root.from+1 == root.to ) {
-            String name = src.get(root.from).content;
+            LexerToken token = src.get(root.from);
+			String name = token.type == Token.DQUOTED_STRING ? token.content.substring(1, token.content.length()-1) : token.content;
             Predicate candidate = lookup(name);
             if( candidate == null )
                 throw new AssertionError("Predicate/Table '"+name+"' not in the database");

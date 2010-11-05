@@ -7,6 +7,9 @@ import qbql.lattice.Database;
 import qbql.lattice.Relation;
 
 public class LE {
+    public static String getSymbolicName() {
+    	return "lft <= rgt";
+    }
 
     public static Relation lft_rgt( Object lft, Object rgt ) {
     	if( !(lft instanceof Comparable) || !(rgt instanceof Comparable) )
@@ -17,5 +20,6 @@ public class LE {
             return Database.R01;
         else
             return Database.R00;
-    }  
+    } 
+    
 }

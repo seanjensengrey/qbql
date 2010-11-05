@@ -1,9 +1,11 @@
 package qbql.index;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -19,6 +21,9 @@ import qbql.lattice.Program;
 import qbql.lattice.Predicate;
 import qbql.lattice.Relation;
 import qbql.lattice.Tuple;
+import qbql.parser.Lex;
+import qbql.parser.LexerToken;
+import qbql.parser.Token;
 import qbql.util.Util;
 
 public class IndexedPredicate extends Predicate {
@@ -71,20 +76,11 @@ public class IndexedPredicate extends Predicate {
     private Database db = null;
     public IndexedPredicate( Database db, String name ) throws Exception {
         this.db = db;
-        Set<String> tmp = new TreeSet<String>();
-        implementation = Class.forName(db.pkg+"."+name);
-        for( Method m : methods() ) {
-            tmp.addAll(arguments(m,ArgType.BOTH));
-        }
-        colNames = new String[tmp.size()];
-        int pos = 0;
-        for( String s : tmp ) {
-            colNames[pos] = s;
-            header.put(s,pos);
-            renamed.put(s, s);
-            pos++;
-        }          
+        if( !narrowPredicate(db, name) && !genericPredicate(db, name) )
+        	throw new Exception("Failed to instantiate "+name);
+        /*?*/db.addPredicate(name, this);
     }
+	
     public IndexedPredicate( IndexedPredicate ip ) {
         super(Util.clone(ip.colNames)); 
         this.db = ip.db;
@@ -334,4 +330,90 @@ public class IndexedPredicate extends Predicate {
         return new IndexedPredicate(this);
     }
 
+    
+    private boolean narrowPredicate( Database db, String name ) {
+    	Set<String> tmp = new TreeSet<String>();
+    	try {
+			implementation = Class.forName(db.pkg+"."+name);
+		} catch( ClassNotFoundException e ) {
+			return false;
+		}
+    	for( Method m : methods() ) {
+    		tmp.addAll(arguments(m,ArgType.BOTH));
+    	}
+    	colNames = new String[tmp.size()];
+    	int pos = 0;
+    	for( String s : tmp ) {
+    		colNames[pos] = s;
+    		header.put(s,pos);
+    		renamed.put(s, s);
+    		pos++;
+    	}
+    	return true;
+    }
+    
+    private static Map<String,String> match( String txt1, String txt2 ) {
+    	Lex lex = new Lex();
+    	List<LexerToken> src1 = lex.parse(txt1);
+    	List<LexerToken> src2 = lex.parse(txt2);
+    	if( src1.size() != src2.size() )
+    		return null;
+    	Map<String,String> ret = new HashMap<String,String>();
+    	for( int i = 0; i < src1.size(); i++ ) {
+    		LexerToken t1 = src1.get(i);
+    		LexerToken t2 = src2.get(i);
+    		if( t1.type != t2.type )
+    			return null;
+    		if( t1.type == Token.IDENTIFIER ) {
+    			ret.put(t1.content, t2.content); 
+    		} else if( !t1.content.equals(t2.content) )
+    			return null;   		
+		}
+    	return ret;
+    }
+    
+    private boolean genericPredicate( Database db, String predicate ) {
+    	// http://www.javaworld.com/javaworld/javatips/jw-javatip113.html
+        String name = db.pkg;
+        if( !name.startsWith("/") ) {
+            name = "/" + name;
+        }        
+        name = name.replace('.','/');
+        
+        URL url = IndexedPredicate.class.getResource(name);
+        File directory = new File(url.getFile());
+        if( directory.exists() ) {
+            String[] files = directory.list();
+            for( int i=0; i<files.length; i++ ) {
+                if( files[i].endsWith(".class") ) {
+                    String classname = files[i].substring(0,files[i].length()-6);
+                    try {
+                        Class c = Class.forName(db.pkg+"."+classname);
+                        Method getSymbolicNameMethod = c.getDeclaredMethod("getSymbolicName");
+                        String candidate = (String)getSymbolicNameMethod.invoke(null);
+                        Map<String,String> matched = match(candidate, predicate);
+                        if( matched == null )
+                        	continue;
+                        implementation = c;
+                    	Set<String> tmp = new TreeSet<String>();
+                    	for( Method m : methods() ) {
+                    		tmp.addAll(arguments(m,ArgType.BOTH));
+                    	}
+                    	colNames = new String[tmp.size()];
+                    	int pos = 0;
+                    	for( String s : tmp ) {
+                    		String t = matched.get(s);
+                    		colNames[pos] = t;
+                    		header.put(t,pos);
+                    		renamed.put(t, s);
+                    		pos++;
+                    	}
+                        return true;
+                    } catch ( Exception e ) {
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }
