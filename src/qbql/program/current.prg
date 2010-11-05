@@ -1,4 +1,4 @@
-include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
+--include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
 include udf.def;
 
 Points = [x y]
@@ -12,6 +12,11 @@ Points = [x y]
           5 0
           6 3
 ;
+
+Points ^ "x <= y"; 
+
+--AtOneSide = --[x1 y1 x2 y2 xa ya xb yb]
+    --Plus /^ [x=x1] /^ [z=x2] 
 /* unit test */
 AtOneSide 
 /^ ([x1 y1] 0 1
@@ -24,11 +29,16 @@ AtOneSide
  ^  [xa ya] 0 3
  ^  [xb yb] 3 3) = R01.
  
+"f1+ f2=result" /^ [f1 f2] 3 2; 
+
+--"3+2=result";
+ 
 Exp /^ [y] 1 "2.7";
 
 Mult /^ [f1 f2] 3 2;
 
 Mult /^ [f1 p] 3 6;
+
 
 
 R = (
