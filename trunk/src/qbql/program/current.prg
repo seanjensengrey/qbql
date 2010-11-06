@@ -13,10 +13,21 @@ Points = [x y]
           6 3
 ;
 
-Points ^ "x <= y"; 
+Points ^ "x <= y" =[x  y]
+                 0  1
+                 0  3
+                 2  2
+                 2  5
+                 3  3
+. 
+Points ^ "x <= 2"=[x  y]
+                 0  1
+                 0  3
+                 2  2
+                 2  5
+.
 
---AtOneSide = --[x1 y1 x2 y2 xa ya xb yb]
-    --Plus /^ [x=x1] /^ [z=x2] 
+
 /* unit test */
 AtOneSide 
 /^ ([x1 y1] 0 1
@@ -28,10 +39,12 @@ AtOneSide
  ^  [x2 y2] 2 2
  ^  [xa ya] 0 3
  ^  [xb yb] 3 3) = R01.
+--"(0,1) - (2,2) | (0,3) (3,3)";
  
-"f1+ f2=result" /^ [f1 f2] 3 2; 
+--"f1+ f2=result" /^ [f1 f2] 3 2; 
 
---"3+2=result";
+--"x+y=5" ^ [x]2;
+--"x+y=5" ^ "x-y=1";
  
 Exp /^ [y] 1 "2.7";
 
@@ -42,15 +55,15 @@ Mult /^ [f1 p] 3 6;
 
 
 R = (
-     (Points /^ [x=x1] /^ [y=y1]) 
-   ^ (Points /^ [x=x2] /^ [y=y2]) 
-   ^ (Points /^ [x=xa] /^ [y=ya]) 
-   ^ (Points /^ [x=xb] /^ [y=yb]) 
+     (Points /^ "x=x1" /^ "y=y1") 
+   ^ (Points /^ "x=x2" /^ "y=y2") 
+   ^ (Points /^ "x=xa" /^ "y=ya") 
+   ^ (Points /^ "x=xb" /^ "y=yb") 
  ^ AtOneSide 
 ) /= (
-     (Points /^ [x=xa] /^ [y=ya]) 
-   ^ (Points /^ [x=xb] /^ [y=yb])
-)^ ([x1=x2] ^ [y1=y2])';
+     (Points /^ "x=xa" /^ "y=ya") 
+   ^ (Points /^ "x=xb" /^ "y=yb")
+)^ ("x1=x2" ^ "y1=y2")';
 
 R v [x1 y1];
          

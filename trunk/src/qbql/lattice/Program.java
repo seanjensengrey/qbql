@@ -312,6 +312,10 @@ public class Program {
             else                            
                 right = expr(child, src);
         }
+        if( !(left instanceof Relation) )
+        	left = reEvaluateByUnnesting(left);
+        if( !(right instanceof Relation) )
+        	right = reEvaluateByUnnesting(right);
         if( oper == lt )
             return Relation.le((Relation)left,(Relation)right);
         else if( oper == gt )
@@ -502,12 +506,51 @@ public class Program {
                 System.out.println(child.content(src)+"="+partition(child, src).toString()+";");
                 return null;
             } else if( child.contains(expr) ) {
-                System.out.println(child.content(src)+"="+expr(child, src).toString(child.content(src).length()+1)+";");
+                Predicate expr2 = expr(child, src);
+                
+                expr2 = reEvaluateByUnnesting(expr2);
+                
+				System.out.println(child.content(src)+"="+expr2.toString(child.content(src).length()+1)+";");
                 return null;
             } 
         }
         throw new AssertionError("No expr/partition in statement?");
     }
+
+	private Predicate reEvaluateByUnnesting( Predicate expr2 ) {
+		if( !(expr2 instanceof Relation) ) {
+			// "2+3=result"
+			String[] header = expr2.colNames;
+		 	
+			final int stop = 1 << header.length;                	
+			for( int i = 1; i < stop; i++ ) {
+		       	Set<String> accum = new HashSet<String>(); 
+				for( int pos = 0; pos < header.length; pos++ ) {
+					int atPos = i & (1 << pos);
+					if( atPos > 0 ) {
+						accum.add(header[pos]);
+					}
+				}
+		    	Relation rel = new Relation(accum.toArray(new String[]{}));
+		    	Map<String, Object> body = new HashMap<String, Object>(); 
+		    	for( String s : accum ) {
+		    		Integer t = null;
+		    		try {
+		    			t = Integer.parseInt(s);
+		    		} catch( NumberFormatException e ) {}
+		    		body.put(s,t==null?s:t);
+		    	}
+		    	rel.addTuple(body);
+				Predicate tmp = Predicate.setIX(expr2, rel);
+		    	if( tmp instanceof Relation ) {
+		    		expr2 = tmp;
+		    		break;
+		    	}
+			}
+		}
+		return expr2;
+	}    
+    
     /**
      * @param root
      * @param src
@@ -585,18 +628,18 @@ public class Program {
             }
         } else*/ if( root.contains(table) ) {
             Relation ret = Database.R00;
-            String colX = null;
+            //String colX = null;
             for( ParseNode child : root.children() ) {
                 if( child.contains(header) )                    
                     ret = new Relation(values(child, src).toArray(new String[0]));
                 else if( child.contains(content) ) {
                     addContent(ret,child, src);
                     return ret;
-                } else if( child.contains(identifier) && colX == null ) 
+                } /*else if( child.contains(identifier) && colX == null ) 
                     colX = child.content(src);
                 else if( child.contains(identifier) ) {
                     return new EqualityPredicate(colX, child.content(src));
-                }
+                }*/
             } 
             return ret;
         } /*else if( root.contains(renamedRel) ) {
@@ -663,6 +706,9 @@ public class Program {
         Predicate ret = database.getPredicate(name);
         if( ret != null ) 
             return ret;
+    	List<LexerToken> src = new Lex().parse(name);
+    	if( src.size() == 3 && "=".equals(src.get(1).content) )
+    		return new EqualityPredicate(src.get(0).content, src.get(2).content);
         try {
             return new IndexedPredicate(database,name);
         } catch ( Exception e ) {
