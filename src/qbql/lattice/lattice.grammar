@@ -131,7 +131,8 @@ program:     assertion
 query:       expr ';'
           |  partition ';'
 ;
-/* set-theoretic notation; deprecated. 
+
+/* set-theoretic notation; deprecated. Use table syntax 
 relation:    '{' tuples '}'
 ;
 tuple:       '<' values '>'
@@ -140,6 +141,7 @@ tuples:      tuple
           |  tuples ',' tuple
 ;
 */
+
 setEQ:       expr '/' '=' expr
 ;
 setIX:       expr '/' '^' expr
@@ -147,7 +149,7 @@ setIX:       expr '/' '^' expr
 table:       '[' ']'
           |  '[' header ']'
           |  '[' header ']' content
-          |  '[' identifier '=' identifier ']'
+/*        |  '[' identifier '=' identifier ']'  - deprecated. Use string literals, e.g. "x=y"*/
 ;
 transpCont:  expr '/' '>' expr
 ;

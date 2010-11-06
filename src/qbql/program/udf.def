@@ -41,14 +41,14 @@ x <"and"> y = <NOT>((<NOT>x) v (<NOT>y)).
 
 -----------------------------------------------------------------------
 Mult = 
-(Exp /^ [x=r] /^ [y=f1]) /^
-(Exp /^ [x=s] /^ [y=f2]) /^
-(Exp /^ [x=t] /^ [y=p]) /^
-(Plus /^ [x=r] /^ [y=s] /^ [z=t]);
+"exp(r)=f1" /^
+"exp(s)=f2" /^
+"exp(t)=p" /^
+"r+s=t";
 
 Substr = 
-(Cat /^ [from=to] /^ [prefix=_1])
+(Cat /^ "from=to" /^ "prefix=_1")
 /^
-(Cat /^ [source=_1] /^ [postfix=fragment])
+(Cat /^ "source=_1" /^ "postfix=fragment")
 ;
 

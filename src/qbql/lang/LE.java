@@ -7,8 +7,11 @@ import qbql.lattice.Database;
 import qbql.lattice.Relation;
 
 public class LE {
-    public static String getSymbolicName() {
-    	return "lft <= rgt";
+    public static String[] getSymbolicNames() {
+    	return new String[] {
+    		"lft <= rgt", 
+    	    "rgt >= lft"
+    	};
     }
 
     public static Relation lft_rgt( Object lft, Object rgt ) {

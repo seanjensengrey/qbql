@@ -131,11 +131,11 @@ public class Predicate implements Comparable {
         }
         
         if( x instanceof Relation && y instanceof IndexedPredicate ) 
-            //try {
+            try {
                 return IndexedPredicate.join((Relation)x,(IndexedPredicate)y);
-            //} catch( AssertionError e ) {
-                //return new Predicate(x,y,Program.naturalJoin);
-            //}           
+            } catch( AssertionError e ) {
+                return new Predicate(x,y,Program.naturalJoin);
+            }           
         if( x instanceof Relation && y instanceof ComplementPredicate ) 
             return ComplementPredicate.join((Relation)x,(ComplementPredicate)y);
         if( x instanceof Relation && y instanceof EqualityPredicate ) 

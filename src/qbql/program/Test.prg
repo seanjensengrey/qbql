@@ -23,6 +23,8 @@ x ^ ((<INV>y) v (<INV>z)) = (x ^ (<INV>y)) v (x ^ (<INV>z)).
 
 ["------Distributivity -----"];
 
+
+
 Cat ^ [source from] Hello 3 =[from  postfix  prefix  source]
                         3  lo  Hel  Hello
 .
@@ -32,10 +34,10 @@ Cat ^ [source] Hello World ^ [from] 3=[from  postfix  prefix  source]
 .
 Cat ^ [] = [from  prefix  postfix   source].
 
-[source from] Hello 3 /^ [from=f] /^ [source=s]=[f  s]
+[source from] Hello 3 /^ "from=f" /^ "source=s"=[f  s]
                                           3  Hello
 .
-(Cat /^ [source=src]) ^ [src] Hello World ^ [from] 3
+(Cat /^ "source=src") ^ [src] Hello World ^ [from] 3
 ~
 Cat ^ [source] Hello World ^ [from] 3
 .
@@ -50,8 +52,8 @@ Cat ^ [source] Hello World ^ [from] 3
                                                            o  4
 .
 
-Substr1 = (Substr /^ [source=src1] /^ [from=from1]) v [src1 from1 fragment];
-Substr2 = (Substr /^ [source=src2] /^ [from=from2]) v [src2 from2 fragment];
+Substr1 = (Substr /^ "source=src1" /^ "from=from1") v [src1 from1 fragment];
+Substr2 = (Substr /^ "source=src2" /^ "from=from2") v [src2 from2 fragment];
 Substr1^[]=[src1 from1 fragment].
 Substr2^[]=[src2 from2 fragment].
 
@@ -63,8 +65,8 @@ v [from1 from2 fragment]=[fragment  from1  from2]
 .
 
 
-HelloFgmts = ([from=from1] /^ Substr /^ [source] Hello) v [from1 fragment];
-WorldFgmts = ([source] World /^ Substr /^ [from=from2]) v [from2 fragment];
+HelloFgmts = ("from=from1" /^ Substr /^ [source] Hello) v [from1 fragment];
+WorldFgmts = ([source] World /^ Substr /^ "from=from2") v [from2 fragment];
 HelloFgmts ^ WorldFgmts ^ ([fragment]"")'=[fragment  from1  from2]
                                        l  2  3
                                        l  3  3

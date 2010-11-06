@@ -5,6 +5,14 @@ import java.math.BigDecimal;
 import qbql.index.NamedTuple;
 
 public class Exp {
+    public static String[] getSymbolicNames() {
+    	return new String[] {
+        		"y = exp(x)",
+        		"exp(x) = y",
+        		"x = ln(y)",
+        		"ln(y) = x",
+    	};
+    }
 
     public static NamedTuple x_y( Object x  ) {
         String[] columns = new String[]{"y"};

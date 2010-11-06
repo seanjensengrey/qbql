@@ -134,6 +134,7 @@ public class IndexedPredicate extends Predicate {
             if( m == null ) 
                 throw new AssertionError("didn't find a method");
             // postponed to facilitate joining with []
+            
             List<String> inputs = arguments(m, ArgType.INPUT);
             
             Object[] args = new Object[m.getParameterTypes().length];
@@ -362,9 +363,11 @@ public class IndexedPredicate extends Predicate {
     	for( int i = 0; i < src1.size(); i++ ) {
     		LexerToken t1 = src1.get(i);
     		LexerToken t2 = src2.get(i);
-    		if( t1.type != t2.type )
+    		if( !( t1.type == t2.type 
+    			|| t1.type == Token.IDENTIFIER && t2.type == Token.DIGITS
+    		))
     			return null;
-    		if( t1.type == Token.IDENTIFIER ) {
+    		if( t1.type == Token.IDENTIFIER || t1.type == Token.DIGITS ) {
     			ret.put(t1.content, t2.content); 
     		} else if( !t1.content.equals(t2.content) )
     			return null;   		
@@ -389,26 +392,28 @@ public class IndexedPredicate extends Predicate {
                     String classname = files[i].substring(0,files[i].length()-6);
                     try {
                         Class c = Class.forName(db.pkg+"."+classname);
-                        Method getSymbolicNameMethod = c.getDeclaredMethod("getSymbolicName");
-                        String candidate = (String)getSymbolicNameMethod.invoke(null);
-                        Map<String,String> matched = match(candidate, predicate);
-                        if( matched == null )
-                        	continue;
-                        implementation = c;
-                    	Set<String> tmp = new TreeSet<String>();
-                    	for( Method m : methods() ) {
-                    		tmp.addAll(arguments(m,ArgType.BOTH));
-                    	}
-                    	colNames = new String[tmp.size()];
-                    	int pos = 0;
-                    	for( String s : tmp ) {
-                    		String t = matched.get(s);
-                    		colNames[pos] = t;
-                    		header.put(t,pos);
-                    		renamed.put(t, s);
-                    		pos++;
-                    	}
-                        return true;
+                        Method getSymbolicNameMethod = c.getDeclaredMethod("getSymbolicNames");
+                        String[] candidates = (String[])getSymbolicNameMethod.invoke(null);
+                        for( String candidate: candidates ) {
+                        	Map<String,String> matched = match(candidate, predicate);
+                        	if( matched == null )
+                        		continue;
+                        	implementation = c;
+                        	Set<String> tmp = new TreeSet<String>();
+                        	for( Method m : methods() ) {
+                        		tmp.addAll(arguments(m,ArgType.BOTH));
+                        	}
+                        	colNames = new String[tmp.size()];
+                        	int pos = 0;
+                        	for( String s : tmp ) {
+                        		String t = matched.get(s);
+                        		colNames[pos] = t;
+                        		header.put(t,pos);
+                        		renamed.put(t, s);
+                        		pos++;
+                        	}
+                        	return true;
+                        }
                     } catch ( Exception e ) {
                     }
                 }

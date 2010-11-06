@@ -5,8 +5,13 @@ import java.math.BigDecimal;
 import qbql.index.NamedTuple;
 
 public class Times {
-    public static String getSymbolicName() {
-    	return "x * y = z";
+    public static String[] getSymbolicNames() {
+    	return new String[] {
+        		"x * y = z",
+        		"z / y = x",
+        		"z = x * y",
+        		"x = z / y",
+    	};
     }
 
     public static NamedTuple x_y_z( 
