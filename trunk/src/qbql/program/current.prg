@@ -66,4 +66,10 @@ R = (
 )^ ("x1=x2" ^ "y1=y2")';
 
 R v [x1 y1];
+
+
+"for(int i = 0; i<10; i++)";
+
+"int i < 10" /^ "i * 2 = evenNumbers";
+
          
