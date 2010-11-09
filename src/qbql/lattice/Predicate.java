@@ -2,11 +2,15 @@ package qbql.lattice;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import qbql.index.IndexedPredicate;
+import qbql.parser.Lex;
+import qbql.parser.LexerToken;
+import qbql.parser.Token;
 import qbql.util.Util;
 
 public class Predicate implements Comparable {
@@ -208,11 +212,13 @@ public class Predicate implements Comparable {
                 	if( test instanceof Relation )
                 		return setIX(test,y.lft);
                 } catch( AssertionError e ) {}
-			} else if( y.oper == Program.naturalJoin && notAll3Intersect ) {
-            	String[] lftHdr = Util.symmDiff(x.colNames, Util.union(y.lft.colNames, y.rgt.colNames));
-            	String[] rgtHdr = Util.union(Util.symmDiff(x.colNames, y.lft.colNames), Util.symmDiff(x.colNames, y.rgt.colNames));
-            	if( Util.symmDiff(lftHdr,rgtHdr).length == 0 )
-            		return join(setIX(x,y.lft),setIX(x,y.rgt));
+			} else if( y.oper == Program.naturalJoin  ) {
+            	if( notAll3Intersect ) {
+                	String[] lftHdr = Util.symmDiff(x.colNames, Util.union(y.lft.colNames, y.rgt.colNames));
+                	String[] rgtHdr = Util.union(Util.symmDiff(x.colNames, y.lft.colNames), Util.symmDiff(x.colNames, y.rgt.colNames));
+                	if( Util.symmDiff(lftHdr,rgtHdr).length == 0  )
+                		return join(setIX(x,y.lft),setIX(x,y.rgt));
+            	}
             } else if( y.oper == Program.innerUnion ) {
                 String[] xly = Util.intersect(x.colNames, y.lft.colNames);
                 String[] xry = Util.intersect(x.colNames, y.rgt.colNames);
@@ -307,7 +313,10 @@ public class Predicate implements Comparable {
         ret.append("[");
         for( int i = 0; i < colNames.length; i++ )
             ret.append((i>0?"  ":"")+colNames[i]);
-        ret.append("]\n");
+        ret.append("]");
+        //if( ident == 0 )
+            ret.append(" -- "+getClass().getName());        	
+        ret.append("\n");
         ret.append(Util.identln(ident," "));
         ret.append("...\n");
         return ret.toString();
@@ -323,5 +332,27 @@ public class Predicate implements Comparable {
         return ret;
     }
 
+    protected static Map<String,String> matchNames( String txt1, String txt2 ) {
+    	Lex lex = new Lex();
+    	List<LexerToken> src1 = lex.parse(txt1);
+    	List<LexerToken> src2 = lex.parse(txt2);
+    	if( src1.size() != src2.size() )
+    		return null;
+    	Map<String,String> ret = new HashMap<String,String>();
+    	for( int i = 0; i < src1.size(); i++ ) {
+    		LexerToken t1 = src1.get(i);
+    		LexerToken t2 = src2.get(i);
+    		if( !( t1.type == t2.type 
+    			|| t1.type == Token.IDENTIFIER && t2.type == Token.DIGITS
+    		))
+    			return null;
+    		if( t1.type == Token.IDENTIFIER || t1.type == Token.DIGITS ) {
+    			ret.put(t1.content, t2.content); 
+    		} else if( !t1.content.equals(t2.content) )
+    			return null;   		
+		}
+    	return ret;
+    }
+    
 
 }

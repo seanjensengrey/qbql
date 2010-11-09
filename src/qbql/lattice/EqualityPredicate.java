@@ -191,5 +191,19 @@ public class EqualityPredicate extends Predicate {
         		if( s1!=s2 && s1.equals(s2) )
         			throw new AssertionError("assertDisjointSets: repeated element "+s1);
     }
+    
+    public void renameInPlace( String from, String to ) {
+    	super.renameInPlace(from, to);
+        for( int i = 0; i < colsX.length; i++ ) {
+        	if( from.equals(colsX[i]) )
+        		colsX[i] = to;
+        	if( from.equals(colsY[i]) )
+        		colsY[i] = to;
+        }
+    }
 
+
+    protected EqualityPredicate clone() {
+        return new EqualityPredicate(colsX,colsY);
+    }
 }

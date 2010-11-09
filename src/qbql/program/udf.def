@@ -12,7 +12,7 @@ x <OR> y = --(x ^ R11) v (y ^ (x v R11)). -- x <OR> (y <OR> z) = (x <OR> y) <OR>
         --(x' ^ y')'. -- 70 sec
         --((R00 ^ x) ^ y) v (R11 ^ y) v (x ^ R11). -- 113 sec
 <NOT> x  = (R11 v x) ^ x'. 
--- same performance as: ( <NOT> x ) = (R11 v (x^R00)) ^ x'. 
+-- same performance as: <NOT> x = (R11 v (x^R00)) ^ x'. 
 
 x <REMOVE> y = x v y`. -- project relation x onto all attributes except those in y
                        -- typical usage: EMP <REMOVE> [SAL MGR] 
@@ -40,11 +40,13 @@ x @/> y = ( (x v y)` @* (x'^ y) )'.
 x <"and"> y = <NOT>((<NOT>x) v (<NOT>y)).
 
 -----------------------------------------------------------------------
-Mult = 
+
+"f1 <*> f2 = p" = 
 "exp(r)=f1" /^
 "exp(s)=f2" /^
 "exp(t)=p" /^
 "r+s=t";
+
 
 Substr = 
 (Cat /^ "from=to" /^ "prefix=_1")
@@ -52,3 +54,5 @@ Substr =
 (Cat /^ "source=_1" /^ "postfix=fragment")
 ;
 
+LT = LE ^ ("lft=rgt")'; 
+"lft < rgt" = LT; 

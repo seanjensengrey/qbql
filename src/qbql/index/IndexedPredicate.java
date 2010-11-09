@@ -167,6 +167,8 @@ public class IndexedPredicate extends Predicate {
             } catch( InvocationTargetException e ) {
                 if( e.getCause() instanceof EmptySetException )
                     return ret;
+                else if( e.getCause() instanceof AssertionError )
+                	throw (AssertionError)e.getCause();
                 else
                 	throw new RuntimeException(e);
             } catch ( Exception e ) {
@@ -327,10 +329,6 @@ public class IndexedPredicate extends Predicate {
         return ret;      
     }
 
-    protected IndexedPredicate clone() {
-        return new IndexedPredicate(this);
-    }
-
     
     private boolean narrowPredicate( Database db, String name ) {
     	Set<String> tmp = new TreeSet<String>();
@@ -353,28 +351,6 @@ public class IndexedPredicate extends Predicate {
     	return true;
     }
     
-    private static Map<String,String> match( String txt1, String txt2 ) {
-    	Lex lex = new Lex();
-    	List<LexerToken> src1 = lex.parse(txt1);
-    	List<LexerToken> src2 = lex.parse(txt2);
-    	if( src1.size() != src2.size() )
-    		return null;
-    	Map<String,String> ret = new HashMap<String,String>();
-    	for( int i = 0; i < src1.size(); i++ ) {
-    		LexerToken t1 = src1.get(i);
-    		LexerToken t2 = src2.get(i);
-    		if( !( t1.type == t2.type 
-    			|| t1.type == Token.IDENTIFIER && t2.type == Token.DIGITS
-    		))
-    			return null;
-    		if( t1.type == Token.IDENTIFIER || t1.type == Token.DIGITS ) {
-    			ret.put(t1.content, t2.content); 
-    		} else if( !t1.content.equals(t2.content) )
-    			return null;   		
-		}
-    	return ret;
-    }
-    
     private boolean genericPredicate( Database db, String predicate ) {
     	// http://www.javaworld.com/javaworld/javatips/jw-javatip113.html
         String name = db.pkg;
@@ -395,7 +371,7 @@ public class IndexedPredicate extends Predicate {
                         Method getSymbolicNameMethod = c.getDeclaredMethod("getSymbolicNames");
                         String[] candidates = (String[])getSymbolicNameMethod.invoke(null);
                         for( String candidate: candidates ) {
-                        	Map<String,String> matched = match(candidate, predicate);
+                        	Map<String,String> matched = matchNames(candidate, predicate);
                         	if( matched == null )
                         		continue;
                         	implementation = c;
@@ -421,4 +397,10 @@ public class IndexedPredicate extends Predicate {
         }
         return false;
     }
+    
+    
+    protected IndexedPredicate clone() {
+        return new IndexedPredicate(this);
+    }
+
 }

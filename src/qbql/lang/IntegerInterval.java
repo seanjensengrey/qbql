@@ -5,22 +5,22 @@ import java.util.Map;
 
 import qbql.lattice.Relation;
 
-public class IntegersLT {
+public class IntegerInterval {
 
     public static String[] getSymbolicNames() {
     	return new String[] {
-        		"for(int i = 0; i<bound; i++)",
-        		"int i < bound",
+        		"for(int i = from; i<to; i++)",
+        		"from <= int i < to",
     	};
     }
-    public static Relation bound_i( int bound ) {
+    public static Relation from_to_i( int from, int to ) {
         Relation ret = new Relation(
-            new String[]{"bound","i"}
+            new String[]{"from","to","i"}
         );
-        final int limit = bound;//Integer.parseInt(bound);
-        for( int j = 0; j < limit; j++ ) {
+        for( int j = from; j < to; j++ ) {
             Map<String,Object> content = new HashMap<String,Object>();
-            content.put("bound", bound);
+            content.put("from", from);
+            content.put("to", to);
             content.put("i", j);
             ret.addTuple(content);
         }

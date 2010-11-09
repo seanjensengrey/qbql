@@ -43,6 +43,9 @@ public class Database {
                 ret.add(pred);
         return ret.toArray(new String[0]);
     }  
+    public Set<String> predicateNames() {
+        return lattice.keySet();
+    }  
     
     private Map<String,Expr> newOperations = new TreeMap<String,Expr>();
     public Expr getOperation( String name ) {

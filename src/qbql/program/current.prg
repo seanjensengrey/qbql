@@ -1,6 +1,7 @@
 --include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
 include udf.def;
 
+/*
 Points = [x y]
           0 1
           0 3
@@ -13,22 +14,7 @@ Points = [x y]
           6 3
 ;
 
-Points ^ "x <= y" =[x  y]
-                 0  1
-                 0  3
-                 2  2
-                 2  5
-                 3  3
-. 
-Points ^ "x <= 2"=[x  y]
-                 0  1
-                 0  3
-                 2  2
-                 2  5
-.
-
-
-/* unit test */
+-- unit test 
 AtOneSide 
 /^ ([x1 y1] 0 1
  ^  [x2 y2] 2 2
@@ -66,10 +52,16 @@ R = (
 )^ ("x1=x2" ^ "y1=y2")';
 
 R v [x1 y1];
+*/
 
+--"for(int i = 0; i<10; i++)";
 
-"for(int i = 0; i<10; i++)";
+--"x+y=5" ^ "x-y=1" ^ "int x < 10";
 
-"int i < 10" /^ "i * 2 = evenNumbers";
+--("x+z=5" /^ "x-y=1") ^ "y=z";
 
-         
+--"5 <= int x < 10" ^ "2*y=x" ^ "int y";
+
+"3 < 2";
+
+--"3 <*> 5 = p";         

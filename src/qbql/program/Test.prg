@@ -1,6 +1,12 @@
 include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
 include udf.def;
 
+R00 ^ (x v y v z) = R00 &
+(x /^ (y ^ z)) ^ R00 = ((x /^ y) ^ (x /^ z)) ^ R00 ->
+x /^ (y ^ z) = (x /^ y) ^ (x /^ z).
+
+["------CONDITIONAL DISTRIBUTIVITY -----"];
+
 (<NOT>x) ^ x = x ^ R00.
 (<NOT>x) v x = x v R11. 
 
@@ -88,3 +94,31 @@ Sum /= [summands] 1 2 3 4=[result]
 .
  
 ["------ Aggregates -----"]; 
+
+Points = [x y]
+          0 1
+          0 3
+          2 2
+          2 5
+          3 1
+          3 3
+          4 2
+          5 0
+          6 3
+;
+
+Points ^ "x <= y" =[x  y]
+                 0  1
+                 0  3
+                 2  2
+                 2  5
+                 3  3
+. 
+Points ^ "x <= 2"=[x  y]
+                 0  1
+                 0  3
+                 2  2
+                 2  5
+.
+
+["------ Generic Predicates -----"]; 
