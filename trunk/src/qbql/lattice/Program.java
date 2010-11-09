@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
+
+import com.sun.org.apache.xml.internal.utils.QName;
 
 import qbql.index.IndexedPredicate;
 import qbql.parser.BNFGrammar;
@@ -520,7 +521,7 @@ public class Program {
 	private Predicate reEvaluateByUnnesting( Predicate expr2 ) {
 		if( !(expr2 instanceof Relation) ) {
 			// "2+3=result"
-			String[] header = expr2.colNames;
+			final String[] header = expr2.colNames;
 		 	
 			final int stop = 1 << header.length;                	
 			for( int i = 1; i < stop; i++ ) {
@@ -712,6 +713,21 @@ public class Program {
         try {
             return new IndexedPredicate(database,name);
         } catch ( Exception e ) {
+            for( String qName : database.predicateNames() ) {
+            	if( !qName.startsWith("\"") )
+            		continue;
+            	String candidate = qName.substring(1,qName.length()-1);
+            	Map<String,String> matched = Predicate.matchNames(candidate, name);
+            	if( matched == null )
+            		continue;
+            	ret = database.getPredicate(qName).clone();
+            	for( String key : matched.keySet() ) {
+            		String val = matched.get(key);
+            		if( !val.equals(key) )
+            			ret.renameInPlace(key, val);
+            	}
+            	return ret;
+            }
             return null;
         }
     }

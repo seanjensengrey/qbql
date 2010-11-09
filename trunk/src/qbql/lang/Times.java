@@ -33,7 +33,7 @@ public class Times {
     ) {
         String[] columns = new String[]{"y"};
         if( x instanceof Integer & z instanceof Integer )
-        	return new NamedTuple(columns,new Object[]{(Integer)z/(Integer)x});
+        	return new NamedTuple(columns,new Object[]{(((Integer)z).doubleValue())/(Integer)x});
         if( x instanceof Float & z instanceof Float )
         	return new NamedTuple(columns,new Object[]{(Float)z/(Float)x});
         if( x instanceof Double & z instanceof Double )

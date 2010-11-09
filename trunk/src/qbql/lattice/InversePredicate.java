@@ -31,4 +31,12 @@ public class InversePredicate extends Predicate {
     	return Relation.union(x, tmp);
     }
     
+    public void renameInPlace( String from, String to ) {
+    	super.renameInPlace(from, to);
+    	src.renameInPlace(from, to);
+    }
+    
+    protected InversePredicate clone() {
+        return new InversePredicate(src);
+    }
 }

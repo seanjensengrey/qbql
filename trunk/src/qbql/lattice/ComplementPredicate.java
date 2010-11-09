@@ -32,4 +32,13 @@ public class ComplementPredicate extends Predicate {
         return ret;
     }
     
+    public void renameInPlace( String from, String to ) {
+    	super.renameInPlace(from, to);
+    	src.renameInPlace(from, to);
+    }
+    
+    protected ComplementPredicate clone() {
+        return new ComplementPredicate(src);
+    }
+
 }
