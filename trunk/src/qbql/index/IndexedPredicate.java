@@ -1,6 +1,8 @@
 package qbql.index;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,6 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 
 import qbql.lattice.Database;
 import qbql.lattice.EqualityPredicate;
@@ -351,53 +355,84 @@ public class IndexedPredicate extends Predicate {
     	return true;
     }
     
+    String[] files = null;
     private boolean genericPredicate( Database db, String predicate ) {
     	// http://www.javaworld.com/javaworld/javatips/jw-javatip113.html
-        String name = db.pkg;
-        if( !name.startsWith("/") ) {
-            name = "/" + name;
-        }        
-        name = name.replace('.','/');
-        
-        URL url = IndexedPredicate.class.getResource(name);
-        File directory = new File(url.getFile());
-        if( directory.exists() ) {
-            String[] files = directory.list();
-            for( int i=0; i<files.length; i++ ) {
-                if( files[i].endsWith(".class") ) {
-                    String classname = files[i].substring(0,files[i].length()-6);
-                    try {
-                        Class c = Class.forName(db.pkg+"."+classname);
-                        Method getSymbolicNameMethod = c.getDeclaredMethod("getSymbolicNames");
-                        String[] candidates = (String[])getSymbolicNameMethod.invoke(null);
-                        for( String candidate: candidates ) {
-                        	Map<String,String> matched = matchNames(candidate, predicate);
-                        	if( matched == null )
-                        		continue;
-                        	implementation = c;
-                        	Set<String> tmp = new TreeSet<String>();
-                        	for( Method m : methods() ) {
-                        		tmp.addAll(arguments(m,ArgType.BOTH));
-                        	}
-                        	colNames = new String[tmp.size()];
-                        	int pos = 0;
-                        	for( String s : tmp ) {
-                        		String t = matched.get(s);
-                        		colNames[pos] = t;
-                        		header.put(t,pos);
-                        		renamed.put(t, s);
-                        		pos++;
-                        	}
-                        	return true;
-                        }
-                    } catch ( Exception e ) {
+    	if( files == null ) {
+            String name = db.pkg;
+            if( !name.startsWith("/") ) {
+            	name = "/" + name;
+            }        
+            name = name.replace('.','/');
+
+            URL url = IndexedPredicate.class.getResource(name);
+            File directory = new File(url.getFile());
+            if( directory.exists() ) {
+            	files = directory.list();
+            } else {
+            	String jarName = directory.getPath();
+            	jarName = jarName.substring("file:\\".length());
+            	jarName = jarName.substring(0,jarName.indexOf('!'));
+             	try {
+					files = getClassesFromJARFile(jarName,name.substring(1)).toArray(new String[0]);
+				} catch( IOException e ) {
+					System.err.println(e.getMessage());
+				}
+            }
+    	}
+        for( int i=0; i<files.length; i++ ) {
+        	System.out.println(files[i]);
+            if( files[i].endsWith(".class") ) {
+                String classname = files[i].substring(0,files[i].length()-6);
+                try {
+                    Class c = Class.forName(db.pkg+"."+classname);
+                    Method getSymbolicNameMethod = c.getDeclaredMethod("getSymbolicNames");
+                    String[] candidates = (String[])getSymbolicNameMethod.invoke(null);
+                    for( String candidate: candidates ) {
+                    	Map<String,String> matched = matchNames(candidate, predicate);
+                    	if( matched == null )
+                    		continue;
+                    	implementation = c;
+                    	Set<String> tmp = new TreeSet<String>();
+                    	for( Method m : methods() ) {
+                    		tmp.addAll(arguments(m,ArgType.BOTH));
+                    	}
+                    	colNames = new String[tmp.size()];
+                    	int pos = 0;
+                    	for( String s : tmp ) {
+                    		String t = matched.get(s);
+                    		colNames[pos] = t;
+                    		header.put(t,pos);
+                    		renamed.put(t, s);
+                    		pos++;
+                    	}
+                    	return true;
                     }
+                } catch ( Exception e ) {
                 }
             }
         }
         return false;
     }
     
+    private static List<String> getClassesFromJARFile( String jar, String packageName ) throws IOException {
+    	final List<String> classes = new LinkedList<String>();
+    	JarInputStream jarFile = null;
+    	try {
+    		jarFile = new JarInputStream(new FileInputStream(jar));
+    		for( JarEntry jarEntry = jarFile.getNextJarEntry(); jarEntry != null ;jarEntry = jarFile.getNextJarEntry() ) {
+    			String className = jarEntry.getName();
+    			if( className.endsWith(".class") ) {
+    				if (className.startsWith(packageName))
+    					classes.add(className.substring(packageName.length()+1));
+    			}    			
+    		}
+    	} finally {
+    		if( jarFile != null )
+    			jarFile.close();
+    	}
+    	return classes;
+    }
     
     protected IndexedPredicate clone() {
         return new IndexedPredicate(this);
