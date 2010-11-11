@@ -381,7 +381,6 @@ public class IndexedPredicate extends Predicate {
             }
     	}
         for( int i=0; i<files.length; i++ ) {
-        	System.out.println(files[i]);
             if( files[i].endsWith(".class") ) {
                 String classname = files[i].substring(0,files[i].length()-6);
                 try {
