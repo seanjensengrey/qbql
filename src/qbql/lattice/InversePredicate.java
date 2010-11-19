@@ -19,9 +19,9 @@ public class InversePredicate extends Predicate {
     	header.addAll(x.header.keySet());
     	header.removeAll(y.header.keySet());
     	Relation tmp = new Relation(header.toArray(new String[0]));
-    	for( Tuple ty : ((Relation)y.src).content ) {
+    	for( Tuple ty : ((Relation)y.src).getContent() ) {
     		boolean foundMatch = false;
-    		for( Tuple tx : x.content )
+    		for( Tuple tx : x.getContent() )
     			if( tx.matches(ty, x, (Relation)y.src) )
     				foundMatch = true;
     		if( !foundMatch )

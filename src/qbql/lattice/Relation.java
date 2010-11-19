@@ -18,7 +18,8 @@ import qbql.util.Util;
 
 public class Relation extends Predicate {
 
-    public Set<Tuple> content = new HashSet<Tuple>(); // TreeSet<Tuple>
+    private Set<Tuple> content = new HashSet<Tuple>(); 
+    //private Set<Tuple> content = new TreeSet<Tuple>(); switch to for big relations
 
     public Relation( String[] columns ) {
         super(columns);		
@@ -70,10 +71,26 @@ public class Relation extends Predicate {
         Set<String> columns = content.keySet();
         for( String colName : columns )
             newTuple[header.get(colName)] = content.get(colName);
-        this.content.add(new Tuple(newTuple));
+        addTuple(newTuple);
     }
+	public void addTuple( Object[] newTuple ) {
+		this.content.add(new Tuple(newTuple));
+        
+        if( this.content.size() > 100 && this.content instanceof HashSet ) {
+        	Set<Tuple> newContent = new TreeSet<Tuple>();
+        	for( Tuple t : this.content )
+        		newContent.add(t);
+        	this.content = newContent;
+        }
+	}
 
-    TreeSet<Tuple> orderedContent() {
+    public Set<Tuple> getContent() {
+        return content;		
+    }
+    
+    private TreeSet<Tuple> getOrderedContent() {
+    	if( content instanceof TreeSet )
+    		return (TreeSet<Tuple>)content;
         TreeSet<Tuple> ret = new TreeSet<Tuple>();
         for( Tuple tuple : content ) 
             ret.add(tuple);
@@ -95,7 +112,7 @@ public class Relation extends Predicate {
         for( int i = 0; i < colNames.length; i++ )
         	ret.append((i>0?"  ":"")+colNames[i]);
         ret.append("]\n");
-        for( Tuple tuple : orderedContent() ) {
+        for( Tuple tuple : getOrderedContent() ) {
         	boolean firstTuple = true;
         	for( int i = 0; i < tuple.data.length; i++ ) {
         		String value = tuple.data[i].toString();

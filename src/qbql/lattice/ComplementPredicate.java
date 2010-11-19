@@ -17,17 +17,16 @@ public class ComplementPredicate extends Predicate {
         if( !x.header.keySet().containsAll(y.header.keySet()) )
             throw new AssertionError("Unsafe join with complement");
         Relation ret = new Relation(x.colNames);
-        for( Tuple tupleX: x.content ) {
+        for( Tuple tupleX: x.getContent() ) {
         	Relation tX = new Relation(x.colNames);
         	Object[] tXTuple = new Object[tupleX.data.length];
         	System.arraycopy(tupleX.data, 0, tXTuple, 0, tXTuple.length);
-        	Tuple tCopy = new Tuple(tXTuple);
-			tX.content.add(tCopy);
+			tX.addTuple(tXTuple);
         	Predicate join = Predicate.join(tX, y.src);
         	if( !(join instanceof Relation) )
                 throw new AssertionError("!(join instanceof Relation)");
-        	if( ((Relation)join).content.size()==0 )
-        		ret.content.add(tCopy);
+        	if( ((Relation)join).getContent().size()==0 )
+        		ret.addTuple(tXTuple);
         }
         return ret;
     }

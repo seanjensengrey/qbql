@@ -22,7 +22,7 @@ public class Vars {
         ParseNode atPos = db.root.locate(Util.X(pos),Util.Y(pos));
         if( atPos != null )
             for( int name : atPos.content() )
-                ret.content.add(new Tuple(new Object[]{db.cyk.allSymbols[name]}));
+                ret.addTuple(new Object[]{db.cyk.allSymbols[name]});
         return ret;      
     }
     public Relation name_pos( String name ) {
@@ -32,7 +32,7 @@ public class Vars {
     }
     private void descend( ParseNode root, int name, Relation ret ) {
         if( root.contains(name) )
-            ret.content.add(new Tuple(new Object[]{"["+root.from+","+root.to+")"}));
+            ret.addTuple(new Object[]{"["+root.from+","+root.to+")"});
         for( ParseNode child : root.children() )
             descend(child,name,ret);
     }

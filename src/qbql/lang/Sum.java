@@ -9,7 +9,7 @@ public class Sum {
             Relation summands 
     ) {
         int ret = 0;
-        for( Tuple t: summands.content ) {
+        for( Tuple t: summands.getContent() ) {
             ret += (Integer)t.data[0];
         }
         String[] columns = new String[]{"result"};

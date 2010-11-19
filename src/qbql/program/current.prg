@@ -1,5 +1,6 @@
 --include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
-include udf.def;
+--include udf.def;
+include volume.db;
 
 /*
 Points = [x y]
@@ -61,7 +62,8 @@ R v [x1 y1];
 --("x+z=5" /^ "x-y=1") ^ "y=z";
 
 --"5 <= int x < 10" ^ "2*y=x"; --^ "int y";
-"i in {3,...,7}";
+
+T100000 /^ T10;
 
 --"3 < 2";
 

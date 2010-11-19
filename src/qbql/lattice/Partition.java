@@ -36,8 +36,8 @@ public class Partition implements Comparable<Partition> {
         //Relation rjR11 = Relation.join(r, db.R11);
         Relation relVar = r;
         Map<Tuple, Integer> indexes = new HashMap<Tuple, Integer>(); 
-        for( Tuple t1 : relVar.content )
-            for( Tuple t2 : relVar.content ) {
+        for( Tuple t1 : relVar.getContent() )
+            for( Tuple t2 : relVar.getContent() ) {
                 boolean equals = true;
                 for( String attr : attributes.colNames ) {
                     Integer pos = relVar.header.get(attr);
