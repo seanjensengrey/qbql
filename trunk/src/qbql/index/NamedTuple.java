@@ -22,7 +22,7 @@ public class NamedTuple extends Tuple {
 
     public Relation toRelation() {
         Relation ret = new Relation(columns);
-        ret.content.add(this); 
+        ret.addTuple(data); 
         return ret;
     }
 }

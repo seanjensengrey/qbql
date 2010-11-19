@@ -126,18 +126,18 @@ public class Database {
         // (if R11 is wrong then calculate domain independent part of set join)  
         
         Relation hdrYX = Relation.union(Relation.join(R00,x),Relation.join(R00,y));
-        for( Tuple xi : X.content ) {
+        for( Tuple xi : X.getContent() ) {
             Relation singleX = new Relation(X.colNames);
-            singleX.content.add(xi);
+            singleX.addTuple(xi.data);
             Relation lft = Relation.union(Relation.join(singleX,x),hdrYX); 
-            for( Tuple yi : Y.content ) {
+            for( Tuple yi : Y.getContent() ) {
                 Relation singleY = new Relation(Y.colNames);
-                singleY.content.add(yi);
+                singleY.addTuple(yi.data);
                 Relation rgt = Relation.union(Relation.join(singleY,y),hdrYX);
                 if( type == Program.contains && Relation.le(lft, rgt) 
                  || type == Program.transpCont && Relation.ge(lft, rgt)   
                  || type == Program.disjoint && Predicate.le(lft, Predicate.join(Predicate.union(R11,rgt),complement(rgt))) 
-                 || type == Program.almostDisj && Relation.join(lft, rgt).content.size()==1 
+                 || type == Program.almostDisj && Relation.join(lft, rgt).getContent().size()==1 
                  || type == Program.big && Predicate.ge(lft, Predicate.join(Predicate.union(R11,rgt),complement(rgt)))   
                  || type == Program.setEQ && lft.equals(rgt)
                 )
@@ -192,10 +192,9 @@ public class Database {
 
         for( Predicate rel : lattice.values() )
             if( rel instanceof Relation )
-                for( Tuple t : ((Relation)rel).content )
+                for( Tuple t : ((Relation)rel).getContent() )
                     for( int i = 0; i < t.data.length; i++ ) {
-                        Tuple newTuple = new Tuple(new Object[]{t.data[i]});
-                        domains.get(rel.colNames[i]).content.add(newTuple);
+                        domains.get(rel.colNames[i]).addTuple(new Object[]{t.data[i]});
                     }
 
         /* Bad performance for large db
@@ -207,7 +206,7 @@ public class Database {
         
         Map<String, Object[]> doms = new TreeMap<String, Object[]>();
         for( String r : domains.keySet() ) {
-            Set<Tuple> tuples = domains.get(r).content;
+            Set<Tuple> tuples = domains.get(r).getContent();
             Object[] content = new Object[tuples.size()];
             int i = 0;
             for( Tuple t : tuples )
@@ -226,7 +225,7 @@ public class Database {
                 for (String key: doms.keySet())
                     t[ ret.header.get(key) ] = doms.get(key)[ indexes.get(key) ];
 
-                ret.content.add(new Tuple(t));
+                ret.addTuple(t);
 
             } while (next(indexes, doms));
         } catch( Exception e ) { // for empty domains
@@ -251,7 +250,7 @@ public class Database {
     public boolean equivalent( Relation x, Relation y ) {
         if( x == y )
             return true;
-        if( x.content.size() != y.content.size() )
+        if( x.getContent().size() != y.getContent().size() )
             return false;
         
         if( !submissive(x,y) )
@@ -262,8 +261,8 @@ public class Database {
     public boolean submissive( Relation x, Relation y ) {
         
         if( y.colNames.length == 0 ) { // indexing is broken this case
-            if( y.content.size() == 0  )
-                return x.content.size() == 0;
+            if( y.getContent().size() == 0  )
+                return x.getContent().size() == 0;
             else
                 return Relation.union(x,getPredicate("R11")).equals(x);
         }
@@ -273,9 +272,9 @@ public class Database {
             indexes[i] = 0;
         do {
             boolean matchedAllRows = true;
-            for ( Tuple tx: x.content ) { 
+            for ( Tuple tx: x.getContent() ) { 
                 boolean matchedX = false;
-                for ( Tuple ty: y.content ) {
+                for ( Tuple ty: y.getContent() ) {
                     boolean mismatchedField = false;
                     for( int i = 0; i < indexes.length; i++ ) {
                         if( !tx.data[i].equals(ty.data[indexes[i]]) ) {

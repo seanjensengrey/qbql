@@ -134,7 +134,7 @@ public class IndexedPredicate extends Predicate {
         for( String s : x.header.keySet() )
             required.remove(y.oldName(s));
         Method m = y.method(required);
-        for( Tuple tupleX: x.content ) {
+        for( Tuple tupleX: x.getContent() ) {
             if( m == null ) 
                 throw new AssertionError("didn't find a method");
             // postponed to facilitate joining with []
@@ -210,10 +210,10 @@ public class IndexedPredicate extends Predicate {
 
                 }
                 if( retTuple != null )
-                    ret.content.add(new Tuple(retTuple));
+                    ret.addTuple(retTuple);
             } else if( o instanceof Relation ) {
                 Relation r = (Relation)o;
-                for( Tuple t : r.content ) {
+                for( Tuple t : r.getContent() ) {
                     Object[] retTuple = new Object[header.size()];
                     for( String attr : ret.colNames ) {
                         Integer colRet = ret.header.get(attr);
@@ -240,7 +240,7 @@ public class IndexedPredicate extends Predicate {
                         }                        
                     }
                     if( retTuple != null )
-                        ret.content.add(new Tuple(retTuple));
+                        ret.addTuple(retTuple);
                 }
             } else
                 throw new RuntimeException("Wrong return type");
@@ -249,7 +249,7 @@ public class IndexedPredicate extends Predicate {
     }
     
     public static IndexedPredicate union( Relation x, IndexedPredicate y )  {
-        if( 0 < x.content.size() )
+        if( 0 < x.getContent().size() )
             throw new AssertionError("Not a projection: TODO");
         IndexedPredicate ret = new IndexedPredicate(y);
         Set<String> columns = new HashSet<String>();
@@ -297,9 +297,9 @@ public class IndexedPredicate extends Predicate {
         for( String s : x.header.keySet() )
             required.remove(y.oldName(s));
         Method m = y.method(required);
-        for( Tuple xi : X.content ) {
+        for( Tuple xi : X.getContent() ) {
             Relation singleX = new Relation(X.colNames);
-            singleX.content.add(xi);
+            singleX.addTuple(xi.data);
             Relation lft = Relation.union(Relation.join(singleX,x),hdrYX);
             
             Object o = null;

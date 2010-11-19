@@ -616,6 +616,8 @@ public class Program {
                 ;
             else {                          
                 right = expr(child, src);
+                right = reEvaluateByUnnesting(right);
+
                 break;
             }
         }
@@ -969,7 +971,7 @@ public class Program {
         for( Object elem : values(root, src) ) {
             t[i%ret.colNames.length] = elem;
             if( i%ret.colNames.length == ret.colNames.length-1 ) {
-                ret.content.add(new Tuple(t));
+                ret.addTuple(t);
                 t = new Object[ret.colNames.length];
             }
             i++;

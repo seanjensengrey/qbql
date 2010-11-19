@@ -31,7 +31,7 @@ public class Links {
         Relation ret = new Relation(new String[]{"down"});
         if( atPos != null )
            for( ParseNode child : atPos.children() ) 
-               ret.content.add(new Tuple(new Object[]{"["+child.from+","+child.to+")"}));
+               ret.addTuple(new Object[]{"["+child.from+","+child.to+")"});
         return ret;      
     }
 }

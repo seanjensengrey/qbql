@@ -154,11 +154,11 @@ public class EqualityPredicate extends Predicate {
                 String[] header = new String[x.colNames.length];
                 System.arraycopy(x.colNames, 0, header, 0, x.colNames.length);
                 Relation ret = new Relation(header);
-                for( Tuple t : x.content ) 
+                for( Tuple t : x.getContent() ) 
                     if( t.data[x.header.get(colX)].equals(t.data[x.header.get(colY)]) ) {
                         Object[] o = new Object[x.colNames.length];
                         System.arraycopy(t.data, 0, o, 0, x.colNames.length);
-                        ret.content.add(new Tuple(o));
+                        ret.addTuple(o);
                     }
                 return ret;
             } 
@@ -168,11 +168,11 @@ public class EqualityPredicate extends Predicate {
         System.arraycopy(x.colNames, 0, header, 0, x.colNames.length);
         header[x.colNames.length] = colY;
         Relation ret = new Relation(header);
-        for( Tuple t : x.content ) {
+        for( Tuple t : x.getContent() ) {
             Object[] o = new Object[x.colNames.length+1];
             System.arraycopy(t.data, 0, o, 0, x.colNames.length);
             o[x.colNames.length] = t.data[x.header.get(colX)];
-            ret.content.add(new Tuple(o));
+            ret.addTuple(o);
         }
         return ret;
     }
