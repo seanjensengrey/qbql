@@ -42,8 +42,12 @@ public class Exp {
         //if( x instanceof BigDecimal & y instanceof BigDecimal )
         	//return new NamedTuple(columns,new Object[]{((BigDecimal)x).add((BigDecimal)y)});
         if( y instanceof String  ) {
-        	Double d = Double.valueOf((String)y);
-        	return new NamedTuple(columns,new Object[]{Math.log((Double)d)});
+        	try { 
+        		Double d = Double.valueOf((String)y);
+        		return new NamedTuple(columns,new Object[]{Math.log((Double)d)});
+        	} catch( Exception e ) {
+        		throw new AssertionError("ln(var) -- postpone eval");
+        	}
         }
         throw new AssertionError("ln(?)");
     }
