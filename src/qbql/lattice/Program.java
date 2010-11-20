@@ -616,7 +616,6 @@ public class Program {
                 ;
             else {                          
                 right = expr(child, src);
-                right = reEvaluateByUnnesting(right);
 
                 break;
             }
