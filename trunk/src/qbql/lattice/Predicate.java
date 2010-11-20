@@ -259,6 +259,19 @@ public class Predicate implements Comparable {
         if( x instanceof Relation && y instanceof IndexedPredicate ) 
             return IndexedPredicate.setEQ((Relation)x,(IndexedPredicate)y);
         
+        try {
+        	Predicate tmp = x.reEvaluateByUnnesting();
+        	if( tmp instanceof Relation && y instanceof IndexedPredicate )
+        		return IndexedPredicate.setEQ((Relation)tmp,(IndexedPredicate)y); 
+        } catch( Exception e ) {        	
+        }
+        try {
+        	Predicate tmp = y.reEvaluateByUnnesting();
+        	if( tmp instanceof Relation && x instanceof IndexedPredicate )
+        		return IndexedPredicate.setEQ((Relation)tmp,(IndexedPredicate)x); 
+        } catch( Exception e ) {        	
+        }
+        
         throw new AssertionError("x.className="+x.getClass().getSimpleName()+",y.className="+y.getClass().getSimpleName());
     }
     
@@ -355,4 +368,38 @@ public class Predicate implements Comparable {
     }
     
 
+	Predicate reEvaluateByUnnesting() {
+		if( !(this instanceof Relation) ) {
+			// "2+3=result"
+			final String[] header = colNames;
+		 	
+			final int stop = 1 << header.length;                	
+			for( int i = 1; i < stop; i++ ) {
+		       	Set<String> accum = new HashSet<String>(); 
+				for( int pos = 0; pos < header.length; pos++ ) {
+					int atPos = i & (1 << pos);
+					if( atPos > 0 ) {
+						accum.add(header[pos]);
+					}
+				}
+		    	Relation rel = new Relation(accum.toArray(new String[]{}));
+		    	Map<String, Object> body = new HashMap<String, Object>(); 
+		    	for( String s : accum ) {
+		    		Integer t = null;
+		    		try {
+		    			t = Integer.parseInt(s);
+		    		} catch( NumberFormatException e ) {}
+		    		body.put(s,t==null?s:t);
+		    	}
+		    	rel.addTuple(body);
+		    	try {
+		    		Predicate tmp = Predicate.setIX(this, rel);
+		    		if( tmp instanceof Relation ) {
+		    			return tmp;
+		    		}
+		    	} catch( Exception e ) {}
+			}
+		}
+		return this;
+	}    
 }

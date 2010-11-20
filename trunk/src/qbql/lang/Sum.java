@@ -5,6 +5,17 @@ import qbql.lattice.Relation;
 import qbql.lattice.Tuple;
 
 public class Sum {
+    public static String[] getSymbolicNames() {
+    	return new String[] {
+        		"Sigma summands = result",
+        		"Σ summands = result",
+        		"result = result + summands",
+        		"result += summands",
+        		"result = result + summands[i]",
+    	};
+    }
+	
+	
     public static NamedTuple summands_result( 
             Relation summands 
     ) {

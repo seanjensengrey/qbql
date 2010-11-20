@@ -317,8 +317,11 @@ public class IndexedPredicate extends Predicate {
             
             try {
                 Relation singleY = ((NamedTuple)m.invoke(o, new Object[] {lft})).toRelation();
-                for( String newName : y.renamed.keySet() )
-                	singleY.renameInPlace(y.renamed.get(newName), newName );
+                for( String oldName : y.renamed.keySet() ) {
+					String newName = y.renamed.get(oldName);
+					if( singleY.header.containsKey(newName) )
+						singleY.renameInPlace(newName, oldName);
+				}
 
                 ret = Relation.union(ret, Relation.join(singleX, singleY)); 
             } catch( InvocationTargetException e ) {
