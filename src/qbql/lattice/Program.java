@@ -314,9 +314,9 @@ public class Program {
                 right = expr(child, src);
         }
         if( !(left instanceof Relation) )
-        	left = reEvaluateByUnnesting(left);
+        	left = left.reEvaluateByUnnesting();
         if( !(right instanceof Relation) )
-        	right = reEvaluateByUnnesting(right);
+        	right = right.reEvaluateByUnnesting();
         if( oper == lt )
             return Relation.le((Relation)left,(Relation)right);
         else if( oper == gt )
@@ -509,7 +509,7 @@ public class Program {
             } else if( child.contains(expr) ) {
                 Predicate expr2 = expr(child, src);
                 
-                expr2 = reEvaluateByUnnesting(expr2);
+                expr2 = expr2.reEvaluateByUnnesting();
                 
 				System.out.println(child.content(src)+"="+expr2.toString(child.content(src).length()+1)+";");
                 return null;
@@ -518,41 +518,6 @@ public class Program {
         throw new AssertionError("No expr/partition in statement?");
     }
 
-	private Predicate reEvaluateByUnnesting( Predicate expr2 ) {
-		if( !(expr2 instanceof Relation) ) {
-			// "2+3=result"
-			final String[] header = expr2.colNames;
-		 	
-			final int stop = 1 << header.length;                	
-			for( int i = 1; i < stop; i++ ) {
-		       	Set<String> accum = new HashSet<String>(); 
-				for( int pos = 0; pos < header.length; pos++ ) {
-					int atPos = i & (1 << pos);
-					if( atPos > 0 ) {
-						accum.add(header[pos]);
-					}
-				}
-		    	Relation rel = new Relation(accum.toArray(new String[]{}));
-		    	Map<String, Object> body = new HashMap<String, Object>(); 
-		    	for( String s : accum ) {
-		    		Integer t = null;
-		    		try {
-		    			t = Integer.parseInt(s);
-		    		} catch( NumberFormatException e ) {}
-		    		body.put(s,t==null?s:t);
-		    	}
-		    	rel.addTuple(body);
-		    	try {
-		    		Predicate tmp = Predicate.setIX(expr2, rel);
-		    		if( tmp instanceof Relation ) {
-		    			expr2 = tmp;
-		    			break;
-		    		}
-		    	} catch( Exception e ) {}
-			}
-		}
-		return expr2;
-	}    
     
     /**
      * @param root
@@ -618,7 +583,7 @@ public class Program {
                 ;
             else {                          
                 right = expr(child, src);
-                right = reEvaluateByUnnesting(right);
+                right = right.reEvaluateByUnnesting();
 
                 break;
             }
