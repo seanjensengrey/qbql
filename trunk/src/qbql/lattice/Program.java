@@ -542,11 +542,13 @@ public class Program {
 		    		body.put(s,t==null?s:t);
 		    	}
 		    	rel.addTuple(body);
-				Predicate tmp = Predicate.setIX(expr2, rel);
-		    	if( tmp instanceof Relation ) {
-		    		expr2 = tmp;
-		    		break;
-		    	}
+		    	try {
+		    		Predicate tmp = Predicate.setIX(expr2, rel);
+		    		if( tmp instanceof Relation ) {
+		    			expr2 = tmp;
+		    			break;
+		    		}
+		    	} catch( Exception e ) {}
 			}
 		}
 		return expr2;
@@ -616,6 +618,7 @@ public class Program {
                 ;
             else {                          
                 right = expr(child, src);
+                right = reEvaluateByUnnesting(right);
 
                 break;
             }
