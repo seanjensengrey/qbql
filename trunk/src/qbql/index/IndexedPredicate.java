@@ -403,6 +403,8 @@ public class IndexedPredicate extends Predicate {
                     	int pos = 0;
                     	for( String s : tmp ) {
                     		String t = matched.get(s);
+                    		if( t == null ) // e.g. Sum predicate has variable arity 
+                    			continue;
                     		colNames[pos] = t;
                     		header.put(t,pos);
                     		renamed.put(t, s);

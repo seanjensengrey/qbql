@@ -12,6 +12,7 @@ public class Sum {
         		//"result = result + summands",  // conflicts with plus!
         		"result += summands",
         		"result = result + summands[i]",
+        		"result += summands[i]",
     	};
     }
 	
