@@ -55,4 +55,5 @@ Substr =
 ;
 
 LT = LE ^ ("lft=rgt")'; 
-"lft < rgt" = LT; 
+"lft < rgt" = LT;
+"lft < rgt" ^ R00;
