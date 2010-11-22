@@ -135,8 +135,15 @@ public class IndexedPredicate extends Predicate {
             required.remove(y.oldName(s));
         Method m = y.method(required);
         for( Tuple tupleX: x.getContent() ) {
-            if( m == null ) 
-                throw new AssertionError("didn't find a method");
+            if( m == null ) { 
+            	StringBuilder reqMap = new StringBuilder();
+            	for( String s: required ) {
+					Object key = Util.keyForAValue(y.renamed,s);
+            		reqMap.append(" "+(key != null ? key+"->": "")+s);
+            	}
+                throw new AssertionError("Didn't find a method for \n"
+                		+reqMap+" in "+y.implementation.getName());
+            }
             // postponed to facilitate joining with []
             
             List<String> inputs = arguments(m, ArgType.INPUT);
@@ -298,6 +305,17 @@ public class IndexedPredicate extends Predicate {
             required.remove(y.oldName(s));
         Method m = y.method(required);
         for( Tuple xi : X.getContent() ) {
+            if( m == null ) { 
+            	StringBuilder reqMap = new StringBuilder();
+            	for( String s: required ) {
+					Object key = Util.keyForAValue(y.renamed,s);
+            		reqMap.append(" "+(key != null ? key+"->": "")+s);
+            	}
+                throw new AssertionError("Didn't find a method for \n"
+                		+reqMap+" in "+y.implementation.getName());
+            }
+            // postponed to facilitate joining with []
+            
             Relation singleX = new Relation(X.colNames);
             singleX.addTuple(xi.data);
             Relation lft = Relation.union(Relation.join(singleX,x),hdrYX);
@@ -323,7 +341,11 @@ public class IndexedPredicate extends Predicate {
 						singleY.renameInPlace(newName, oldName);
 				}
 
-                ret = Relation.union(ret, Relation.join(singleX, singleY)); 
+                Relation singleXY = Relation.join(singleX, singleY); 
+                if( !singleXY.header.keySet().equals(ret.header.keySet()) )
+                	throw new AssertionError("[Relation /= IndexedPredicate]="+ret.header.keySet()+" vs. \n"
+                			+m.getName()+" "+singleXY.header.keySet());
+				ret = Relation.union(ret, singleXY); 
             } catch( InvocationTargetException e ) {
                 /*if( e.getCause() instanceof EmptySetException )
                     return ret;
@@ -399,17 +421,19 @@ public class IndexedPredicate extends Predicate {
                     	for( Method m : methods() ) {
                     		tmp.addAll(arguments(m,ArgType.BOTH));
                     	}
-                    	colNames = new String[tmp.size()];
                     	int pos = 0;
                     	for( String s : tmp ) {
                     		String t = matched.get(s);
                     		if( t == null ) // e.g. Sum predicate has variable arity 
                     			continue;
-                    		colNames[pos] = t;
                     		header.put(t,pos);
                     		renamed.put(t, s);
                     		pos++;
                     	}
+                    	colNames = new String[pos];
+                    	for( String s : header.keySet() ) {
+                    		colNames[header.get(s)] = s;
+						}
                     	return true;
                     }
                 } catch ( Exception e ) {

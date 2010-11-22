@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.URL;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -121,6 +122,13 @@ public abstract class Util {
             state[pos] = init;                             
         }
         return false;
+    }
+    
+    public static Object keyForAValue( Map m, Object value ) {
+    	for( Object key : m.keySet() )
+    		if( m.get(key).equals(value) )
+    			return key;
+    	return null;
     }
 
     public static void main( String[] args ) throws Exception {

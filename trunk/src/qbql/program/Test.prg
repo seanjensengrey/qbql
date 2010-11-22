@@ -86,12 +86,19 @@ SubstrSrc = (Substr /^ [source] "Hello World" /^ [fragment]o) v [prefix postfix]
 .
 
 
-
 ["------ Predicates -----"]; 
 
-Sum /= [summands] 1 2 3 4=[result]
-                     10
-.
+[i a] 
+  0 1 
+  1 1 
+  2 3 
+ /= "sum += a[i]"=[sum] 5.
+
+[a] 
+ 1 
+ 1 
+ 3 
+ /= "sum += a" = [sum] 4.
  
 ["------ Aggregates -----"]; 
 
@@ -121,4 +128,14 @@ Points ^ "x <= 2"=[x  y]
                  2  5
 .
 
+"for(int i = 0; i<5; i++)" /^ "i+3=inc3"=[inc3]
+                                        3
+                                        4
+                                        5
+                                        6
+                                        7
+.
+
 ["------ Generic Predicates -----"]; 
+
+["------ Time = 25078 ? -----"];
