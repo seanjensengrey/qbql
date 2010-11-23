@@ -75,11 +75,18 @@ public abstract class Util {
         Set<String> ret = new TreeSet<String>();
         for( String s : x )
             ret.add(s);
-        for( String s : y )
-            if( ret.contains(s) )
+        for( String s : y ) {
+        	boolean contains = false;
+            for( String t : x )
+            	if( t.equals(s) ) {
+            		contains = true;
+            		break;
+            	}
+            if( contains )
                 ret.remove(s);
             else
                 ret.add(s);
+        }
         return ret.toArray(new String[0]);
     }
 

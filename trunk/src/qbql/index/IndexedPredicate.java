@@ -34,14 +34,14 @@ public class IndexedPredicate extends Predicate {
     
     Class<?> implementation = null;
     
-    private HashMap<String,String> renamed = new HashMap<String,String>(); //new_name->old_name
-    private String oldName( String col ) {
+    private HashMap<String,String> renamed = new HashMap<String,String>(); //old_name->new_name
+    private String newName( String col ) {
         return renamed.get(col);
     }
-    private Set<String> newNames( String col ) {
+    private Set<String> oldNames( String col ) {
         Set<String> ret = new HashSet<String>();
         for( String newName : renamed.keySet() )
-            if( col.equals(oldName(newName)) )
+            if( col.equals(newName(newName)) )
                 ret.add(newName);
         return ret;
     }
@@ -67,14 +67,15 @@ public class IndexedPredicate extends Predicate {
     
     public void renameInPlace( String from, String to ) {       
         super.renameInPlace(from, to);
-        
-        renamed.put(to, oldName(from));
-        renamed.remove(oldName(from));
+        Set<String> old = oldNames(from);
+        for( String o : old ) {
+        	renamed.remove(o);
+        	renamed.put(o, to);
+        }
     }
     public void eqInPlace( String from, String to ) {     
         super.eqInPlace(from, to);
-        
-        renamed.put(to, oldName(from));
+        renameInPlace(from, to);
     }
 
     private Database db = null;
@@ -130,16 +131,27 @@ public class IndexedPredicate extends Predicate {
         Relation ret = new Relation(header.toArray(new String[0]));
         Set<String> required = new HashSet<String>();
         for( String s : y.header.keySet() )
-            required.add(y.oldName(s));
+            required.addAll(y.oldNames(s));
         for( String s : x.header.keySet() )
-            required.remove(y.oldName(s));
+            required.removeAll(y.oldNames(s));
         Method m = y.method(required);
+        Object obj = null;
+        try {
+            Class partypes[] = new Class[1];
+            partypes[0] = Database.class;
+            Constructor ct = y.implementation.getConstructor(partypes);
+            Object arglist[] = new Object[1];
+            arglist[0] = y.db;
+            obj = ct.newInstance(arglist);
+        } catch( NoSuchMethodException e ) {            	
+        } catch ( Exception e ) {
+			throw new RuntimeException(e);
+		}
         for( Tuple tupleX: x.getContent() ) {
             if( m == null ) { 
             	StringBuilder reqMap = new StringBuilder();
             	for( String s: required ) {
-					Object key = Util.keyForAValue(y.renamed,s);
-            		reqMap.append(" "+(key != null ? key+"->": "")+s);
+            		reqMap.append(" "+(s != null ? s+"->": "")+y.newName(s));
             	}
                 throw new AssertionError("Didn't find a method for \n"
                 		+reqMap+" in "+y.implementation.getName());
@@ -152,29 +164,13 @@ public class IndexedPredicate extends Predicate {
             int pos = -1;
             for( String origName : inputs ) {
                 pos++;
-                for( String s : y.newNames(origName) ) {
-                    Integer xHeaderPos = x.header.get(s);
-                    if( xHeaderPos != null ) {
-                        args[pos] = tupleX.data[xHeaderPos];
-                        break;
-                    }
-                }
+                Integer xHeaderPos = x.header.get(y.newName(origName));
+                args[pos] = tupleX.data[xHeaderPos];
             }
+            
             Object o = null;
             try {
-                Class partypes[] = new Class[1];
-                partypes[0] = Database.class;
-                Constructor ct = y.implementation.getConstructor(partypes);
-                Object arglist[] = new Object[1];
-                arglist[0] = y.db;
-                o = ct.newInstance(arglist);
-            } catch( NoSuchMethodException e ) {            	
-            } catch ( Exception e ) {
-				throw new RuntimeException(e);
-			}
-            
-            try {
-                o = m.invoke(o, args);
+                o = m.invoke(obj, args);
             } catch( InvocationTargetException e ) {
                 if( e.getCause() instanceof EmptySetException )
                     return ret;
@@ -191,32 +187,18 @@ public class IndexedPredicate extends Predicate {
                 NamedTuple nt = (NamedTuple)o;
                 for( String attr : ret.colNames ) {
                     Integer colRet = ret.header.get(attr);
-                    Integer colX = x.header.get(attr);                    
-                    //Integer colY = y.header.get(attr);
-                    Object co = null;
-                    String oldYattr = y.oldName(attr);
-                    if( oldYattr != null )
-                        co = nt.get(oldYattr);
-                    if( co != null ) {
-                        if( colX != null ) 
-                            if( !co.equals(tupleX.data[colX]) ) {
-                                retTuple = null;
-                                break;
-                            }
-                        retTuple[colRet] = co;                        
-                    } else if( colX != null ) {
-                        retTuple[colRet] = tupleX.data[colX]; 
-                    } else {
-                        for( String eqCol : y.newNames(y.oldName(attr)) ) {
-                            colX = x.header.get(eqCol);
-                            if( colX != null ) {
-                                retTuple[colRet] = tupleX.data[colX];
-                            }
-                        }
-                    }                        
-
+                    
+                    Integer colX = x.header.get(attr);
+                    if( colX != null ) {
+                    	retTuple[colRet] = tupleX.data[colX];
+                    	continue;
+                    }
+                    
+                    String oldYattr = (String)Util.keyForAValue(y.renamed, attr);
+                    Object co = nt.get(oldYattr);
+                    retTuple[colRet] = co;                    
                 }
-                if( retTuple != null )
+                //if( retTuple != null )
                     ret.addTuple(retTuple);
             } else if( o instanceof Relation ) {
                 Relation r = (Relation)o;
@@ -224,29 +206,19 @@ public class IndexedPredicate extends Predicate {
                     Object[] retTuple = new Object[header.size()];
                     for( String attr : ret.colNames ) {
                         Integer colRet = ret.header.get(attr);
+                        
                         Integer colX = x.header.get(attr);                    
-                        //Integer colY = y.header.get(attr);
-                        Integer colR = r.header.get(y.oldName(attr));
-                        if( colR != null ) {
-                            Object co = t.data[colR];
-                            if( colX != null ) 
-                                if( !co.equals(tupleX.data[colX]) ) {
-                                    retTuple = null;
-                                    break;
-                                }
-                            retTuple[colRet] = co;                            
-                        } else if( colX != null ) {
-                            retTuple[colRet] = tupleX.data[colX]; 
-                        } else {
-                            for( String eqCol : y.newNames(y.oldName(attr)) ) {
-                                colX = x.header.get(eqCol);
-                                if( colX != null ) {
-                                    retTuple[colRet] = tupleX.data[colX];
-                                }
-                            }
-                        }                        
+                        if( colX != null ) {
+                        	retTuple[colRet] = tupleX.data[colX];
+                        	continue;
+                        }
+                        
+                        String oldYattr = (String)Util.keyForAValue(y.renamed, attr);
+                        Integer colR = r.header.get(oldYattr);
+                        Object co = t.data[colR];
+                        retTuple[colRet] = co;                         
                     }
-                    if( retTuple != null )
+                    //if( retTuple != null )
                         ret.addTuple(retTuple);
                 }
             } else
@@ -300,16 +272,27 @@ public class IndexedPredicate extends Predicate {
         
         Set<String> required = new HashSet<String>();
         for( String s : y.header.keySet() )
-            required.add(y.oldName(s));
+            required.addAll(y.oldNames(s));
         for( String s : x.header.keySet() )
-            required.remove(y.oldName(s));
+            required.removeAll(y.oldNames(s));
         Method m = y.method(required);
+        Object obj = null;
+        try {
+            Class partypes[] = new Class[1];
+            partypes[0] = Database.class;
+            Constructor ct = y.implementation.getConstructor(partypes);
+            Object arglist[] = new Object[1];
+            arglist[0] = y.db;
+            obj = ct.newInstance(arglist);
+        } catch( NoSuchMethodException e ) {            	
+        } catch ( Exception e ) {
+			throw new RuntimeException(e);
+		}
         for( Tuple xi : X.getContent() ) {
             if( m == null ) { 
             	StringBuilder reqMap = new StringBuilder();
             	for( String s: required ) {
-					Object key = Util.keyForAValue(y.renamed,s);
-            		reqMap.append(" "+(key != null ? key+"->": "")+s);
+            		reqMap.append(" "+(s != null ? s+"->": "")+y.newName(s));
             	}
                 throw new AssertionError("Didn't find a method for \n"
                 		+reqMap+" in "+y.implementation.getName());
@@ -322,23 +305,11 @@ public class IndexedPredicate extends Predicate {
             
             Object o = null;
             try {
-                Class partypes[] = new Class[1];
-                partypes[0] = Database.class;
-                Constructor ct = y.implementation.getConstructor(partypes);
-                Object arglist[] = new Object[1];
-                arglist[0] = y.db;
-                o = ct.newInstance(arglist);
-            } catch( NoSuchMethodException e ) {            	
-            } catch ( Exception e ) {
-				throw new RuntimeException(e);
-			}
-            
-            try {
-                Relation singleY = ((NamedTuple)m.invoke(o, new Object[] {lft})).toRelation();
+                Relation singleY = ((NamedTuple)m.invoke(obj, new Object[] {lft})).toRelation();
                 for( String oldName : y.renamed.keySet() ) {
-					String newName = y.renamed.get(oldName);
-					if( singleY.header.containsKey(newName) )
-						singleY.renameInPlace(newName, oldName);
+					String newName = y.newName(oldName);
+					if( singleY.header.containsKey(oldName) )
+						singleY.renameInPlace(oldName, newName);
 				}
 
                 Relation singleXY = Relation.join(singleX, singleY); 
@@ -422,17 +393,19 @@ public class IndexedPredicate extends Predicate {
                     		tmp.addAll(arguments(m,ArgType.BOTH));
                     	}
                     	int pos = 0;
+                    	Map<Integer,String> cols = new HashMap<Integer,String>();
                     	for( String s : tmp ) {
                     		String t = matched.get(s);
                     		if( t == null ) // e.g. Sum predicate has variable arity 
                     			continue;
                     		header.put(t,pos);
-                    		renamed.put(t, s);
+                    		renamed.put(s, t);
+                    		cols.put(pos,t);
                     		pos++;
                     	}
                     	colNames = new String[pos];
-                    	for( String s : header.keySet() ) {
-                    		colNames[header.get(s)] = s;
+                    	for( int j = 0; j < colNames.length; j++ ) {
+                    		colNames[j] = cols.get(j);
 						}
                     	return true;
                     }

@@ -492,6 +492,7 @@ public class Program {
                     && !root.parent(descendant.from, descendant.to).contains(header)
                     && !root.parent(descendant.from, descendant.to).contains(table)
                     && !root.parent(descendant.from, descendant.to).contains(userOper)
+                    && !id.startsWith("\"")
                     && (!notAssignedOnes || lookup(id) == null) ) 
                 variables.add(id);
         }
@@ -924,9 +925,21 @@ public class Program {
         else if( root.from + 1 == root.to && src.get(root.from).type == Token.DIGITS  
             ||   root.from + 2 == root.to && "-".equals(src.get(root.from).content) && src.get(root.from+1).type == Token.DIGITS )
             ret.add(Integer.parseInt(root.content(src)));
-        else if( root.from + 1 == root.to && src.get(root.from).type == Token.DQUOTED_STRING )
-            ret.add(root.content(src).substring(1,root.content(src).length()-1));
-        else
+        else if( root.from + 1 == root.to && src.get(root.from).type == Token.DQUOTED_STRING ) {
+            String strValue = root.content(src).substring(1,root.content(src).length()-1);
+            Object value = strValue;
+            try {
+            	Integer i = Integer.parseInt(strValue);
+            	if( i != null )
+            		value = i;
+            } catch( Exception e ) {}
+            try {
+            	Double d = Double.parseDouble(strValue);
+            	if( d != null )
+            		value = d;
+            } catch( Exception e ) {}
+			ret.add(value);
+        } else
             for( ParseNode child : root.children() )
                 ret.addAll(values(child,src));
         return ret;

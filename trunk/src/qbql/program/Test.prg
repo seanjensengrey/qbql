@@ -1,11 +1,15 @@
 include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
 include udf.def;
 
+"lft < rgt"^R00=[lft  rgt].
+
+["^^^^^ Predicate Header Evaluation ^^^^^"];
+
 R00 ^ (x v y v z) = R00 &
 (x /^ (y ^ z)) ^ R00 = ((x /^ y) ^ (x /^ z)) ^ R00 ->
 x /^ (y ^ z) = (x /^ y) ^ (x /^ z).
 
-["------CONDITIONAL DISTRIBUTIVITY -----"];
+["^^^^^ CONDITIONAL DISTRIBUTIVITY ^^^^^"];
 
 (<NOT>x) ^ x = x ^ R00.
 (<NOT>x) v x = x v R11. 
@@ -14,21 +18,20 @@ x /^ (y ^ z) = (x /^ y) ^ (x /^ z).
 (<INV>x) ^ x = x ^ R11.
 (<INV>x) v x = x v R00. 
 
-<NOT>R00= <INV>R11.
+<NOT>R00 = <INV>R11.
 
-["------INV AXIOMS -----"];
+["^^^^^ INV AXIOMS ^^^^^"];
 
 (<INV>x) v (<INV>y) = <INV>(x <OR> y).
 (<NOT>x) ^ (<NOT>y) = <NOT>(x <OR> y).
 (<INV>x) <OR> (<INV>y) = <INV>(x v y).
 
-["------De Morgan -----"];
+["^^^^^ De Morgan ^^^^^"];
 
 
 x ^ ((<INV>y) v (<INV>z)) = (x ^ (<INV>y)) v (x ^ (<INV>z)).
 
-["------Distributivity -----"];
-
+["^^^^^ Distributivity ^^^^^"];
 
 
 Cat ^ [source from] Hello 3 =[from  postfix  prefix  source]
@@ -86,7 +89,7 @@ SubstrSrc = (Substr /^ [source] "Hello World" /^ [fragment]o) v [prefix postfix]
 .
 
 
-["------ Predicates -----"]; 
+["^^^^^ Predicates ^^^^^"]; 
 
 [i a] 
   0 1 
@@ -100,7 +103,7 @@ SubstrSrc = (Substr /^ [source] "Hello World" /^ [fragment]o) v [prefix postfix]
  3 
  /= "sum += a" = [sum] 4.
  
-["------ Aggregates -----"]; 
+["^^^^^ Aggregates ^^^^^"]; 
 
 Points = [x y]
           0 1
@@ -128,6 +131,18 @@ Points ^ "x <= 2"=[x  y]
                  2  5
 .
 
+AtOneSide 
+/^ ([x1 y1] 0 1
+ ^  [x2 y2] 2 2
+ ^  [xa ya] 0 3
+ ^  [xb yb] 3 1) = R00.
+AtOneSide 
+/^ ([x1 y1] 0 1
+ ^  [x2 y2] 2 2
+ ^  [xa ya] 0 3
+ ^  [xb yb] 3 3) = R01.
+
+
 "for(int i = 0; i<5; i++)" /^ "i+3=inc3"=[inc3]
                                         3
                                         4
@@ -136,6 +151,42 @@ Points ^ "x <= 2"=[x  y]
                                         7
 .
 
-["------ Generic Predicates -----"]; 
+"i in {1,...,5}" ^ "i * i = i2" = [i  i2]
+                               1  1
+                               2  4
+                               3  9
+                               4  16
+.
 
-["------ Time = 25078 ? -----"];
+["^^^^^ Generic Predicates ^^^^^"]; 
+
+(
+     (Points /^ "x=x1" /^ "y=y1") 
+   ^ (Points /^ "x=x2" /^ "y=y2") 
+   ^ (Points /^ "x=xa" /^ "y=ya") 
+   ^ (Points /^ "x=xb" /^ "y=yb") 
+ ^ AtOneSide 
+) /= (
+     (Points /^ "x=xa" /^ "y=ya") 
+   ^ (Points /^ "x=xb" /^ "y=yb")
+)^ ("x1=x2" ^ "y1=y2")'
+= [x1  x2  y1  y2]
+   0  0  1  3
+   0  0  3  1
+   0  2  3  5
+   0  5  1  0
+   2  0  5  3
+   2  6  5  3
+   5  0  0  1
+   5  6  0  3
+   6  2  3  5
+   6  5  3  0
+.
+
+["^^^^^ Convex Hull ^^^^^"];
+
+"3 <*> 5 = p"=[p] "15.0".
+
+["^^^^^ User Defined Operations ^^^^^"]; 
+
+["Time = 25078 ?"];
