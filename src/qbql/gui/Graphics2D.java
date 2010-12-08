@@ -17,9 +17,8 @@ import qbql.util.Util;
 
 public class Graphics2D extends Database {
     public static void main( String[] args ) throws Exception {
-        final String db = Util.readFile(Graphics2D.class,"graphics.db");
         final String prg = Util.readFile(Graphics2D.class,"graphics.prg");
-        run(db,prg);
+        run(prg);
         
         JFrame f = new JFrame("Graphics Database");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -28,16 +27,16 @@ public class Graphics2D extends Database {
 
     }
     
-    public Graphics2D( String pkg, String db ) {
+    public Graphics2D( String pkg ) {
         super(pkg);
     }
     
-    public static Graphics2D run( String database, String prg ) throws Exception {
+    public static Graphics2D run( String prg ) throws Exception {
         
         StackTraceElement[] stack = new Throwable().getStackTrace();
         String createdInClass = stack[0].getClassName();
         String pkg = createdInClass.substring(0,createdInClass.lastIndexOf('.'));
-        Graphics2D db = new Graphics2D(pkg,database);
+        Graphics2D db = new Graphics2D(pkg);
         
         // program
         List<LexerToken> src =  new Lex().parse(prg);

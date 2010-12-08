@@ -371,7 +371,7 @@ public class Predicate implements Comparable {
 	Predicate reEvaluateByUnnesting() {
 		if( !(this instanceof Relation) ) {
 			// "2+3=result"
-			final String[] header = colNames;
+			final String[] header = allAttributes();
 		 	
 			final int stop = 1 << header.length;                	
 			for( int i = 1; i < stop; i++ ) {
@@ -402,4 +402,17 @@ public class Predicate implements Comparable {
 		}
 		return this;
 	}    
+	
+	private String[] allAttributes() {
+		if( lft == null )
+			return colNames;
+		if( rgt == null )
+			return lft.colNames;
+		Set<String> ret = new HashSet<String>();
+		for( String s : lft.colNames )
+			ret.add(s);
+		for( String s : rgt.colNames )
+			ret.add(s);
+		return ret.toArray(new String[0]);
+	}
 }
