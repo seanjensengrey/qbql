@@ -662,10 +662,9 @@ public class Program {
         
         else if( root.contains(identifier) || root.from+1 == root.to ) {
             LexerToken token = src.get(root.from);
-			String name = token.type == Token.DQUOTED_STRING ? token.content.substring(1, token.content.length()-1) : token.content;
-            Predicate candidate = lookup(name);
+            Predicate candidate = lookup(token.content);
             if( candidate == null )
-                throw new AssertionError("Predicate/Table '"+name+"' not in the database");
+                throw new AssertionError("Predicate/Table '"+token.content+"' not in the database");
 			return candidate;
         }
                     
@@ -676,6 +675,8 @@ public class Program {
         Predicate ret = database.getPredicate(name);
         if( ret != null ) 
             return ret;
+		name = name.startsWith("\"")&&name.endsWith("\"") ? name.substring(1, name.length()-1) : name;
+
     	List<LexerToken> src = new Lex().parse(name);
     	if( src.size() == 3 && "=".equals(src.get(1).content) )
     		return new EqualityPredicate(src.get(0).content, src.get(2).content);
