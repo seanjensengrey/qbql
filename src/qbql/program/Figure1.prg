@@ -138,8 +138,10 @@ x = y <-> R00 = ((((y)' <and> x))` v ((x)' ^ y)).
 x < y & x @^ y = x <-> x /< y = R01.
 
 
-x = (x <OR> y) <and> (x <OR> (y`)').
-x = (x ^ y) v (x ^ (y')`). 
+x = (x <OR> y) <and> ( x <OR> <NOT>(<INV>(y)) ).
+x = (x ^ y) v ( x ^ <INV>(<NOT>(y)) ). 
+-- false: x = (x ^ y) v ( x ^ <NOT>(<INV>(y)) ).
+
 
 
 

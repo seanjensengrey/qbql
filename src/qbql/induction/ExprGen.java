@@ -20,21 +20,12 @@ public class ExprGen {
     
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
-            "@'",
-            "`",
+            "<NOT>",
+            "<INV>",
     };
     static String[] binaryRelsOps;
     public static void main( String[] args ) throws Exception {
-        //final String goal = Util.readFile(ExprGen.class,"induction.prg");
-        //String goal = "(x ^ y) v (x ^ (y`)') = expr.";
-        //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
-        //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
-        //String goal = "y + z = y <-> implication."; // Found: y * z = y <-> (((R11 ^ z) v (R00 ^ y)) = (z v y)).
-
-        //String goal = "(x @^ y) @v (x @^ z) = expr.";
-        String goal = "x /< y = expr.";
-        //String goal = "r#x < r#y <-> implication.";
-        //String goal = "x = y <-> R00 = expr.";
+        final String goal = Util.readFile(ExprGen.class,"induction.prg");
         System.out.println("goal: "+goal);
         
         final String[] constants = new String[] {
@@ -45,7 +36,7 @@ public class ExprGen {
         final String[] binaryOps = new String[] {
             "^",
             "v", 
-            //"@*",
+            //"<and>",
             "/^",
             //"/>",
             //"/<",
@@ -66,8 +57,10 @@ public class ExprGen {
         //String quickFile = "FD.db";
         String quickFile = "Figure1.db";
 		String quickDbsrc = Util.readFile(ExprGen.class,quickFile);
+		quickDbsrc += "\n include udf.def;\n";
         //String fullDb = quickDb;
         String fullDbsrc = Util.readFile(Run.class,"Figure1.db");
+        fullDbsrc += "\n include udf.def;\n";
         
         final int threads = 1;//Runtime.getRuntime().availableProcessors();
         System.out.println("Using " + threads + " threads");
@@ -98,9 +91,11 @@ public class ExprGen {
         for( int i = 0; i < threads; i++ ) {
         	Database quickDb = new Database("qbql.lang");
 			final Program quick = new Program(quickDb);
+			quick.outputVariables = false;
 			quick.run(quickDbsrc);       
         	Database fullDb = new Database("qbql.lang");
 			final Program full = new Program(fullDb);
+			full.outputVariables = false;
 			full.run(fullDbsrc);       
 
 			

@@ -37,10 +37,10 @@ public class TreeNode {
         
         StringBuilder s = new StringBuilder();
         if( lft != null && rgt == null ) { // unary
+            s.append(label);
             s.append("(");
             s.append(lft.toString());
             s.append(")");
-            s.append(label);
             return s.toString();
         }
         if( lft != null ) {
@@ -171,9 +171,9 @@ public class TreeNode {
         if( ret )
             return ret;
         
-        if( "'".equals(label) && "'".equals(lft.label) )
+        if( "<NOT>".equals(label) && "<NOT>".equals(lft.label) )
             return true;
-        if( ("'".equals(label)||"`".equals(label)) 
+        if( ("<NOT>".equals(label)||"<INV>".equals(label)) 
          && ("R11".equals(lft.label)||"R00".equals(lft.label)) )
             return true;
         

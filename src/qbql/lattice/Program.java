@@ -333,7 +333,7 @@ public class Program {
             throw new AssertionError("Impossible case");             
     }
 
-    boolean outputVariables = false;
+    public boolean outputVariables = true;
     
     public ParseNode assertion( ParseNode root, List<LexerToken> src ) {
         ParseNode ret = null;
@@ -510,7 +510,7 @@ public class Program {
             } else if( child.contains(expr) ) {
                 Predicate expr2 = expr(child, src);
                 
-                expr2 = expr2.reEvaluateByUnnesting();
+                //expr2 = expr2.reEvaluateByUnnesting();
                 
 				System.out.println(child.content(src)+"="+expr2.toString(child.content(src).length()+1)+";");
                 return null;
@@ -976,7 +976,6 @@ public class Program {
         }
 
         long t1 = System.currentTimeMillis();
-        outputVariables = true;
         ParseNode exception = program(root,src);
         long t2 = System.currentTimeMillis();
         System.out.println("Time = "+(t2-t1)); 
