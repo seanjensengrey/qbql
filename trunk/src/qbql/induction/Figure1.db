@@ -3,24 +3,10 @@
 -- Attributes are renamed: x -> p, y -> q, z -> r, because 
 -- elsewhere x, y, and z are relation variables!
 
-A = {<p=1>};		
-
-B = {<p=1>,<p=2>};
-		
-/*		
-C = {<q=a>};
-		
-D = {<q=a>,<q=b>};
-
-JAC = A ^ C;
-
-JAD = A ^ D;
-
-JBC = B ^ C;
-
-_A = A ^ R00;
-
-_C = C ^ R00;
-
-ADvBC = (A ^ D) v (B ^ C);
-*/
+A=[p]
+   1
+;
+B=[p]
+   1
+   2
+;
