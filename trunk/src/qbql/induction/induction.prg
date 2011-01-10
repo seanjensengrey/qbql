@@ -25,4 +25,7 @@ x /< (z @@ y) = (x /< z) @@ (x /< y).
 */
 
 
-(x ^ y) v (x ^ <NOT>(<INV>y)) = expr.
+--(x ^ y) v (x ^ <NOT>(<INV>y)) = expr.
+
+x <op> y = expr. 
+(x ^ y) < z <-> x < (y <op> z).
