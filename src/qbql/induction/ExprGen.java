@@ -30,14 +30,14 @@ public class ExprGen {
         
         final String[] constants = new String[] {
             "R00",
-            //"R11",             
+            "R11",             
         };
         
         final String[] binaryOps = new String[] {
             "^",
             "v", 
             //"<and>",
-            "/^",
+            //"/^",
             //"/>",
             //"/<",
             //"/=",

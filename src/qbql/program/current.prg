@@ -34,4 +34,6 @@ CB = Colored v ([name]B ^ ([color])');
 (CB /^ "name=name2" /^ ([color]green)');
 */
 
-x = (x <OR> y) <and> ( x <OR> <NOT>(<INV>(y)) ).
+--x = (x <OR> y) <and> ( x <OR> <NOT>(<INV>(y)) ).
+
+-- false: x < y & u < v -> x /^ u < y /^ v.
