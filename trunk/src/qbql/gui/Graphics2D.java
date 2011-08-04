@@ -8,10 +8,12 @@ import javax.swing.JFrame;
 import qbql.lattice.Database;
 import qbql.lattice.Program;
 import qbql.parser.CYK;
+import qbql.parser.Earley;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
+import qbql.parser.SyntaxError;
 import qbql.util.Util;
 
 
@@ -31,6 +33,7 @@ public class Graphics2D extends Database {
         super(pkg);
     }
     
+	static final String PARSE_ERROR_IN_ASSERTIONS_FILE = "*** Parse Error in assertions file ***";
     public static Graphics2D run( String prg ) throws Exception {
         
         StackTraceElement[] stack = new Throwable().getStackTrace();
@@ -40,11 +43,15 @@ public class Graphics2D extends Database {
         
         // program
         List<LexerToken> src =  new Lex().parse(prg);
-        Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
-        int size = matrix.size();
-        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = Program.cyk.forest(size, matrix);
+        Earley earley = new Earley(Gui.guiRules());
+        Matrix matrix = new Matrix(earley);
+        earley.parse(src, matrix); 
+        SyntaxError err = SyntaxError.checkSyntax(prg, new String[]{"program"}, src, earley, matrix);      
+        if( err != null ) {
+            System.out.println(err.toString());
+            throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);
+        }
+        ParseNode root = earley.forest(src, matrix);
 
         if( root.topLevel != null ) {
             System.out.println("*** Parse Error in assertions file ***");

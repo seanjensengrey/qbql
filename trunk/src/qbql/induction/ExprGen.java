@@ -8,10 +8,12 @@ import java.util.TreeMap;
 
 import qbql.lattice.Database;
 import qbql.lattice.Program;
+import qbql.parser.Earley;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
+import qbql.parser.SyntaxError;
 import qbql.program.Run;
 import qbql.util.Util;
 
@@ -24,6 +26,7 @@ public class ExprGen {
             "<INV>",
     };
     static String[] binaryRelsOps;
+	static final String PARSE_ERROR_IN_ASSERTIONS_FILE = "*** Parse Error in assertions file ***";
     public static void main( String[] args ) throws Exception {
         final String goal = Util.readFile(ExprGen.class,"induction.prg");
         System.out.println("goal: "+goal);
@@ -37,9 +40,9 @@ public class ExprGen {
             "^",
             "v", 
             //"<and>",
-            //"/^",
+            "/^",
             //"/>",
-            //"/<",
+            "/<",
             //"/=",
             //"/^",
             //"/0",
@@ -67,13 +70,15 @@ public class ExprGen {
         
         final Lex lex = new Lex();
         List<LexerToken> src =  lex.parse(goal);
-        Matrix matrix = Program.cyk.initMatrixSubdiagonal(src,true);
-        int size = matrix.size();
-        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = Program.cyk.forest(size, matrix);
-        if( !root.contains(Program.cyk.symbolIndexes.get("program") ) )
-            throw new Exception("!root.contains(program)" );     
+        Earley earley = Program.earley;
+        Matrix matrix = new Matrix(earley);
+        earley.parse(src, matrix); 
+        SyntaxError err = SyntaxError.checkSyntax(goal, new String[]{"program"}, src, earley, matrix);      
+        if( err != null ) {
+            System.out.println(err.toString());
+            throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);
+        }
+        ParseNode root = earley.forest(src, matrix);
         
         final int subgoal = subgoal(src);
         binaryRelsOps = new String[binaryOps.length];
@@ -107,7 +112,7 @@ public class ExprGen {
 		}
         
         final Set<String> variables = extractVariables(root, src, verifiers[0].full, subgoal);
-        variables.remove(Program.cyk.allSymbols[subgoal]);
+        variables.remove(earley.allSymbols[subgoal]);
         
         zilliaryOps = new String[variables.size()+constants.length];
         for( int i = 0; i < variables.size(); i++ ) {
@@ -210,17 +215,19 @@ public class ExprGen {
 
 		public void exec( final String node ) {
 			try {
-				String input = goal.replace(Program.cyk.allSymbols[subgoal], node);
+				String input = goal.replace(Program.earley.allSymbols[subgoal], node);
 
 				List<LexerToken> src =  lex.parse(input);
-				Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
-				int size = matrix.size();
-				TreeMap<Integer, Integer> skipRanges = new TreeMap<Integer,Integer>();
-				Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-				ParseNode root = Program.cyk.forest(size, matrix);
-				if( !root.contains(Program.cyk.symbolIndexes.get("program") ) )
-					return;
-
+		        Earley earley = Program.earley;
+		        Matrix matrix = new Matrix(earley);
+		        earley.parse(src, matrix); 
+		        SyntaxError err = SyntaxError.checkSyntax(goal, new String[]{"program"}, src, earley, matrix);      
+		        if( err != null ) {
+		            System.out.println(err.toString());
+		            throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);
+		        }
+		        ParseNode root = earley.forest(src, matrix);
+				
 				long t2 = System.currentTimeMillis();                   
 				ParseNode eval = quick.program(root, src);
 				evalTime += System.currentTimeMillis()-t2;
@@ -265,9 +272,9 @@ public class ExprGen {
 
     private static int subgoal( List<LexerToken> src ) {
     	for( LexerToken t : src )
-    		if( t.content.equals(Program.cyk.allSymbols[Program.implication]) )
+    		if( t.content.equals(Program.earley.allSymbols[Program.implication]) )
     			return Program.implication;
-    		else if( t.content.equals(Program.cyk.allSymbols[Program.expr]) )
+    		else if( t.content.equals(Program.earley.allSymbols[Program.expr]) )
     			return Program.expr;
         throw new AssertionError("no subgoal?");
     }

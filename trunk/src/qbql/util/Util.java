@@ -105,6 +105,28 @@ public abstract class Util {
         return p-0x10001;
     }
 
+    //-----------------------------------------
+    public static long lPair( int x, int y ) {
+        return ((long)y << 32) | (long)x;
+    }
+
+    public static int lY( long p ) {
+        return (int) (p >> 32);
+    }
+
+    public static int lX( long p ) {
+        return (int)p;
+    }
+    
+    public static long addlX( long pair, int x ) {
+    	return pair+x; 
+    }
+    
+    public static long addlY( long pair, int y ) {
+    	return pair+ (((long)y) << 32); 
+    }    
+    //----------------------------------
+    
     // [14,5) -> 5
     public static int Y( String interval ) {
         return Integer.parseInt(interval.substring(interval.indexOf(',')+1,interval.length()-1));

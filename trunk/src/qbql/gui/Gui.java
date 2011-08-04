@@ -25,7 +25,7 @@ import javax.swing.JTextField;
 
 import qbql.lattice.Database;
 import qbql.lattice.Program;
-import qbql.parser.BNFGrammar;
+import qbql.parser.Grammar;
 import qbql.parser.CYK;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
@@ -142,7 +142,7 @@ public class Gui {
         contentPane.add(Box.createRigidArea(new Dimension(width,width)));
     }
     /////////////////////////GRAMMAR//////////////////////////
-    private static Set<RuleTuple> guiRules() throws Exception {
+    static Set<RuleTuple> guiRules() throws Exception {
         String input = Util.readFile(Gui.class, "gui.grammar");
         HashMap<String, String> specialSymbols = new HashMap<String, String>();
         List<LexerToken> src = new Lex(
@@ -150,8 +150,8 @@ public class Gui {
                       specialSymbols                 
         ).parse(input);
         //LexerToken.print(src);
-        ParseNode root = BNFGrammar.parseGrammarFile(src, input);
-        return BNFGrammar.grammar(root, src);
+        ParseNode root = Grammar.parseGrammarFile(src, input);
+        return Grammar.grammar(root, src);
     }
     
     static CYK cyk = null; 
@@ -189,7 +189,7 @@ public class Gui {
     }
         
     private static final String path = "/qbql/gui/";
-    public static void main( String[] args ) throws Exception {
+    /*public static void main( String[] args ) throws Exception {
         Gui model = new Gui();
         String guiCode = Util.readFile(model.getClass(),path+"test.gui");
 
@@ -209,7 +209,7 @@ public class Gui {
 
         model.frame(root, src);
         
-    }
+    }*/
 
 }
 
