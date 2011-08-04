@@ -11,14 +11,17 @@ import java.util.TreeMap;
 import com.sun.org.apache.xml.internal.utils.QName;
 
 import qbql.index.IndexedPredicate;
-import qbql.parser.BNFGrammar;
+import qbql.parser.Earley;
+import qbql.parser.Grammar;
 import qbql.parser.CYK;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.parser.RuleTuple;
+import qbql.parser.SyntaxError;
 import qbql.parser.Token;
+import qbql.parser.Visual;
 import qbql.program.Run;
 import qbql.util.Util;
 
@@ -31,7 +34,7 @@ public class Program {
     
     //// READ RULES
     
-    public static CYK cyk;
+    public static Earley earley;
     public static int naturalJoin;
     public static int innerUnion;
     static int userDefined;
@@ -89,71 +92,67 @@ public class Program {
     static int comma;
     static {        
         try {
-            cyk = new CYK(latticeRules()) {
-                public int[] atomicSymbols() {
-                    return new int[] {assertion,assignment,query};
-                }
-            };
-            naturalJoin = cyk.symbolIndexes.get("join");
-            userDefined = cyk.symbolIndexes.get("userDefined");
-            userOper = cyk.symbolIndexes.get("userOper");
-            innerUnion = cyk.symbolIndexes.get("innerUnion");
-            unnamedJoin = cyk.symbolIndexes.get("unnamedJoin");
-            unnamedMeet = cyk.symbolIndexes.get("unnamedMeet");
-            setIX = cyk.symbolIndexes.get("setIX");
-            setEQ = cyk.symbolIndexes.get("setEQ");
-            contains = cyk.symbolIndexes.get("contains");
-            transpCont = cyk.symbolIndexes.get("transpCont");
-            disjoint = cyk.symbolIndexes.get("disjoint");
-            almostDisj = cyk.symbolIndexes.get("almostDisj");
-            big = cyk.symbolIndexes.get("big");
-            complement = cyk.symbolIndexes.get("complement");
-            inverse = cyk.symbolIndexes.get("inverse");
-            join = cyk.symbolIndexes.get("'v'");
-            meet = cyk.symbolIndexes.get("'^'");
-            equivalence = cyk.symbolIndexes.get("'~'");
-            equality = cyk.symbolIndexes.get("'='");
-            minus = cyk.symbolIndexes.get("'-'");
-            lt = cyk.symbolIndexes.get("'<'");
-            gt = cyk.symbolIndexes.get("'>'");
-            amp = cyk.symbolIndexes.get("'&'");
-            num = cyk.symbolIndexes.get("'#'");
-            bar = cyk.symbolIndexes.get("'|'");
-            excl = cyk.symbolIndexes.get("'!'");
-            expr = cyk.symbolIndexes.get("expr");
-            partition = cyk.symbolIndexes.get("partition");
-            parExpr = cyk.symbolIndexes.get("parExpr");
-            openParen = cyk.symbolIndexes.get("'('");
-            closeParen = cyk.symbolIndexes.get("')'");
-            implication = cyk.symbolIndexes.get("implication");
-            proposition = cyk.symbolIndexes.get("proposition");
-            oper = cyk.symbolIndexes.get("oper");
-            assertion = cyk.symbolIndexes.get("assertion");
-            query = cyk.symbolIndexes.get("query");
+            earley = new Earley(latticeRules());
+            naturalJoin = earley.symbolIndexes.get("join");
+            userDefined = earley.symbolIndexes.get("userDefined");
+            userOper = earley.symbolIndexes.get("userOper");
+            innerUnion = earley.symbolIndexes.get("innerUnion");
+            unnamedJoin = earley.symbolIndexes.get("unnamedJoin");
+            unnamedMeet = earley.symbolIndexes.get("unnamedMeet");
+            setIX = earley.symbolIndexes.get("setIX");
+            setEQ = earley.symbolIndexes.get("setEQ");
+            contains = earley.symbolIndexes.get("contains");
+            transpCont = earley.symbolIndexes.get("transpCont");
+            disjoint = earley.symbolIndexes.get("disjoint");
+            almostDisj = earley.symbolIndexes.get("almostDisj");
+            big = earley.symbolIndexes.get("big");
+            complement = earley.symbolIndexes.get("complement");
+            inverse = earley.symbolIndexes.get("inverse");
+            join = earley.symbolIndexes.get("'v'");
+            meet = earley.symbolIndexes.get("'^'");
+            equivalence = earley.symbolIndexes.get("'~'");
+            equality = earley.symbolIndexes.get("'='");
+            minus = earley.symbolIndexes.get("'-'");
+            lt = earley.symbolIndexes.get("'<'");
+            gt = earley.symbolIndexes.get("'>'");
+            amp = earley.symbolIndexes.get("'&'");
+            num = earley.symbolIndexes.get("'#'");
+            bar = earley.symbolIndexes.get("'|'");
+            excl = earley.symbolIndexes.get("'!'");
+            expr = earley.symbolIndexes.get("expr");
+            partition = earley.symbolIndexes.get("partition");
+            parExpr = earley.symbolIndexes.get("parExpr");
+            openParen = earley.symbolIndexes.get("'('");
+            closeParen = earley.symbolIndexes.get("')'");
+            implication = earley.symbolIndexes.get("implication");
+            proposition = earley.symbolIndexes.get("proposition");
+            oper = earley.symbolIndexes.get("oper");
+            assertion = earley.symbolIndexes.get("assertion");
+            query = earley.symbolIndexes.get("query");
 
-            include = cyk.symbolIndexes.get("include");
-            filename = cyk.symbolIndexes.get("filename");
+            include = earley.symbolIndexes.get("include");
+            filename = earley.symbolIndexes.get("filename");
 
-            identifier = cyk.symbolIndexes.get("identifier");
-            //string_literal = cyk.symbolIndexes.get("string_literal");
+            identifier = earley.symbolIndexes.get("identifier");
+            //string_literal = earley.symbolIndexes.get("string_literal");
 
-            assignment = cyk.symbolIndexes.get("assignment");
-            relation = cyk.symbolIndexes.get("relation");
-            table = cyk.symbolIndexes.get("table");
-            /*tuples = cyk.symbolIndexes.get("tuples");
-            tuple = cyk.symbolIndexes.get("tuple");*/
-            header = cyk.symbolIndexes.get("header");
-            content = cyk.symbolIndexes.get("content");
-            attribute = cyk.symbolIndexes.get("attribute");
-            values = cyk.symbolIndexes.get("values");
-            namedValue = cyk.symbolIndexes.get("namedValue");
-            //System.out.println(cyk.allSymbols[20]);
+            assignment = earley.symbolIndexes.get("assignment");
+            relation = earley.symbolIndexes.get("relation");
+            table = earley.symbolIndexes.get("table");
+            /*tuples = earley.symbolIndexes.get("tuples");
+            tuple = earley.symbolIndexes.get("tuple");*/
+            header = earley.symbolIndexes.get("header");
+            content = earley.symbolIndexes.get("content");
+            attribute = earley.symbolIndexes.get("attribute");
+            values = earley.symbolIndexes.get("values");
+            namedValue = earley.symbolIndexes.get("namedValue");
+            //System.out.println(earley.allSymbols[20]);
         } catch( Exception e ) {
             e.printStackTrace(); // (authorized)
         }
     }
     
-    private static Set<RuleTuple> latticeRules()  {
+    public static Set<RuleTuple> latticeRules() throws Exception  {
         String input;
 		try {
 			input = Util.readFile(Program.class, "lattice.grammar");
@@ -167,8 +166,8 @@ public class Program {
                       specialSymbols                 
         ).parse(input);
         //LexerToken.print(src);
-        ParseNode root = BNFGrammar.parseGrammarFile(src, input);
-        return BNFGrammar.grammar(root, src);
+        ParseNode root = Grammar.parseGrammarFile(src, input);
+        return Grammar.grammar(root, src);
     }
     
     //--------------------------------------------------------------------------
@@ -425,12 +424,12 @@ public class Program {
         String input = "x "+op1+" y = x "+op2+" y.";
         
         LinkedList<LexerToken> src = new Lex().parse(input);
-        Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
-        int size = matrix.size();
-        Program.cyk.closure(matrix, 0, size+1, null, -1);
-        ParseNode root = Program.cyk.forest(size, matrix);
-        if( !root.contains(Program.cyk.symbolIndexes.get("assertion") ) )
-            throw new AssertionError("Parse Eror");     
+        
+        Matrix matrix = new Matrix(earley);
+        earley.parse(src, matrix); 
+        ParseNode root = Program.earley.forest(src, matrix);
+        if( !root.contains(Program.earley.symbolIndexes.get("assertion") ) )
+            throw new AssertionError("Parse Error");     
         
         return assertion(root,src)==null;
 	}
@@ -591,12 +590,20 @@ public class Program {
         database.addPredicate(left, right);
     }
     private Predicate expr( ParseNode root, List<LexerToken> src ) {
+    	if( root.contains(identifier) || root.from+1 == root.to ) {
+            LexerToken token = src.get(root.from);
+            Predicate candidate = lookup(token.content);
+            if( candidate == null )
+                throw new AssertionError("Predicate/Table '"+token.content+"' not in the database");
+			return candidate;
+        } else       
         /*if( root.contains(relation) ) {
             for( ParseNode child : root.children() ) {
                 if( child.contains(tuples) )
                     return tuples(child, src);
             }
-        } else*/ if( root.contains(table) ) {
+        } else*/ 
+    	if( root.contains(table) ) {
             Relation ret = Database.R00;
             //String colX = null;
             for( ParseNode child : root.children() ) {
@@ -659,14 +666,6 @@ public class Program {
         
         else if( root.contains(parExpr) ) 
             return parExpr(root, src);
-        
-        else if( root.contains(identifier) || root.from+1 == root.to ) {
-            LexerToken token = src.get(root.from);
-            Predicate candidate = lookup(token.content);
-            if( candidate == null )
-                throw new AssertionError("Predicate/Table '"+token.content+"' not in the database");
-			return candidate;
-        }
                     
         throw new AssertionError("Unknown case");
     }
@@ -963,18 +962,16 @@ public class Program {
 	static final String PARSE_ERROR_IN_ASSERTIONS_FILE = "*** Parse Error in assertions file ***";
     public void run( String prg ) {
         List<LexerToken> src =  new Lex().parse(prg);
-        Matrix matrix = Program.cyk.initMatrixSubdiagonal(src);
-        int size = matrix.size();
-        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        Program.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = Program.cyk.forest(size, matrix);
-
-        if( root.topLevel != null ) {
-            System.out.println(PARSE_ERROR_IN_ASSERTIONS_FILE);
-            CYK.printErrors(prg, src, root);
+        Matrix matrix = new Matrix(earley);
+        earley.parse(src, matrix); 
+        SyntaxError err = SyntaxError.checkSyntax(prg, new String[]{"program"}, src, earley, matrix);      
+        if( err != null ) {
+            System.out.println(err.toString());
             throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);
         }
 
+        ParseNode root = earley.forest(src, matrix);
+        
         long t1 = System.currentTimeMillis();
         ParseNode exception = program(root,src);
         long t2 = System.currentTimeMillis();

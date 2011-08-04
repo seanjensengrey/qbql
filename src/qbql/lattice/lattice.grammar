@@ -122,11 +122,8 @@ partition:
           |  tuple
           |  partition '|' tuple      
 ;
-program:     assertion
-          |  assignment
-          |  query
-          |  include
-          |  program program
+program:   stmt  
+          |  stmt program
 ;
 query:       expr ';'
           |  partition ';'
@@ -146,6 +143,13 @@ setEQ:       expr '/' '=' expr
 ;
 setIX:       expr '/' '^' expr
 ;
+
+stmt:        assertion
+          |  assignment
+          |  query
+          |  include
+;
+
 table:       '[' ']'
           |  '[' header ']'
           |  '[' header ']' content
