@@ -86,9 +86,10 @@ public class Program {
     static int tuple;*/
     static int header;
     static int content;
+    static int value;
     public static int attribute;
-    static int values;
-    static int namedValue;
+    //static int values;
+    //static int namedValue;
     static int comma;
     static {        
         try {
@@ -143,9 +144,10 @@ public class Program {
             tuple = earley.symbolIndexes.get("tuple");*/
             header = earley.symbolIndexes.get("header");
             content = earley.symbolIndexes.get("content");
+            value = earley.symbolIndexes.get("value");
             attribute = earley.symbolIndexes.get("attribute");
-            values = earley.symbolIndexes.get("values");
-            namedValue = earley.symbolIndexes.get("namedValue");
+            //values = earley.symbolIndexes.get("values");
+            //namedValue = earley.symbolIndexes.get("namedValue");
             //System.out.println(earley.allSymbols[20]);
         } catch( Exception e ) {
             e.printStackTrace(); // (authorized)
@@ -488,6 +490,7 @@ public class Program {
             String id = descendant.content(src);
             if( descendant.from+1 == descendant.to 
                     && (descendant.contains(expr) || descendant.contains(identifier))
+                    && !descendant.contains(value)
                     && !root.parent(descendant.from, descendant.to).contains(header)
                     && !root.parent(descendant.from, descendant.to).contains(table)
                     && !root.parent(descendant.from, descendant.to).contains(userOper)
@@ -876,7 +879,7 @@ public class Program {
         throw new AssertionError("Unknown case");
     }*/
     
-    private void values( Map<String,Object> tuple, ParseNode root, List<LexerToken> src ) {
+    /*private void values( Map<String,Object> tuple, ParseNode root, List<LexerToken> src ) {
         if( root.contains(namedValue) )
             value(tuple,root, src);
         else for( ParseNode child : root.children() )
@@ -903,7 +906,7 @@ public class Program {
             }
         }
         tuple.put(left, right);
-    }
+    }*/
 
     private List<String> strings( ParseNode root, List<LexerToken> src )  {
         List<String> ret = new LinkedList<String>();

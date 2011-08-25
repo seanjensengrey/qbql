@@ -48,9 +48,8 @@ oper:       '^'
 ;
 
 proposition:     
-             expr '<' expr
+             "not to confuse with userOper"
           |  expr '=' expr
-          |  expr '>' expr
           |  expr '~' expr
           |  partition '<' partition
           |  partition '=' partition
@@ -61,6 +60,10 @@ proposition:
           |  oper '!' '=' oper
 ;
 
+"not to confuse with userOper":
+             expr '<' expr
+          |  expr '>' expr
+;
 
 complement:  identifier 'qtSymbol'
           |  parExpr 'qtSymbol'
@@ -107,8 +110,6 @@ inverse:     identifier '`'
 ;
 join:        expr '^' expr
 ;
-namedValue:  attribute '=' value
-;
 parExpr:     '(' expr ')'
 ;
 partition:  
@@ -136,6 +137,11 @@ tuple:       '<' values '>'
 ;
 tuples:      tuple
           |  tuples ',' tuple
+;
+values:      namedValue
+          |  values ',' namedValue
+;
+namedValue:  attribute '=' value
 ;
 */
 
@@ -172,7 +178,4 @@ value:       digits
           |  identifier
           |  string_literal
           |  /* nested relation */ parExpr          
-;
-values:      namedValue
-          |  values ',' namedValue
 ;

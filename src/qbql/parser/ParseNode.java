@@ -205,6 +205,8 @@ public class ParseNode implements Comparable {
             sb.append("  ");  //$NON-NLS-1$
         sb.append(interval()+" ");  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         for( Integer i : content() ) {
+            if( i==-1 )
+                continue;
         	String symbol = cyk.allSymbols[i];
         	//symbol = symbol.endsWith(")")?("\""+symbol+"\""):symbol;
         	//symbol = symbol.endsWith(")")?"":symbol;

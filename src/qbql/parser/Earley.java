@@ -25,7 +25,7 @@ public class Earley extends Parser {
     protected int[] allXs = null;
 	
 	public static void main( String[] args ) throws Exception {
-        String input = Util.readFile(Run.class,"current.prg");
+        String input = Util.readFile(Run.class,"Test.prg");
         List<LexerToken> src =  (new Lex()).parse(input);
 	
         Set<RuleTuple> wiki = new TreeSet<RuleTuple>();

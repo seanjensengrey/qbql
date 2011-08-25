@@ -397,7 +397,7 @@ public class Predicate implements Comparable {
 		    		if( tmp instanceof Relation ) {
 		    			return tmp;
 		    		}
-		    	} catch( Exception e ) {}
+		    	} catch( AssertionError e ) {}
 			}
 		}
 		return this;
