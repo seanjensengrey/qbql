@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import qbql.lattice.Program;
+import qbql.program.Run;
 import qbql.util.Array;
 import qbql.util.Util;
 
@@ -707,4 +708,53 @@ public class CYK extends Parser {
                 return t.head;
         return -1;
     }
+    
+    public static void main( String[] args ) throws Exception {
+        long h = Runtime.getRuntime().totalMemory();
+        long hf = Runtime.getRuntime().freeMemory();
+        System.out.println("mem="+(h-hf)); // (authorized) //$NON-NLS-1$
+        
+        Set<RuleTuple> rules = Program.latticeRules();
+        CYK cyk = new CYK(rules);
+
+        String input = Util.readFile(Run.class,"Test.prg");
+        List<LexerToken> src =  (new Lex()).parse(input);
+        
+        Visual visual = null;
+        if( src.size() < 1000 )
+        	visual = new Visual(src, cyk);
+
+        long t1 = System.currentTimeMillis();
+        Matrix matrix = cyk.initArray(src);
+        long t2 = System.currentTimeMillis();
+        System.out.println("Init array time = "+(t2-t1)); // (authorized) //$NON-NLS-1$
+
+        int size = matrix.size();
+        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
+        t1 = System.currentTimeMillis();
+        cyk.closure(matrix, 0, size+1, skipRanges, -1);
+        t2 = System.currentTimeMillis();
+        System.out.println("Parse time = "+(t2-t1)); // (authorized) //$NON-NLS-1$
+        System.out.println(skipRanges);// (authorized)
+        //instance.print(matrix);
+        cyk.print(matrix, 0, size);
+        //instance.print(ret, 0, 3);
+        //instance.print(ret, 3, 6);
+        if( visual != null )
+            visual.draw(matrix);
+        
+        t1 = System.currentTimeMillis();
+        ParseNode out = cyk.forest(src, matrix);
+        t2 = System.currentTimeMillis();
+        System.out.println("Reduction time = "+(t2-t1)); // (authorized) //$NON-NLS-1$
+        
+        h = Runtime.getRuntime().totalMemory();
+        hf = Runtime.getRuntime().freeMemory();
+        System.out.println("mem="+(h-hf)); // (authorized) //$NON-NLS-1$
+        
+        if( src.size() < 1000 )
+        	out.printTree();
+
+    }
+
 }

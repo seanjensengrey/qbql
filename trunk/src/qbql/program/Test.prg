@@ -28,7 +28,6 @@ x /^ (y ^ z) = (x /^ y) ^ (x /^ z).
 
 ["^^^^^ De Morgan ^^^^^"];
 
-
 x ^ ((<INV>y) v (<INV>z)) = (x ^ (<INV>y)) v (x ^ (<INV>z)).
 
 ["^^^^^ Distributivity ^^^^^"];
@@ -189,4 +188,4 @@ AtOneSide
 
 ["^^^^^ User Defined Operations ^^^^^"]; 
 
-["Time = 25078 ?"];
+["Time = 14110 ?"];
