@@ -3,8 +3,8 @@
 --include volume.db;
 
 
--- wrong ("i in {1,...,1000}" ^ "3 * x = i" /^ "int x") 
---v ("i in {1,...,1000}" ^ "5 * x = i" /^ "int x");
+-- wrong "i in [1,...,20)" ^ "3 * x = i" ^ "5 * x = i" /^ "int x";
+
 /*
 Colored = [name color]
            A    green
@@ -53,24 +53,4 @@ CB = Colored v ([name]B ^ ([color])');
  0 c
 ;
 */
-Au=[i j s]
-    1 1 3
-    1 2 1
-    2 1 1
-    2 2 0
-;
-Ap=[i j1 j2]
-    1 3  1
-    2 1  0
-;
-Au =
-((Ap /^ "j1=s") /^ [j]1)
-v
-((Ap /^ "j2=s") /^ [j]2)
-. 
-Ap =
-((Au /^ "j1=s") /^ [j]1)
-^
-((Au /^ "j2=s") /^ [j]2)
-.
 

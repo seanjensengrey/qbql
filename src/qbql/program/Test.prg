@@ -142,23 +142,6 @@ AtOneSide
  ^  [xb yb] 3 3) = R01.
 
 
-"for(int i = 0; i<5; i++)" /^ "i+3=inc3"=[inc3]
-                                        3
-                                        4
-                                        5
-                                        6
-                                        7
-.
-
-"i in {1,...,5}" ^ "i * i = i2" = [i  i2]
-                               1  1
-                               2  4
-                               3  9
-                               4  16
-.
-
-["^^^^^ Generic Predicates ^^^^^"]; 
-
 (
      (Points /^ "x=x1" /^ "y=y1") 
    ^ (Points /^ "x=x2" /^ "y=y2") 
@@ -184,8 +167,48 @@ AtOneSide
 
 ["^^^^^ Convex Hull ^^^^^"];
 
+
+"for(int i = 0; i<5; i++)" /^ "i+3=inc3"=[inc3]
+                                        3
+                                        4
+                                        5
+                                        6
+                                        7
+.
+
+"i in [1,...,5)" ^ "i * i = i2" = [i  i2]
+                               1  1
+                               2  4
+                               3  9
+                               4  16
+.
+["^^^^^ Generic Predicates ^^^^^"]; 
+
 "3 <*> 5 = p"=[p] "15.0".
 
 ["^^^^^ User Defined Operations ^^^^^"]; 
+
+Au=[i j s]
+    1 1 3
+    1 2 1
+    2 1 1
+    2 2 0
+;
+Ap=[i j1 j2]
+    1 3  1
+    2 1  0
+;
+Au =
+((Ap /^ "j1=s") /^ [j]1)
+v
+((Ap /^ "j2=s") /^ [j]2)
+. 
+Ap =
+((Au /^ "j1=s") /^ [j]1)
+^
+((Au /^ "j2=s") /^ [j]2)
+.
+
+["^^^^^ Pivot ^^^^^"];
 
 ["Time = 14110 ?"];

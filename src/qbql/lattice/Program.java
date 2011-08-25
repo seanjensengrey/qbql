@@ -512,7 +512,11 @@ public class Program {
             } else if( child.contains(expr) ) {
                 Predicate expr2 = expr(child, src);
                 
-                //expr2 = expr2.reEvaluateByUnnesting();
+            	try {
+            		Predicate p = expr2.reEvaluateByUnnesting();
+            		if( p instanceof Relation )
+            			expr2 = p;
+            	} catch( AssertionError e ) {}
                 
 				System.out.println(child.content(src)+"="+expr2.toString(child.content(src).length()+1)+";");
                 return null;
