@@ -11,7 +11,7 @@ public class IntegerInterval {
     	return new String[] {
         		"for(int i = from; i<to; i++)",
         		"from <= int i < to",
-        		"i in {from,...,to}",
+        		"i in [from,...,to)",
     	};
     }
     public static Relation from_to_i( int from, int to ) {
