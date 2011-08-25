@@ -1,21 +1,14 @@
 package qbql.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import javax.swing.Box;
-import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -23,13 +16,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
-import qbql.lattice.Database;
-import qbql.lattice.Program;
-import qbql.parser.Grammar;
 import qbql.parser.CYK;
+import qbql.parser.Grammar;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
-import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.parser.RuleTuple;
 import qbql.util.Util;

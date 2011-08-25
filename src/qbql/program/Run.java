@@ -1,9 +1,8 @@
 package qbql.program;
 
-import qbql.induction.ExprGen;
 import qbql.lattice.Database;
 import qbql.lattice.Program;
-import qbql.util.Profile;
+//import qbql.util.Profile;
 import qbql.util.Util;
 
 public class Run {
