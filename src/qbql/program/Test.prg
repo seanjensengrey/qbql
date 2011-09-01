@@ -14,7 +14,6 @@ x /^ (y ^ z) = (x /^ y) ^ (x /^ z).
 (<NOT>x) ^ x = x ^ R00.
 (<NOT>x) v x = x v R11. 
 
-
 (<INV>x) ^ x = x ^ R11.
 (<INV>x) v x = x v R00. 
 
@@ -24,13 +23,20 @@ x /^ (y ^ z) = (x /^ y) ^ (x /^ z).
 
 (<INV>x) v (<INV>y) = <INV>(x <OR> y).
 (<NOT>x) ^ (<NOT>y) = <NOT>(x <OR> y).
+
 (<INV>x) <OR> (<INV>y) = <INV>(x v y).
+(<INV><NOT>x) v (<INV><NOT>y) = <INV><NOT>(x ^ y).
 
 ["^^^^^ De Morgan ^^^^^"];
 
 x ^ ((<INV>y) v (<INV>z)) = (x ^ (<INV>y)) v (x ^ (<INV>z)).
 
 ["^^^^^ Distributivity ^^^^^"];
+
+x /> y = <NOT>((<NOT>x ^ y) <and> <INV>(y v x)).
+x /> y  = <NOT>(<NOT>x /^ y).
+
+["^^^^^ Relational Division/ set Joins ^^^^^"];
 
 
 Cat ^ [source from] Hello 3 =[from  postfix  prefix  source]
@@ -211,4 +217,4 @@ Ap =
 
 ["^^^^^ Pivot ^^^^^"];
 
-["Time = 14110 ?"];
+["Time = 14328 ?"];
