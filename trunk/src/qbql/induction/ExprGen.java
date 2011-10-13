@@ -33,20 +33,21 @@ public class ExprGen {
         final String[] constants = new String[] {
             "R00",
             "R11",             
+            //"Id",             
         };
         
         final String[] binaryOps = new String[] {
             "^",
             "v", 
-            //"<and>",
+            "<and>",
+            "<\"and\">",
             "/^",
-            //"/>",
+            /*"/>",
             "/<",
-            //"/=",
-            //"/^",
-            //"/0",
-            //"/1",
-            //"/!",
+            "/=",
+            "/0",
+            "/1",
+            "/!",*/
         };
         final String[] binaryRels = new String[] {
         		//"<",
@@ -125,8 +126,8 @@ public class ExprGen {
         l.add(Polish.leaf());
         l.add(TreeNode.one);
         
-        //boolean skip = true;
-        boolean skip = false;
+        boolean skip = true;
+        skip = false;
         for( Polish num = new Polish(l); ; num.next() ) {
             if( !num.wellBuilt() )
                 continue;
@@ -142,7 +143,7 @@ public class ExprGen {
                     continue;
                 }
                 n.print();
-                if( skip && "(((((z ^ z) ^ (z)`) ^ ((z ^ z))`) ^ ((z ^ z))`))`".equals(n.toString()) )
+                if( skip && "((y ^ y) ^ y)".equals(n.toString()) )
                     skip = false;
                 if( skip )
                     continue;

@@ -54,3 +54,21 @@ CB = Colored v ([name]B ^ ([color])');
 ;
 */
 
+X=[p  q  r]
+   0  a  0
+   0  a  1
+   1  c  0
+   1  c  1
+   2  a  0
+;
+X#R00;
+X#[p];
+X#[q];
+X#[r];
+X#[p q];
+X#[q r];
+X#[r p];
+X#R10;
+
+X#[p] /^ X#[q];
+X#[p] /^ X#[p];

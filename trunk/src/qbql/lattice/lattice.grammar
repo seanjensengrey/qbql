@@ -11,6 +11,16 @@ attribute:   identifier
 big:         expr '/' '!' expr
 ;
 
+composition: '/' '^'
+;
+
+conjunction: 
+             proposition '&' conjunction
+          |  proposition 
+          |  '(' conjunction ')'
+          |   '-' '(' conjunction ')'
+;
+
 implication: 
              implication '-' '>' implication
           |  implication '<' '-' implication
@@ -35,12 +45,6 @@ disjunction:
           |  '(' disjunction ')'
 ;
 
-conjunction: 
-             proposition '&' conjunction
-          |  proposition 
-          |  '(' conjunction ')'
-          |   '-' '(' conjunction ')'
-;
 
 oper:       '^'
           | 'v'
@@ -118,11 +122,17 @@ partition:
           |  partition '^' partition
           |  partition 'v' partition
           
+          |  --partComp   
+             partition composition partition   -- partially defined:
+                                           -- result may be not an equivalence relation
+          
           --|  content
-          --|  partition '|' content      
+          --|  partition '|' content   
+             
           |  tuple
           |  partition '|' tuple      
 ;
+
 program:   stmt  
           |  stmt program
 ;
@@ -147,7 +157,7 @@ namedValue:  attribute '=' value
 
 setEQ:       expr '/' '=' expr
 ;
-setIX:       expr '/' '^' expr
+setIX:       expr composition expr
 ;
 
 stmt:        assertion
