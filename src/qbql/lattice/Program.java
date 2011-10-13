@@ -50,6 +50,7 @@ public class Program {
     static int big;
     public static int complement;
     public static int inverse;
+    static int composition;
     static int join;
     static int meet;
     static int equivalence;
@@ -109,6 +110,7 @@ public class Program {
             big = earley.symbolIndexes.get("big");
             complement = earley.symbolIndexes.get("complement");
             inverse = earley.symbolIndexes.get("inverse");
+            composition = earley.symbolIndexes.get("composition");
             join = earley.symbolIndexes.get("'v'");
             meet = earley.symbolIndexes.get("'^'");
             equivalence = earley.symbolIndexes.get("'~'");
@@ -828,13 +830,19 @@ public class Program {
                 oper = join;
             else if( child.contains(meet) )
                 oper = meet;
-            else                            
+            else if( child.contains(composition) )
+                oper = composition;
+            else if( child.contains(partition) )                           
                 right = partition(child, src);
+            else
+            	break;
         }
         if( oper == join )
             return Partition.union(left,right);
         if( oper == meet )
             return Partition.intersect(left,right);
+        if( oper == composition )
+            return Partition.composition(left,right);
 
         throw new AssertionError("Impossible case");             
     }

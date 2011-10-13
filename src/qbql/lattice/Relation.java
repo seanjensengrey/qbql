@@ -18,7 +18,7 @@ import qbql.util.Util;
 
 public class Relation extends Predicate {
 
-    private Set<Tuple> content = new HashSet<Tuple>(); 
+    Set<Tuple> content = new HashSet<Tuple>(); 
     //private Set<Tuple> content = new TreeSet<Tuple>(); switch to for big relations
 
     public Relation( String[] columns ) {

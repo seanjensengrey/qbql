@@ -31,4 +31,6 @@ x /< (z @@ y) = (x /< z) @@ (x /< y).
 --(x <OR> y) < z <-> x < (y <op> z).
 --(x <OR> y) /< z = R01 <-> x /< (y <op> z) = R01.
 
-x ^ (y ^ <NOT> x) = expr.
+--x ^ (y ^ <NOT> x) = expr.
+
+(x /= y)  = expr.

@@ -16,6 +16,8 @@ import qbql.util.Util;
 public class Partition implements Comparable<Partition> {
     private Set<Block> blocks = new TreeSet<Block>();
     
+    private Database db = null;
+    
     public Partition() {}
     
     public Partition( int[] indexes ) {
@@ -33,6 +35,8 @@ public class Partition implements Comparable<Partition> {
     }
     
     public Partition( Relation r, Relation attributes, Database db ) {
+    	this.db = db;
+    	
         //Relation rjR11 = Relation.join(r, db.R11);
         Relation relVar = r;
         Map<Tuple, Integer> indexes = new HashMap<Tuple, Integer>(); 
@@ -70,7 +74,73 @@ public class Partition implements Comparable<Partition> {
         } 
         blocks.addAll(numberedBlocks.values());
     }
-    
+   
+    /**
+     * Convert partitions to equivalence relation, apply composition
+     * If result is equivalence relation, then return it converted into partition
+     */
+    public static Partition composition( Partition x, Partition y ) {
+    	Relation xx = new Relation(new String[]{"1","2"});
+        for( Block bx : x.blocks ) 
+        	for( Object ox1 : bx.content )
+            	for( Object ox2 : bx.content )
+            		xx.addTuple(new Object[]{ox1,ox2});
+        
+    	Relation yy = new Relation(new String[]{"2","3"});
+        for( Block by : y.blocks ) 
+        	for( Object oy1 : by.content )
+            	for( Object oy2 : by.content )
+            		yy.addTuple(new Object[]{oy1,oy2});
+        
+        Relation c = (Relation)Relation.setIX(xx, yy);
+        // check symmetry
+        for( Tuple t0 : c.content ) {
+        	boolean matched = false;        
+            for( Tuple t1 : c.content )
+            	if( t0.data[0]==t1.data[1] && t0.data[1]==t1.data[0] )
+            		matched = true;
+            if( !matched )
+            	throw new AssertionError("!Symmetric; no match for "+t0.toString());
+        }
+        
+        // check transitivity
+        for( Tuple t12 : c.content ) 
+            for( Tuple t23 : c.content ) {
+            	if( t12.data[1]!=t23.data[0] )
+            		continue;
+            	boolean matched = false;        
+            	for( Tuple t13 : c.content )
+            		if( t12.data[0]==t13.data[0] && t23.data[1]==t13.data[1] )
+            			matched = true;
+            if( !matched )
+            	throw new AssertionError("!Transitive; no match for "+t12.toString()+" "+t23.toString());
+        }
+       
+        Relation pc = Relation.union(c, new Relation(new String[]{"1"}));
+        
+        Relation gt = new Relation(new String[]{"1","3"}); 
+        for( Tuple t1 : pc.content )
+            for( Tuple t3 : pc.content )
+            	if( t1.data[0].toString().compareTo(t3.data[0].toString())<0 )
+            		gt.addTuple(new Object[]{t1,t3});
+        
+        Relation maxpc = (Relation)Relation.join(pc, x.db.complement(
+        		     Relation.union(gt, new Relation(new String[]{"1"}))
+        ));
+        
+        Partition ret = new Partition();        
+        for( Tuple t1 : maxpc.content ) {
+        	Block b = new Block();
+            Relation tmp = new Relation(new String[]{"1"});
+            tmp.addTuple(new Object[]{t1});
+        	Relation matches = (Relation) Relation.setIX(c, tmp);
+        	for( Tuple t2 : matches.content )
+        		b.add(t2);
+            ret.blocks.add(b);
+        }
+        
+        return ret;
+    }
     
 
     public static Partition intersect( Partition x, Partition y ) {
@@ -186,6 +256,9 @@ public class Partition implements Comparable<Partition> {
         public void add( Object i ) {
             content.add(i);
         }
+        private boolean contains( Object i ) {
+        	return content.contains(i);
+        }
 
         public String toString() {
             StringBuilder ret = new StringBuilder();
@@ -193,6 +266,14 @@ public class Partition implements Comparable<Partition> {
                 ret.append(" "+i.toString());
             return ret.toString();
         }
+    }
+    
+    private Block owner( Object o ) {
+    	Block ret = null;
+    	for( Block b : blocks )
+    		if( b.contains(o) )
+    			ret = b;
+    	return ret;
     }
     
     public static Set<Partition> generate( int numElem ) {
