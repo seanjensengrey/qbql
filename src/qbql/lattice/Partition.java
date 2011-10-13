@@ -97,8 +97,10 @@ public class Partition implements Comparable<Partition> {
         for( Tuple t0 : c.content ) {
         	boolean matched = false;        
             for( Tuple t1 : c.content )
-            	if( t0.data[0]==t1.data[1] && t0.data[1]==t1.data[0] )
+            	if( t0.data[0]==t1.data[1] && t0.data[1]==t1.data[0] ) {
             		matched = true;
+            		break;
+            	}
             if( !matched )
             	throw new AssertionError("!Symmetric; no match for "+t0.toString());
         }
@@ -110,8 +112,10 @@ public class Partition implements Comparable<Partition> {
             		continue;
             	boolean matched = false;        
             	for( Tuple t13 : c.content )
-            		if( t12.data[0]==t13.data[0] && t23.data[1]==t13.data[1] )
+            		if( t12.data[0]==t13.data[0] && t23.data[1]==t13.data[1] ) {
             			matched = true;
+            			break;
+            		}
             if( !matched )
             	throw new AssertionError("!Transitive; no match for "+t12.toString()+" "+t23.toString());
         }
@@ -122,20 +126,20 @@ public class Partition implements Comparable<Partition> {
         for( Tuple t1 : pc.content )
             for( Tuple t3 : pc.content )
             	if( t1.data[0].toString().compareTo(t3.data[0].toString())<0 )
-            		gt.addTuple(new Object[]{t1,t3});
+            		gt.addTuple(new Object[]{t1.data[0],t3.data[0]});
         
-        Relation maxpc = (Relation)Relation.join(pc, x.db.complement(
-        		     Relation.union(gt, new Relation(new String[]{"1"}))
-        ));
+        Relation gtJc = Relation.join(gt,c);
+		Relation P1gtJc = Relation.union(gtJc, new Relation(new String[]{"1"}));
+		Relation maxpc = (Relation)Relation.join(pc, x.db.complement(P1gtJc));
         
         Partition ret = new Partition();        
         for( Tuple t1 : maxpc.content ) {
         	Block b = new Block();
             Relation tmp = new Relation(new String[]{"1"});
-            tmp.addTuple(new Object[]{t1});
+            tmp.addTuple(new Object[]{t1.data[0]});
         	Relation matches = (Relation) Relation.setIX(c, tmp);
         	for( Tuple t2 : matches.content )
-        		b.add(t2);
+        		b.add(t2.data[0]);
             ret.blocks.add(b);
         }
         
