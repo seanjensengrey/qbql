@@ -65,7 +65,7 @@ public class ExprGen {
         String fullDbsrc = Util.readFile(Run.class,"Figure1.db");
         fullDbsrc += "\n include udf.def;\n";
         
-        final int threads = 2;//Runtime.getRuntime().availableProcessors();
+        final int threads = 3;//Runtime.getRuntime().availableProcessors();
         System.out.println("Using " + threads + " threads");
         
         final Lex lex = new Lex();
@@ -191,17 +191,19 @@ public class ExprGen {
     	final Program quick;
     	final Program full;
     	final Set<String> databaseOperations;
+    	Earley earley;
 		
 		Thread thread = null;
 		
 		public Verifier( String goal, Lex lex, int subgoal, Program quick,
-				Program full, Set<String> databaseOperations ) {
+				Program full, Set<String> databaseOperations ) throws Exception {
 			this.goal = goal;
 			this.lex = lex;
 			this.subgoal = subgoal;
 			this.quick = quick;
 			this.full = full;
 			this.databaseOperations = databaseOperations;
+			earley = new Earley(Program.latticeRules());
 		}
 		
 		public void execThread( final String node ) {
@@ -218,7 +220,6 @@ public class ExprGen {
 				String input = goal.replace(Program.earley.allSymbols[subgoal], node);
 
 				List<LexerToken> src =  lex.parse(input);
-		        Earley earley = new Earley(Program.latticeRules());
 		        Matrix matrix = new Matrix(earley);
 		        earley.parse(src, matrix); 
 		        SyntaxError err = SyntaxError.checkSyntax(goal, new String[]{"program"}, src, earley, matrix);      
