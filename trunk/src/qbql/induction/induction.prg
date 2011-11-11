@@ -33,4 +33,8 @@ x /< (z @@ y) = (x /< z) @@ (x /< y).
 
 --x ^ (y ^ <NOT> x) = expr.
 
-(x /= y)  = expr.
+--(x /= y)  = expr.
+(x /< y)  = expr.
+--(x /< y)  = <NOT>(((<NOT>(y) ^ x) v <INV>(((R00 ^ x) <"and"> y)))).
+--(x /< y)  = <NOT>(((<NOT>(y) ^ x) v <INV>((R00 ^ (y v x))))).
+--(x /< y)  = <NOT>(((<NOT>(y) ^ x) <and> <INV>((y v x)))).
