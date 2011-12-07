@@ -1,5 +1,5 @@
---include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
---include udf.def;
+include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
+include udf.def;
 --include volume.db;
 
 
@@ -53,7 +53,7 @@ CB = Colored v ([name]B ^ ([color])');
  0 c
 ;
 */
-
+/*
 X=[p  q  r]
    0  a  0
    0  a  1
@@ -78,4 +78,19 @@ X#[p] /^ X#[q r];
 X#[p] /^ X#[r p];
 X#[p] /^ X#R00;
 X#[p] /^ X#R10;
+*/
+x /< y = <NOT>( <INV>(x v y) <and> (x ^ <NOT>y) ).
+
+-- semiring
+/*x <plus> y = y <plus> x.
+x <plus> (y <plus> z) = (x <plus> y) <plus> z.
+x <plus> R00 = x.
+
+x <mult> R11 = x.
+x <mult> R00 = R00.
+x <mult> (y <mult> z) = (x <mult> y) <mult> z.
+x <mult> (y <plus> z) = (x <mult> y) <plus> (x <mult> z).
+*/
+
+<INV>(x v y) <and> z = (<INV>(x v y)) <and> z.
 

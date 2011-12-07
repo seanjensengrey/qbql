@@ -140,21 +140,6 @@ query:       expr ';'
           |  partition ';'
 ;
 
-/* set-theoretic notation; deprecated. Use table syntax 
-relation:    '{' tuples '}'
-;
-tuple:       '<' values '>'
-;
-tuples:      tuple
-          |  tuples ',' tuple
-;
-values:      namedValue
-          |  values ',' namedValue
-;
-namedValue:  attribute '=' value
-;
-*/
-
 setEQ:       expr '/' '=' expr
 ;
 setIX:       expr composition expr
@@ -177,7 +162,14 @@ unnamedJoin:  expr '^' '~' expr
 ;
 unnamedMeet:  expr 'v' '~' expr
 ;
-userDefined:  userOper expr -- prefix
+
+unaryUserDefined:
+              userOper parExpr 
+           |  userOper unaryUserDefined 
+           |  userOper identifier 
+;
+userDefined:  
+			  unaryUserDefined   -- prefix
            |  expr userOper expr -- infix
 ;
 userOper:  '<' identifier '>'
