@@ -38,6 +38,7 @@ public class Program {
     public static int naturalJoin;
     public static int innerUnion;
     static int userDefined;
+    static int unaryUserDefined;
     static int userOper;
     static int unnamedJoin;
     static int unnamedMeet;
@@ -97,6 +98,7 @@ public class Program {
             earley = new Earley(latticeRules());
             naturalJoin = earley.symbolIndexes.get("join");
             userDefined = earley.symbolIndexes.get("userDefined");
+            unaryUserDefined = earley.symbolIndexes.get("unaryUserDefined");
             userOper = earley.symbolIndexes.get("userOper");
             innerUnion = earley.symbolIndexes.get("innerUnion");
             unnamedJoin = earley.symbolIndexes.get("unnamedJoin");
@@ -646,7 +648,7 @@ public class Program {
             return ret;
         }*/ else if( root.contains(naturalJoin) ) 
             return binaryOper(root,src, naturalJoin);
-        else if( root.contains(userDefined) ) 
+        else if( root.contains(userDefined) || root.contains(unaryUserDefined) ) 
             return userDefined(root,src);
         else if( root.contains(innerUnion) ) 
             return binaryOper(root,src, innerUnion);
@@ -720,10 +722,10 @@ public class Program {
             	oper = child.content(src);
             } else if( left == null && child.contains(expr) )
                 left = expr(child, src);
-            else if( child.contains(expr) ) {                           
+            else if( oper != null ) {                           
                 right = expr(child, src);
                 break;  // in order not to step on closing parenthesis
-            } else
+            } else if( oper == null )
             	oper = child.content(src);
         }
         Predicate lft = database.getPredicate("?lft");
