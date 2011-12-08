@@ -725,7 +725,7 @@ public class Program {
             else if( oper != null ) {                           
                 right = expr(child, src);
                 break;  // in order not to step on closing parenthesis
-            } else if( oper == null )
+            } else //if( oper == null )
             	oper = child.content(src);
         }
         Predicate lft = database.getPredicate("?lft");
