@@ -92,5 +92,5 @@ x <mult> (y <mult> z) = (x <mult> y) <mult> z.
 x <mult> (y <plus> z) = (x <mult> y) <plus> (x <mult> z).
 */
 
-<INV>(x v y) <and> z = (<INV>(x v y)) <and> z.
+x <OR> y = <NOT>(x).
 

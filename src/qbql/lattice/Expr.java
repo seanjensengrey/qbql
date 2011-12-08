@@ -11,7 +11,6 @@ public class Expr {
 	Expr right;
 	
 	public Expr( String type, Expr lft, Expr rgt ) {
-		super();
 		this.type = type;
 		this.left = lft;
 		this.right = rgt;
@@ -81,19 +80,23 @@ public class Expr {
 	    			return convert(l,r,child,src);
 	        }
 		
-		String oper = ""; 
+		String oper = null; 
 		Expr lft = null;
 		Expr rgt = null;
         for( ParseNode child : root.children() ) {
         	if( lft == null && child.contains(Program.userOper) ) {
 				lft = new Expr("R00",null,null);
 				oper = child.content(src);
-			} else if( lft == null ) {
+			} else if( lft == null && (
+					child.contains(Program.expr)  // <NOT> x
+				 || root.contains(Program.complement)          // x'
+				 || root.contains(Program.inverse)          
+			) ) {
         		lft = convert(l,r,child,src);
-        	} else if( child.contains(Program.expr) ) {
+        	} else if( oper != null ) {
         		rgt = convert(l,r,child,src);
         	} else
-        		oper += child.content(src);        		
+        		oper = child.content(src);        		
         }
 		return new Expr(oper,lft,rgt);
 	}
