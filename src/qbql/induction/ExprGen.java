@@ -31,7 +31,7 @@ public class ExprGen {
         System.out.println("goal: "+goal);
         
         final String[] constants = new String[] {
-            //"R00",
+            "R00",
             //"R11",             
             //"Id",             
         };

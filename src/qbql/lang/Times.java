@@ -32,8 +32,14 @@ public class Times {
     		Object x, Object z 
     ) {
         String[] columns = new String[]{"y"};
-        if( x instanceof Integer & z instanceof Integer )
+        if( x instanceof Integer & z instanceof Integer ) {
+        	int ix = (Integer)x;
+        	int iz = (Integer)z;
+        	int iy = iz/ix;
+        	if( ix*iy == iz )
+        		return new NamedTuple(columns,new Object[]{iy});
         	return new NamedTuple(columns,new Object[]{(((Integer)z).doubleValue())/(Integer)x});
+        }
         if( x instanceof Float & z instanceof Float )
         	return new NamedTuple(columns,new Object[]{(Float)z/(Float)x});
         if( x instanceof Double & z instanceof Double )
@@ -46,8 +52,14 @@ public class Times {
     		Object y, Object z 
     ) {
         String[] columns = new String[]{"x"};
-        if( y instanceof Integer & z instanceof Integer )
-        	return new NamedTuple(columns,new Object[]{(Integer)z/(Integer)y});
+        if( y instanceof Integer & z instanceof Integer ) {
+        	int iy = (Integer)y;
+        	int iz = (Integer)z;
+        	int ix = iz/iy;
+        	if( ix*iy == iz )
+        		return new NamedTuple(columns,new Object[]{ix});
+        	return new NamedTuple(columns,new Object[]{(((Integer)z).doubleValue())/(Integer)y});
+        }
         if( y instanceof Float & z instanceof Float )
         	return new NamedTuple(columns,new Object[]{(Float)z/(Float)y});
         if( y instanceof Double & z instanceof Double )

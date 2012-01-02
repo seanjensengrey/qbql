@@ -15,14 +15,24 @@ public class LE {
     }
 
     public static Relation lft_rgt( Object lft, Object rgt ) {
-    	if( !(lft instanceof Comparable) || !(rgt instanceof Comparable) )
-    		throw new AssertionError("LE !lft/rgt instanceof Comparable");
-    	Comparable l = (Comparable) lft;
-    	Comparable r = (Comparable) rgt;
-        if( l.compareTo(r)<=0 )
-            return Database.R01;
-        else
-            return Database.R00;
+    	if( rgt.getClass().equals(lft.getClass()) ) {
+    		if( lft instanceof Comparable ) {
+    			Comparable l = (Comparable) lft;
+    			Comparable r = (Comparable) rgt;
+    			if( l.compareTo(r)<=0 )
+    				return Database.R01;
+    			else
+    				return Database.R00;
+    		}
+    	}
+    	if( !(lft instanceof Number) || !(rgt instanceof Number) )
+    		throw new AssertionError("LE !lft/rgt instanceof Number");
+    	Double l = ((Number)lft).doubleValue();
+    	Double r = ((Number)rgt).doubleValue();
+    	if( l.compareTo(r)<=0 )
+    		return Database.R01;
+    	else
+    		return Database.R00;
     } 
     
 }
