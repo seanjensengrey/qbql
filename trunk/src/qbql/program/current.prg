@@ -79,18 +79,46 @@ X#[p] /^ X#[r p];
 X#[p] /^ X#R00;
 X#[p] /^ X#R10;
 */
-x /< y = <NOT>( <INV>(x v y) <and> (x ^ <NOT>y) ).
+/*x /< y = <NOT>( <INV>(x v y) <and> (x ^ <NOT>y) ).
+
+x <mult> y = x ^ y.
+x <plus> y = x <OR> y.
 
 -- semiring
-/*x <plus> y = y <plus> x.
+x <plus> y = y <plus> x.
 x <plus> (y <plus> z) = (x <plus> y) <plus> z.
 x <plus> R00 = x.
 
-x <mult> R11 = x.
-x <mult> R00 = R00.
+x <mult> R01 = x.
 x <mult> (y <mult> z) = (x <mult> y) <mult> z.
 x <mult> (y <plus> z) = (x <mult> y) <plus> (x <mult> z).
+
+x <mult> R00 = R00.
+
+x ^ (y v z) = (x ^ (z v (R00 ^ y))) v (x ^ (y v (R00 ^ z))).
+(x ^ y) v (x ^ z) =  x ^ ( ((x v z) ^ y) v ((x v y) ^ z) ).
+(R00 ^ (x ^ (y v z))) v (y ^ z) = ((R00 ^ (x ^ y)) v z) ^ ((R00 ^ (x ^ z)) v y).
 */
 
-x <OR> y = <NOT>(x).
+
+[p]
+ 0 
+ 1 
+ 2
+ 3
+ 4
+ 5 
+^
+"p < t" 
+/^
+"t*2=q" 
+^ 
+[q] 
+ 0
+ 1 
+ 2
+ 3
+ 4
+ 5 
+; 
 
