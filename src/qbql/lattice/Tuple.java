@@ -15,9 +15,12 @@ public class Tuple implements Comparable {
         Tuple src = (Tuple) obj;
         if( src.data.length != data.length )
             return false;
-        for( int i = 0; i < data.length; i++ )
+        for( int i = 0; i < data.length; i++ ) {
+        	if( src.data[i] instanceof Double || data[i] instanceof Double )
+        		return false;
             if( !src.data[i].equals(data[i]) )
                 return false;
+        }
         return true;
     }
     /**
@@ -33,6 +36,8 @@ public class Tuple implements Comparable {
         for( int i = 0; i < data.length; i++ ) {
             String colName = th.colNames[i];
             int j = sr.header.get(colName);
+        	if( src.data[j] instanceof Double || data[i] instanceof Double )
+        		return false;
             if( !data[i].equals(src.data[j]) )
                 return false;
         }
@@ -45,6 +50,8 @@ public class Tuple implements Comparable {
             Integer j = sr.header.get(colName);
             if( j == null )
             	continue;
+        	if( src.data[j] instanceof Double || data[i] instanceof Double )
+        		return false;
             if( !data[i].equals(src.data[j]) )
                 return false;
         }

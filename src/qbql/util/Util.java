@@ -4,11 +4,13 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import qbql.index.NamedTuple;
 import qbql.lattice.Relation;
 
 public abstract class Util {
@@ -182,5 +184,17 @@ public abstract class Util {
         return ret;
     }
 
-
+    public static Number plus( Number x, Number y ) {
+        if( x instanceof Long && y instanceof Long )
+        	return x.longValue()+y.longValue();
+        if( x instanceof Integer && y instanceof Integer )
+        	return x.intValue()+y.intValue();
+        if( x instanceof Double || y instanceof Double )
+        	return x.doubleValue()+y.doubleValue();
+        if( x instanceof Float || y instanceof Float )
+        	return x.floatValue()+y.floatValue();
+        if( x instanceof BigDecimal && y instanceof BigDecimal )
+        	return ((BigDecimal)y).add((BigDecimal)x);
+        throw new AssertionError("? + ?");
+    }
 }
