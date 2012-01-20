@@ -3,17 +3,15 @@ package qbql.lang;
 import qbql.index.NamedTuple;
 import qbql.lattice.Relation;
 import qbql.lattice.Tuple;
-import qbql.util.Util;
 
-public class Sum {
+public class Count {
+
     public static String[] getSymbolicNames() {
     	return new String[] {
-        		"Sigma summands = result",
-        		"Σ summands = result",
-        		//"result = result + summands",  // conflicts with plus!
-        		"result += summands",
-        		"result = result + summands[i]",
-        		"result += summands[i]",
+        		"Sigma _summands 1 = result",
+        		"Σ 1 = result",
+        		"result += 1", // need matching attribute
+        		"result += 1(summands)",
     	};
     }
 	
@@ -21,9 +19,9 @@ public class Sum {
     public static NamedTuple summands_result( 
             Relation summands 
     ) {
-        Number ret = 0;
+        int ret = 0;
         for( Tuple t: summands.getContent() ) {
-            ret = Util.plus(ret, (Number)t.data[0]);
+            ret += 1;
         }
         String[] columns = new String[]{"result"};
         Object[] data = new Object[]{ret};
@@ -32,9 +30,9 @@ public class Sum {
     public static NamedTuple summands_i_result( 
             Relation summands 
     ) {
-    	Number ret = 0;
+        int ret = 0;
         for( Tuple t: summands.getContent() ) {
-            ret = Util.plus(ret, (Number)t.data[0]);
+            ret += 1;
         }
         String[] columns = new String[]{"result"};
         Object[] data = new Object[]{ret};

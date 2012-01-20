@@ -188,10 +188,6 @@ AtOneSide
                                3  9
                                4  16
 .
-["^^^^^ Generic Predicates ^^^^^"]; 
-
-"3 <*> 5 = p"=[p] "15.0".
-
 ["^^^^^ User Defined Operations ^^^^^"]; 
 
 Au=[i j s]
@@ -216,5 +212,11 @@ Ap =
 .
 
 ["^^^^^ Pivot ^^^^^"];
+
+"3 <*> 5 = p";
+--=[p] "15.0".   -- need round relation
+
+["^^^^^ Generic Predicates ^^^^^"]; 
+
 
 ["Time = 14328 ?"];

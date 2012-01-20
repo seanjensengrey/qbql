@@ -14,7 +14,8 @@ public class Run {
             prg = Util.readFile(args[0]);
         } else {
             //prg = Util.readFile(Run.class,"strings.prg");
-            prg = Util.readFile(Run.class,"current.prg");     
+            //prg = Util.readFile(Run.class,"current.prg");     
+            prg = Util.readFile(Run.class,"Partition.prg");     
         }
     	Database db = new Database("qbql.lang");
 		final Program prog = new Program(db);
