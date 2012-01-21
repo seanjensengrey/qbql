@@ -67,6 +67,12 @@ r^R00=s^R00 ->
 (r v s)#x v (r v s)'#(r v s) = (r#x v r'#r) v (s#x v s'#s).
 */
 
+CntRelHdr = [cnt];
+CardRelHdr = [card];
+plpHdr = [plp];
+x <Prob> y = ((x |v| (y ^ CntRelHdr)) ^ (x |v| CardRelHdr)) /^ "cnt / card = prob".
+x <Entropy> y = ((((x <Prob> y) ^ "ln(prob)=lp") /^ "prob*lp=plp") v plpHdr) /= "result += plp".
+
 X=[p  q  r]
    0  a  0
    0  a  1
@@ -74,10 +80,10 @@ X=[p  q  r]
    1  c  1
    2  a  0
 ;
-X#[p];
 
---(X v [p r])  /= "result += 1(r)";
-
+X |v| [card];
+X <Prob> [p];
+--X <Entropy> [p];
 
 cardX = ((X /^ "q +(from1)+ r = t1" /^ "p +(from2)+ t1 = source") v [source]) /= "c += 1(source)";
 XX = (X /^ "q +(from)+ r = source" v [p source]);
@@ -85,7 +91,17 @@ projWcountsX =  XX  /= "result += 1(source)";
 projWcountsXxCard = projWcountsX ^ cardX;
 ppX = projWcountsXxCard  /^ "result / c = x";
 ppX;
-Entropy = (((ppX ^ "exp(y)=x") /^ "x * y = z") v [z]) /= "result += z";
+Entropy = (((ppX ^ "exp(y)=x") /^ "x * y = z") v [z]) /= "res1 += z";
 Entropy;
 
+
+
+--X <Entropy> R00; -- <0,a,0> <0,a,1> <1,c,0> <1,c,1> <2,a,0>;
+X <Entropy> [p]; --  <0,a,0> <0,a,1> | <1,c,0> <1,c,1> | <2,a,0>;
+X <Entropy> [q]; --  <0,a,0> <0,a,1> <2,a,0> | <1,c,0> <1,c,1>;
+X <Entropy> [r]; --  <0,a,0> <1,c,0> <2,a,0> | <0,a,1> <1,c,1>;
+X <Entropy> [p q]; --  <0,a,0> <0,a,1> | <1,c,0> <1,c,1> | <2,a,0>;
+X <Entropy> [q r]; --  <0,a,0> <2,a,0> | <0,a,1> | <1,c,0> | <1,c,1>;
+X <Entropy> [r p]; --  <0,a,0> | <0,a,1> | <1,c,0> | <1,c,1> | <2,a,0>;
+X <Entropy> R10; --  <0,a,0> | <0,a,1> | <1,c,0> | <1,c,1> | <2,a,0>;
 

@@ -1,13 +1,17 @@
 almostDisj:  expr '/' '1' expr
 ;
+
 assertion:   implication '.'
 ;
+
 assignment:  identifier '=' expr ';'
           |  string_literal '=' expr ';'
           |  identifier '=' partition ';'
 ;
+
 attribute:   identifier
 ;
+
 big:         expr '/' '!' expr
 ;
 
@@ -21,23 +25,26 @@ conjunction:
           |   '-' '(' conjunction ')'
 ;
 
-implication: 
-             implication '-' '>' implication
-          |  implication '<' '-' implication
-          |  implication '<' '-' '>' implication
-          |  disjunction
-          |  '(' implication ')'
+complement:  identifier 'qtSymbol'
+          |  parExpr 'qtSymbol'
 ;
 
-filename:
-           identifier
-         | identifier '.' identifier
-         | string_literal
+contains:     expr '/' '<' expr
 ;
 
-include: 'include' filename ';'
+content:     value
+          |  content value
 ;
 
+count:   expr '|' 'v' '|' expr
+;
+
+database:    assignment
+          |  database assignment
+;
+
+disjoint:    expr '/' '0' expr
+;
 
 disjunction: 
              conjunction '|' disjunction
@@ -45,47 +52,11 @@ disjunction:
           |  '(' disjunction ')'
 ;
 
-
-oper:       '^'
-          | 'v'
-          | userOper
-;
-
-proposition:     
-             "not to confuse with userOper"
-          |  expr '=' expr
-          |  expr '~' expr
-          |  partition '<' partition
-          |  partition '=' partition
-          |  partition '>' partition
-          |  expr '!' '=' expr
-          |  expr '<' '~' expr
-          |  expr '>' '~' expr
-          |  oper '!' '=' oper
-;
-
-"not to confuse with userOper":
-             expr '<' expr
-          |  expr '>' expr
-;
-
-complement:  identifier 'qtSymbol'
-          |  parExpr 'qtSymbol'
-;
-contains:     expr '/' '<' expr
-;
-content:     value
-          |  content value
-;
-database:    assignment
-          |  database assignment
-;
-disjoint:    expr '/' '0' expr
-;
 expr:        almostDisj
           |  big
           |  complement
           |  contains
+          |  count
           |  disjoint
           |  identifier
           |  string_literal
@@ -102,20 +73,48 @@ expr:        almostDisj
           |  unnamedMeet
           |  userDefined
 ;
+
+filename:
+           identifier
+         | identifier '.' identifier
+         | string_literal
+;
+
 header:      identifier
           |  string_literal
           |  header identifier
           |  header ',' identifier
 ;
+
+implication: 
+             implication '-' '>' implication
+          |  implication '<' '-' implication
+          |  implication '<' '-' '>' implication
+          |  disjunction
+          |  '(' implication ')'
+;
+
 innerUnion:  expr 'v' expr
 ;
+
 inverse:     identifier '`'
           |  parExpr '`'
 ;
+
+include: 'include' filename ';'
+;
+
 join:        expr '^' expr
 ;
+
+oper:       '^'
+          | 'v'
+          | userOper
+;
+
 parExpr:     '(' expr ')'
 ;
+
 partition:  
             '(' partition ')'
           |  expr '#' expr
@@ -133,15 +132,30 @@ partition:
           |  partition '|' tuple      
 ;
 
+proposition:     
+             "not to confuse with userOper"
+          |  expr '=' expr
+          |  expr '~' expr
+          |  partition '<' partition
+          |  partition '=' partition
+          |  partition '>' partition
+          |  expr '!' '=' expr
+          |  expr '<' '~' expr
+          |  expr '>' '~' expr
+          |  oper '!' '=' oper
+;
+
 program:   stmt  
           |  stmt program
 ;
+
 query:       expr ';'
           |  partition ';'
 ;
 
 setEQ:       expr '/' '=' expr
 ;
+
 setIX:       expr composition expr
 ;
 
@@ -156,6 +170,7 @@ table:       '[' ']'
           |  '[' header ']' content
 /*        |  '[' identifier '=' identifier ']'  - deprecated. Use string literals, e.g. "x=y"*/
 ;
+
 transpCont:  expr '/' '>' expr
 ;
 unnamedJoin:  expr '^' '~' expr
@@ -181,3 +196,9 @@ value:       digits
           |  string_literal
           |  /* nested relation */ parExpr          
 ;
+
+"not to confuse with userOper":
+             expr '<' expr
+          |  expr '>' expr
+;
+

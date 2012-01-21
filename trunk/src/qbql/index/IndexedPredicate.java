@@ -392,6 +392,17 @@ public class IndexedPredicate extends Predicate {
                     	for( Method m : methods() ) {
                     		tmp.addAll(arguments(m,ArgType.BOTH));
                     	}
+                    	
+                    	boolean misMatched = false;
+                    	for( String key : matched.keySet() ) 
+                    		if( !key.equals(matched.get(key)) )
+                    			if( !tmp.contains(key) ) {
+                    				misMatched = true;
+                    				break;
+                    			}
+                    	if( misMatched )
+                    		continue;
+                    	
                     	int pos = 0;
                     	Map<Integer,String> cols = new HashMap<Integer,String>();
                     	for( String s : tmp ) {

@@ -21,15 +21,22 @@ public class Expr {
             return Predicate.join(left.eval(d),right.eval(d));
         else if( "v".equals(type) )
             return Predicate.union(left.eval(d),right.eval(d));
+        else if( "|v|".equals(type) )
+            return Relation.count(left.eval(d),right.eval(d));
         else if( "'".equals(type) )
             return d.complement(left.eval(d));
         else if( "`".equals(type) )
             return d.inverse((Relation)left.eval(d));
         else if( "/^".equals(type) )
-            return Predicate.setIX((Relation)left.eval(d), (Relation)right.eval(d));
-        else if( "/=".equals(type) )
-            return d.quantifier((Relation)left.eval(d),(Relation)right.eval(d),Program.setEQ);
-        else if( "/<".equals(type) )
+            return Predicate.setIX(left.eval(d), right.eval(d));
+        else if( "/=".equals(type) ) {
+        	Predicate lft = left.eval(d);
+        	Predicate rgt = right.eval(d);
+            if( lft instanceof Relation && rgt instanceof Relation )
+                return d.quantifier((Relation)lft,(Relation)rgt,Program.setEQ);
+            else
+	            return Predicate.setEQ(lft, rgt);
+        } else if( "/<".equals(type) )
             return d.quantifier((Relation)left.eval(d),(Relation)right.eval(d),Program.contains);
         else if( "/>".equals(type) )
             return d.quantifier((Relation)left.eval(d),(Relation)right.eval(d),Program.transpCont);
@@ -59,7 +66,7 @@ public class Expr {
             return ret;
             
         } else  // variable
-        	return d.getPredicate(type);
+        	return d.lookup(type);
 		
 	}
 	
@@ -80,7 +87,7 @@ public class Expr {
 	    			return convert(l,r,child,src);
 	        }
 		
-		String oper = null; 
+		String oper = ""; 
 		Expr lft = null;
 		Expr rgt = null;
         for( ParseNode child : root.children() ) {
@@ -93,10 +100,10 @@ public class Expr {
 				 || root.contains(Program.inverse)          
 			) ) {
         		lft = convert(l,r,child,src);
-        	} else if( oper != null ) {
+        	} else if( child.contains(Program.expr)) {
         		rgt = convert(l,r,child,src);
         	} else
-        		oper = child.content(src);        		
+        		oper += child.content(src);        		
         }
 		return new Expr(oper,lft,rgt);
 	}

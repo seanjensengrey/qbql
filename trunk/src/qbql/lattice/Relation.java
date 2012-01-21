@@ -270,5 +270,38 @@ public class Relation extends Predicate {
     protected Relation clone() {
         return join(this,Database.R01);
     }
+
+	public static Predicate count( Predicate lft, Predicate rgt ) {
+		if( !(lft instanceof Relation) || !(rgt instanceof Relation) )
+			throw new AssertionError("!(lft instanceof Relation) || !(rgt instanceof Relation)");
+		Relation x = (Relation)lft;
+		Relation y = (Relation)rgt;
+		Relation xvy = union(x, y);		
+        Set<String> header = new TreeSet<String>();
+        header.addAll(y.header.keySet());
+        Relation ret = new Relation(header.toArray(new String[0]));
+        for( Tuple tupleXvY: xvy.content ){
+            Object[] retTuple = new Object[header.size()];
+            int cnt = 0;
+            for( Tuple tupleX : x.content ) {
+            	boolean matched = true;
+            	for( String attr : xvy.colNames )
+            		if( !tupleX.data[x.header.get(attr)].equals(tupleXvY.data[xvy.header.get(attr)]) )
+            			matched = false;
+            	if( matched )
+            		cnt++;
+            }
+            	
+            for( String attr : ret.colNames ) {
+            	Object cell = x.header.get(attr);
+            	if( cell != null )
+            		retTuple[ret.header.get(attr)] = tupleXvY.data[xvy.header.get(attr)];
+            	else
+            		retTuple[ret.header.get(attr)] = cnt;
+            }
+            ret.content.add(new Tuple(retTuple));
+        }
+        return ret;
+	}
     
 }
