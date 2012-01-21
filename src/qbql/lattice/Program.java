@@ -37,6 +37,7 @@ public class Program {
     public static Earley earley;
     public static int naturalJoin;
     public static int innerUnion;
+    public static int count;
     static int userDefined;
     static int unaryUserDefined;
     static int userOper;
@@ -101,6 +102,7 @@ public class Program {
             unaryUserDefined = earley.symbolIndexes.get("unaryUserDefined");
             userOper = earley.symbolIndexes.get("userOper");
             innerUnion = earley.symbolIndexes.get("innerUnion");
+            count = earley.symbolIndexes.get("count");
             unnamedJoin = earley.symbolIndexes.get("unnamedJoin");
             unnamedMeet = earley.symbolIndexes.get("unnamedMeet");
             setIX = earley.symbolIndexes.get("setIX");
@@ -499,7 +501,7 @@ public class Program {
                     && !root.parent(descendant.from, descendant.to).contains(table)
                     && !root.parent(descendant.from, descendant.to).contains(userOper)
                     && !id.startsWith("\"")
-                    && (!notAssignedOnes || lookup(id) == null) ) 
+                    && (!notAssignedOnes || database.lookup(id) == null) ) 
                 variables.add(id);
         }
         return variables;
@@ -603,7 +605,7 @@ public class Program {
     private Predicate expr( ParseNode root, List<LexerToken> src ) {
     	if( root.contains(identifier) || root.from+1 == root.to ) {
             LexerToken token = src.get(root.from);
-            Predicate candidate = lookup(token.content);
+            Predicate candidate = database.lookup(token.content);
             if( candidate == null )
                 throw new AssertionError("Predicate/Table '"+token.content+"' not in the database");
 			return candidate;
@@ -652,6 +654,8 @@ public class Program {
             return userDefined(root,src);
         else if( root.contains(innerUnion) ) 
             return binaryOper(root,src, innerUnion);
+        else if( root.contains(count) ) 
+            return binaryOper(root,src, count);
         else if( root.contains(unnamedJoin) ) 
             return binaryOper(root,src, unnamedJoin);
         else if( root.contains(unnamedMeet) ) 
@@ -681,36 +685,6 @@ public class Program {
         throw new AssertionError("Unknown case");
     }
 
-    private Predicate lookup( String name ) {
-        Predicate ret = database.getPredicate(name);
-        if( ret != null ) 
-            return ret;
-		name = name.startsWith("\"")&&name.endsWith("\"") ? name.substring(1, name.length()-1) : name;
-
-    	List<LexerToken> src = new Lex().parse(name);
-    	if( src.size() == 3 && "=".equals(src.get(1).content) )
-    		return new EqualityPredicate(src.get(0).content, src.get(2).content);
-        try {
-            return new IndexedPredicate(database,name);
-        } catch ( Exception e ) {
-            for( String qName : database.predicateNames() ) {
-            	if( !qName.startsWith("\"") )
-            		continue;
-            	String candidate = qName.substring(1,qName.length()-1);
-            	Map<String,String> matched = Predicate.matchNames(candidate, name);
-            	if( matched == null )
-            		continue;
-            	ret = database.getPredicate(qName).clone();
-            	for( String key : matched.keySet() ) {
-            		String val = matched.get(key);
-            		if( !val.equals(key) )
-            			ret.renameInPlace(key, val);
-            	}
-            	return ret;
-            }
-            return null;
-        }
-    }
     
     private Predicate userDefined( ParseNode root, List<LexerToken> src )   {
         Predicate left = null;
@@ -756,8 +730,8 @@ public class Program {
             return Predicate.join(left,right);
         else if( oper == innerUnion )
             return Predicate.union(left,right);
-        else if( oper == unnamedJoin )
-            return database.unnamedJoin((Relation)left,(Relation)right);
+        else if( oper == count )
+            return Relation.count(left,right);
         else if( oper == unnamedMeet )
             return database.unnamedMeet((Relation)left,(Relation)right);
         else if( oper == setEQ ) {

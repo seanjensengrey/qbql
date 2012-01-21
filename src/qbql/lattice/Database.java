@@ -9,6 +9,7 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import qbql.index.IndexedPredicate;
 import qbql.parser.CYK;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
@@ -30,6 +31,37 @@ public class Database {
     	}
     	return ret;
     }
+    public Predicate lookup( String name ) {
+        Predicate ret = getPredicate(name);
+        if( ret != null ) 
+            return ret;
+		name = name.startsWith("\"")&&name.endsWith("\"") ? name.substring(1, name.length()-1) : name;
+
+    	List<LexerToken> src = new Lex().parse(name);
+    	if( src.size() == 3 && "=".equals(src.get(1).content) )
+    		return new EqualityPredicate(src.get(0).content, src.get(2).content);
+        try {
+            return new IndexedPredicate(this,name);
+        } catch ( Exception e ) {
+            for( String qName : predicateNames() ) {
+            	if( !qName.startsWith("\"") )
+            		continue;
+            	String candidate = qName.substring(1,qName.length()-1);
+            	Map<String,String> matched = Predicate.matchNames(candidate, name);
+            	if( matched == null )
+            		continue;
+            	ret = getPredicate(qName).clone();
+            	for( String key : matched.keySet() ) {
+            		String val = matched.get(key);
+            		if( !val.equals(key) )
+            			ret.renameInPlace(key, val);
+            	}
+            	return ret;
+            }
+            return null;
+        }
+    }
+
     public void addPredicate( String name, Predicate relvar ) {
         lattice.put(name, relvar);
     }       
