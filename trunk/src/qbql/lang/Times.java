@@ -3,6 +3,7 @@ package qbql.lang;
 import java.math.BigDecimal;
 
 import qbql.index.NamedTuple;
+import qbql.util.Util;
 
 public class Times {
     public static String[] getSymbolicNames() {
@@ -18,54 +19,39 @@ public class Times {
             Object x, Object y 
     ) {
         String[] columns = new String[]{"z"};
-        if( x instanceof Integer & y instanceof Integer )
-        	return new NamedTuple(columns,new Object[]{(Integer)x*(Integer)y});
-        if( x instanceof Float & y instanceof Float )
-        	return new NamedTuple(columns,new Object[]{(Float)x*(Float)y});
-        if( x instanceof Double & y instanceof Double )
-        	return new NamedTuple(columns,new Object[]{(Double)x*(Double)y});
-        if( x instanceof BigDecimal & y instanceof BigDecimal )
-        	return new NamedTuple(columns,new Object[]{((BigDecimal)x).multiply((BigDecimal)y)});
-        throw new AssertionError("? * ?");
+        if( !(x instanceof Number) ) 
+            throw new AssertionError("!(x instanceof Number)");
+        if( !(y instanceof Number) ) 
+            throw new AssertionError("!(y instanceof Number)");
+        Number nX = (Number)x;
+        Number nY = (Number)y;
+        Number z = Util.times(nX, nY); 
+        return new NamedTuple(columns,new Object[]{z});
     }
     public static NamedTuple x_z_y( 
     		Object x, Object z 
     ) {
-        String[] columns = new String[]{"y"};
-        if( x instanceof Integer & z instanceof Integer ) {
-        	int ix = (Integer)x;
-        	int iz = (Integer)z;
-        	int iy = iz/ix;
-        	if( ix*iy == iz )
-        		return new NamedTuple(columns,new Object[]{iy});
-        	return new NamedTuple(columns,new Object[]{(((Integer)z).doubleValue())/(Integer)x});
-        }
-        if( x instanceof Float & z instanceof Float )
-        	return new NamedTuple(columns,new Object[]{(Float)z/(Float)x});
-        if( x instanceof Double & z instanceof Double )
-        	return new NamedTuple(columns,new Object[]{(Double)z/(Double)x});
-        if( x instanceof BigDecimal & z instanceof BigDecimal )
-        	return new NamedTuple(columns,new Object[]{((BigDecimal)z).divide((BigDecimal)x)});
-        throw new AssertionError("? / ?");
+        String[] columns = new String[]{"y"};       
+        if( !(x instanceof Number) ) 
+            throw new AssertionError("!(x instanceof Number)");
+        if( !(z instanceof Number) ) 
+            throw new AssertionError("!(z instanceof Number)");
+        Number nX = (Number)x;
+        Number nZ = (Number)z;
+        Number y = Util.divide(nZ, nX); 
+        return new NamedTuple(columns,new Object[]{y});
     }
     public static NamedTuple y_z_x( 
     		Object y, Object z 
     ) {
         String[] columns = new String[]{"x"};
-        if( y instanceof Integer & z instanceof Integer ) {
-        	int iy = (Integer)y;
-        	int iz = (Integer)z;
-        	int ix = iz/iy;
-        	if( ix*iy == iz )
-        		return new NamedTuple(columns,new Object[]{ix});
-        	return new NamedTuple(columns,new Object[]{(((Integer)z).doubleValue())/(Integer)y});
-        }
-        if( y instanceof Float & z instanceof Float )
-        	return new NamedTuple(columns,new Object[]{(Float)z/(Float)y});
-        if( y instanceof Double & z instanceof Double )
-        	return new NamedTuple(columns,new Object[]{(Double)z/(Double)y});
-        if( y instanceof BigDecimal & z instanceof BigDecimal )
-        	return new NamedTuple(columns,new Object[]{((BigDecimal)z).divide((BigDecimal)y)});
-        throw new AssertionError("? / ?");
+        if( !(y instanceof Number) ) 
+            throw new AssertionError("!(y instanceof Number)");
+        if( !(z instanceof Number) ) 
+            throw new AssertionError("!(z instanceof Number)");
+        Number nY = (Number)y;
+        Number nZ = (Number)z;
+        Number x = Util.divide(nZ, nY); 
+        return new NamedTuple(columns,new Object[]{x});
     }
 }
