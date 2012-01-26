@@ -197,4 +197,48 @@ public abstract class Util {
         	return ((BigDecimal)y).add((BigDecimal)x);
         throw new AssertionError("? + ?");
     }
+    public static Number minus( Number x, Number y ) {
+        if( x instanceof Long && y instanceof Long )
+        	return x.longValue()-y.longValue();
+        if( x instanceof Integer && y instanceof Integer )
+        	return x.intValue()-y.intValue();
+        if( x instanceof Double || y instanceof Double )
+        	return x.doubleValue()-y.doubleValue();
+        if( x instanceof Float || y instanceof Float )
+        	return x.floatValue()-y.floatValue();
+        if( x instanceof BigDecimal && y instanceof BigDecimal )
+        	return ((BigDecimal)y).subtract((BigDecimal)x);
+        throw new AssertionError("? - ?");
+    }
+    public static Number times( Number x, Number y ) {
+        if( x instanceof Long && y instanceof Long )
+        	return x.longValue()*y.longValue();
+        if( x instanceof Integer && y instanceof Integer )
+        	return x.intValue()*y.intValue();
+        if( x instanceof Double || y instanceof Double )
+        	return x.doubleValue()*y.doubleValue();
+        if( x instanceof Float || y instanceof Float )
+        	return x.floatValue()*y.floatValue();
+        if( x instanceof BigDecimal && y instanceof BigDecimal )
+        	return ((BigDecimal)y).multiply((BigDecimal)x);
+        throw new AssertionError("? * ?");
+    }
+    public static Number divide( Number x, Number y ) {
+        if( x instanceof Long && y instanceof Integer 
+         || x instanceof Integer && y instanceof Long 
+         || x instanceof Integer && y instanceof Integer 
+         || x instanceof Long && y instanceof Long 
+        ) {
+        	long ret = x.longValue()/y.longValue();
+        	if( ret*y.longValue()==x.longValue() )
+        		return ret;
+        	return x.doubleValue()/y.doubleValue();
+        } if( x instanceof Double || y instanceof Double )
+        	return x.doubleValue()/y.doubleValue();
+        if( x instanceof Float || y instanceof Float )
+        	return x.floatValue()/y.floatValue();
+        if( x instanceof BigDecimal && y instanceof BigDecimal )
+        	return ((BigDecimal)y).divide((BigDecimal)x);
+        throw new AssertionError("? - ?");
+    }
 }
