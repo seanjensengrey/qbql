@@ -43,7 +43,7 @@ x @/> y = ( (x v y)` @* (x'^ y) )'.
 
 x <"and"> y = <NOT>((<NOT>x) v (<NOT>y)).
 
-x <Decomp> y = (x ^ y) v (x ^ <NOT>y).
+x <Decomp> y = (x ^ <INV>y) v (x ^ <NOT>y).
 
 --x <plus> y = ....
 --x <mult> y = <NOT>((<NOT>(y) v <NOT>(x))).

@@ -24,13 +24,13 @@
 --(x /< y)  = <NOT>(((<NOT>(y) ^ x) v <INV>((R00 ^ (y v x))))).
 --(x /< y)  = <NOT>(((<NOT>(y) ^ x) <and> <INV>((y v x)))).
 
-
+/*
 x <plus> y = expr. 
 x <plus> R00 = x.
 x <plus> y = y <plus> x.
 x <plus> (y <plus> z) = (x <plus> y) <plus> z.
 x <mult> (y <plus> z) = (x <mult> y) <plus> (x <mult> z).
-
+*/
 
 /*x <mult> y = expr. 
 -- <mult> != ^.
@@ -43,3 +43,4 @@ x <mult> (y <mult> z) = (x <mult> y) <mult> z.
 x <mult> (y v z) = (x <mult> y) v (x <mult> z).
 */
 
+(x/^z) /< (y/^z)  = expr.
