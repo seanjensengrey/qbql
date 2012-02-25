@@ -75,37 +75,40 @@ plpHdr = [plp];
 t1=[t]1;
 x <Prob> y = ((x |v| (y ^ CntRelHdr)) ^ (x |v| CardRelHdr)) /^ "cnt / card = prob".
 x <Entropy> y = ((((x <Prob> y) ^ "ln(prob)=lp") /^ "prob*lp=plp") v plpHdr) /= "result += plp".
-x <Gini> y = (((((x <Prob> y) ^ t1) ^ "t-prob=p1" ) /^ "prob*p1=plp") v plpHdr) /= "result += plp".
+x <Gini> y = ((((x <Prob> y) ^ t1 ^ "t-prob=p1" ) /^ "prob*p1=plp") v plpHdr) /= "result += plp".
 
-X=[p  q  r]
-   0  a  0
-   0  a  1
-   1  c  0
-   1  c  1
-   2  a  0
+X=[t  x  y]
+   0  0  0
+   1  -1  2 --4
+   2  0  2  --0
+   3  3  0
 ;
-X |v| [card];
-X <Prob> [p];
---X <Entropy> [p];
+-- x = t^2-2*t
+-- y = x^2-3*x   vs. y = t-x
+--X<Entropy>R00;
+X<Entropy>[t];
+X<Entropy>[x];
+X<Entropy>[y];
+X<Entropy>[t x];
+X<Entropy>[x y];
+X<Entropy>[t y];
+X<Entropy>R10;
+/*X#R00= <0,0,0> <1,-1,4> <2,0,0> <3,3,0>;
+X#[t]= <0,0,0> | <1,-1,4> | <2,0,0> | <3,3,0>;
+X#[x]= <0,0,0> <2,0,0> | <1,-1,4> | <3,3,0>;
+X#[y]= <0,0,0> <2,0,0> <3,3,0> | <1,-1,4>;
+X#[tx]= <0,0,0> | <1,-1,4> | <2,0,0> | <3,3,0>;
+X#[xy]= <0,0,0> <2,0,0> | <1,-1,4> | <3,3,0>;
+X#[ty]= <0,0,0> | <1,-1,4> | <2,0,0> | <3,3,0>;
+X#R10= <0,0,0> | <1,-1,4> | <2,0,0> | <3,3,0>;*/
+/*X#R00= <0,0,0> <1,-1,2> <2,0,2> <3,3,0>;
+X#[t]= <0,0,0> | <1,-1,2> | <2,0,2> | <3,3,0>;
+X#[x]= <0,0,0> <2,0,2> | <1,-1,2> | <3,3,0>;
+X#[y]= <0,0,0> <3,3,0> | <1,-1,2> <2,0,2>;
+X#[tx]= <0,0,0> | <1,-1,2> | <2,0,2> | <3,3,0>;
+X#[xy]= <0,0,0> | <1,-1,2> | <2,0,2> | <3,3,0>;
+X#[ty]= <0,0,0> | <1,-1,2> | <2,0,2> | <3,3,0>;
+X#R10= <0,0,0> | <1,-1,2> | <2,0,2> | <3,3,0>;*/
 
-cardX = ((X /^ "q +(from1)+ r = t1" /^ "p +(from2)+ t1 = source") v [source]) /= "c += 1(source)";
-XX = (X /^ "q +(from)+ r = source" v [p source]);
-projWcountsX =  XX  /= "result += 1(source)";
-projWcountsXxCard = projWcountsX ^ cardX;
-ppX = projWcountsXxCard  /^ "result / c = x";
-ppX;
-Entropy = (((ppX ^ "exp(y)=x") /^ "x * y = z") v [z]) /= "res1 += z";
-Entropy;
-
-
-
---X <Entropy> R00; -- <0,a,0> <0,a,1> <1,c,0> <1,c,1> <2,a,0>;
-X <Gini> [p]; --  <0,a,0> <0,a,1> | <1,c,0> <1,c,1> | <2,a,0>;
-X <Gini> [q]; --  <0,a,0> <0,a,1> <2,a,0> | <1,c,0> <1,c,1>;
-X <Gini> [r]; --  <0,a,0> <1,c,0> <2,a,0> | <0,a,1> <1,c,1>;
-X <Gini> [p q]; --  <0,a,0> <0,a,1> | <1,c,0> <1,c,1> | <2,a,0>;
-X <Gini> [q r]; --  <0,a,0> <2,a,0> | <0,a,1> | <1,c,0> | <1,c,1>;
-X <Gini> [r p]; --  <0,a,0> | <0,a,1> | <1,c,0> | <1,c,1> | <2,a,0>;
-X <Gini> R10; --  <0,a,0> | <0,a,1> | <1,c,0> | <1,c,1> | <2,a,0>;
 
 

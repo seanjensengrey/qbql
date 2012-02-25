@@ -21,8 +21,8 @@ public class ExprGen {
     
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
-            "<NOT>",
-            "<INV>",
+            //"<NOT>",
+            //"<INV>",
     };
     static String[] binaryRelsOps;
 	static final String PARSE_ERROR_IN_ASSERTIONS_FILE = "*** Parse Error in assertions file ***";
@@ -31,7 +31,7 @@ public class ExprGen {
         System.out.println("goal: "+goal);
         
         final String[] constants = new String[] {
-            "R00",
+            //"R00",
             //"R11",             
             //"Id",             
         };
@@ -42,9 +42,9 @@ public class ExprGen {
             //"<and>",
             //"<\"and\">",
             //"/^",
-            /*"/>",
+            //"/>",
             "/<",
-            "/=",
+            /*"/=",
             "/0",
             "/1",
             "/!",*/

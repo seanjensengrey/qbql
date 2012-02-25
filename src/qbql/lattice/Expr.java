@@ -87,7 +87,7 @@ public class Expr {
 	    			return convert(l,r,child,src);
 	        }
 		
-		String oper = ""; 
+		String oper = null; 
 		Expr lft = null;
 		Expr rgt = null;
         for( ParseNode child : root.children() ) {
@@ -100,10 +100,17 @@ public class Expr {
 				 || root.contains(Program.inverse)          
 			) ) {
         		lft = convert(l,r,child,src);
-        	} else if( child.contains(Program.expr)) {
+        	} else if( child.contains(Program.parExpr) 
+        		    || child.contains(Program.expr) 
+        		    || child.contains(Program.identifier)  // user-defined unary expressions aren't expr
+            ) {
         		rgt = convert(l,r,child,src);
-        	} else
-        		oper += child.content(src);        		
+        	} else if( oper == null )
+				oper = child.content(src);
+        	else {   //oper += child.content(src); 
+        		root.printTree();System.out.println(root.content(src));
+        		throw new AssertionError("oper += child.content(src)");
+        	}
         }
 		return new Expr(oper,lft,rgt);
 	}
