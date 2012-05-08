@@ -19,7 +19,7 @@ composition: '/' '^'
 ;
 
 conjunction: 
-             proposition '&' conjunction
+             conjunction '&' conjunction
           |  proposition 
           |  '(' conjunction ')'
           |   '-' '(' conjunction ')'
