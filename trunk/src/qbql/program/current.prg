@@ -1,5 +1,6 @@
-include "C:/eclipse/qbql_trunk/src/qbql/program/Figure1.db";
-include udf.def;
+-- 2 different styles of include
+include "D:/qbql_trunk1/src/qbql/program/Figure1.db"; 
+include udf.def;  
 --include volume.db;
 
 
@@ -100,5 +101,93 @@ x ^ (y v z) = (x ^ (z v (R00 ^ y))) v (x ^ (y v (R00 ^ z))).
 (R00 ^ (x ^ (y v z))) v (y ^ z) = ((R00 ^ (x ^ y)) v z) ^ ((R00 ^ (x ^ z)) v y).
 */
 
+x < x*.
 
-x <"and"> (z /< y)=(x <"and"> z) /< (x <"and"> y).
+x**=x*.
+
+x < y -> x* < y*.
+
+-- invalid: (<NOT>x)* = <NOT>(x*).
+-- invalid: (x ^ y)* = x* ^ y*.
+
+(x v y)* = x* v y*.
+
+
+
+
+/* Alice p.171 */
+SDT = [Snack   Distr   Price Theater]
+       coffee  Smart   235   Rex
+       coffee  Smart   235   LeChampo
+       coffee  Smart   235   Cinoche
+       coffee  Leclerc 260   Cinoche
+       wine    Smart   80    Rex
+       wine    Smart   80    Cinoche
+       popcorn Leclerc 560   Cinoche
+;
+
+
+sdp = SDT v [Snack Distr Price];
+dt  = SDT v [Distr Theater];
+st  = SDT v [Snack Theater];
+
+SDT = sdp ^ dt ^ st.
+x = SDT;
+
+s = sdp ^ dt;
+t = st; 
+u = sdp;
+w = dt ^ st;
+
+s;
+t;
+s ^ t;
+s ^ (s ^ t)';
+t ^ R11 < s ^ t ^ R11. 
+u ^ R11 < s ^ t ^ R11. 
+w ^ R11 < s ^ t ^ R11.
+
+
+x = 
+(s v w) ^ 
+(s v u) ^
+(t v u) ^
+(t v w).
+
+s = a ^ c;
+t = b; 
+u = a;
+w = b ^ c;
+
+x = 
+(s v w) ^ 
+(s v u) ^
+(t v u) ^
+(t v w).
+
+
+s;
+x <and> s;
+x <and> s = s.
+x <and> t = t.
+x <and> u = u.
+x <and> w = w.
+x = s ^ t.
+x = u ^ w.
+/**/
+
+s ^ R11 < s ^ t ^ R11 & 
+t ^ R11 < s ^ t ^ R11 & 
+u ^ R11 < s ^ t ^ R11 & 
+w ^ R11 < s ^ t ^ R11 & 
+s ^ t = u ^ w ->
+s ^ t = 
+(s v w) ^ 
+(s v u) ^
+(t v u) ^
+(t v w) 
+.
+
+
+
+
