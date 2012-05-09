@@ -15,6 +15,10 @@ attribute:   identifier
 big:         expr '/' '!' expr
 ;
 
+closure: identifier '*'
+      |  parExpr '*'
+;
+
 composition: '/' '^'
 ;
 
@@ -57,6 +61,7 @@ expr:        almostDisj
           |  complement
           |  contains
           |  count
+          |  closure
           |  disjoint
           |  identifier
           |  string_literal

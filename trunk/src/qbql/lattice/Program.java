@@ -51,6 +51,7 @@ public class Program {
     static int almostDisj;
     static int big;
     public static int complement;
+    public static int closure;
     public static int inverse;
     static int composition;
     static int join;
@@ -113,6 +114,7 @@ public class Program {
             almostDisj = earley.symbolIndexes.get("almostDisj");
             big = earley.symbolIndexes.get("big");
             complement = earley.symbolIndexes.get("complement");
+            closure = earley.symbolIndexes.get("closure");
             inverse = earley.symbolIndexes.get("inverse");
             composition = earley.symbolIndexes.get("composition");
             join = earley.symbolIndexes.get("'v'");
@@ -662,6 +664,8 @@ public class Program {
             return binaryOper(root,src, unnamedMeet);
         else if( root.contains(complement) ) 
             return unaryOper(root,complement, src);
+        else if( root.contains(closure) ) 
+            return unaryOper(root,closure, src);
         else if( root.contains(inverse) ) 
             return unaryOper(root,inverse, src);
         else if( root.contains(setIX) ) 
@@ -760,6 +764,9 @@ public class Program {
                 return database.complement(rel);
             else if( oper == inverse )
                 return database.inverse((Relation)rel);
+            else if( oper == closure )
+                return ((Relation)rel).closure();
+            
         }
         throw new AssertionError("Unknown case");
     }

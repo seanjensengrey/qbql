@@ -101,18 +101,52 @@ x ^ (y v z) = (x ^ (z v (R00 ^ y))) v (x ^ (y v (R00 ^ z))).
 (R00 ^ (x ^ (y v z))) v (y ^ z) = ((R00 ^ (x ^ y)) v z) ^ ((R00 ^ (x ^ z)) v y).
 */
 
-x < x*.
+x < y <-> x ^ y = x.
 
-x**=x*.
+x < x*.
 
 x < y -> x* < y*.
 
--- invalid: (<NOT>x)* = <NOT>(x*).
--- invalid: (x ^ y)* = x* ^ y*.
+x ^ x* = x.
 
-(x v y)* = x* v y*.
+(x*)*=x*.
 
+x ^ y = x -> x* ^ y* =x*.
 
+(x v y) ^ R00 = R00 
+-> (x ^ y)* = x* ^ y*.
+
+x ^ R00=x* ^ R00.
+
+R11* = R11.
+R10* = R10.
+R01* = R01.
+R00* = R00.
+
+(s <and> (s^t))* = s* & 
+(t <and> (s^t))* = t* & 
+(u <and> (s^t))* = u* & 
+(w <and> (s^t))* = w* & 
+s ^ t = u ^ w ->
+s ^ t = 
+(s v w) ^ 
+(s v u) ^
+(t v u) ^
+(t v w). 
+
+(s <and> (s^t))* = s* & 
+(t <and> (s^t))* = t* & 
+(u <and> (s^t))* = u* & 
+(w <and> (s^t))* = w* & 
+s ^ t = u ^ w &
+s ^ t = 
+(s v w) ^ 
+(s v u) ^
+(t v u) ^
+(t v w) 
+-> s = u | s = w | t = u | t = w | (s v t)^R00 = R00
+| (u v w)^R00 = R00
+.
 
 
 /* Alice p.171 */
@@ -139,13 +173,7 @@ t = st;
 u = sdp;
 w = dt ^ st;
 
-s;
-t;
-s ^ t;
-s ^ (s ^ t)';
-t ^ R11 < s ^ t ^ R11. 
-u ^ R11 < s ^ t ^ R11. 
-w ^ R11 < s ^ t ^ R11.
+(s <and> x)* = s*.
 
 
 x = 
@@ -154,39 +182,7 @@ x =
 (t v u) ^
 (t v w).
 
-s = a ^ c;
-t = b; 
-u = a;
-w = b ^ c;
 
-x = 
-(s v w) ^ 
-(s v u) ^
-(t v u) ^
-(t v w).
-
-
-s;
-x <and> s;
-x <and> s = s.
-x <and> t = t.
-x <and> u = u.
-x <and> w = w.
-x = s ^ t.
-x = u ^ w.
-/**/
-
-s ^ R11 < s ^ t ^ R11 & 
-t ^ R11 < s ^ t ^ R11 & 
-u ^ R11 < s ^ t ^ R11 & 
-w ^ R11 < s ^ t ^ R11 & 
-s ^ t = u ^ w ->
-s ^ t = 
-(s v w) ^ 
-(s v u) ^
-(t v u) ^
-(t v w) 
-.
 
 
 

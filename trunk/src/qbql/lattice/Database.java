@@ -267,7 +267,7 @@ public class Database {
         
         return ret;
     }    
-    private boolean next( Map<String, Integer> state, Map<String, Object[]> doms ) {
+    static boolean next( Map<String, Integer> state, Map<String, Object[]> doms ) {
         for( String pos: state.keySet() ) {
             int rownum = state.get(pos);
             if( rownum < doms.get(pos).length-1 ) {

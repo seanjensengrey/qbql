@@ -65,7 +65,7 @@ public class ExprGen {
         String fullDbsrc = Util.readFile(Run.class,"Figure1.db");
         fullDbsrc += "\n include udf.def;\n";
         
-        final int threads = 1;//Runtime.getRuntime().availableProcessors();
+        final int threads = Runtime.getRuntime().availableProcessors()-1;
         System.out.println("Using " + threads + " threads");
         
         final Lex lex = new Lex();
