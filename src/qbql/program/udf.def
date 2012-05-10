@@ -41,6 +41,8 @@ x @/> y = ( (x v y)` @* (x'^ y) )'.
 <INV>x = (R11 /^ x). -- faster (Test.prg 13156 ms vs. 14156)
 
 
+<CLOSE> x  = x*. -- alias for expression generator where unary operators are prefixed
+
 x <"and"> y = <NOT>((<NOT>x) v (<NOT>y)).
 
 x <Decomp> y = (x ^ <INV>y) v (x ^ <NOT>y).

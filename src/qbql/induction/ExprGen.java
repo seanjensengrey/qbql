@@ -17,103 +17,107 @@ import qbql.program.Run;
 import qbql.util.Util;
 
 public class ExprGen {
-	final static boolean singleSolution = true;
-    
+    final static boolean singleSolution = true;
+
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
-            //"<NOT>",
-            //"<INV>",
+        //"<NOT>",
+        //"<INV>",
+        "<CLOSE>"
     };
     static String[] binaryRelsOps;
-	static final String PARSE_ERROR_IN_ASSERTIONS_FILE = "*** Parse Error in assertions file ***";
+    static final String PARSE_ERROR_IN_ASSERTIONS_FILE = "*** Parse Error in assertions file ***";
     public static void main( String[] args ) throws Exception {
         final String goal = Util.readFile(ExprGen.class,"induction.prg");
         System.out.println("goal: "+goal);
-        
+        final int subgoal = subgoal(goal);
+
         final String[] constants = new String[] {
-            //"R00",
-            //"R11",             
-            //"Id",             
+                "R00",
+                //"R11",             
+                //"Id",             
         };
-        
+
         final String[] binaryOps = new String[] {
-            "^",
-            "v", 
-            //"<and>",
-            //"<\"and\">",
-            //"/^",
-            //"/>",
-            "/<",
-            /*"/=",
+                "^",
+                "v", 
+                //"<and>",
+                //"<\"and\">",
+                //"/^",
+                //"/>",
+                //"/<",
+                /*"/=",
             "/0",
             "/1",
             "/!",*/
         };
         final String[] binaryRels = new String[] {
-        		//"<",
-        		"=",
-        		//"!=",
-        		//"&",
-        		//"|"
+                "<",
+                "=",
+                //"!=",
+                //"&",
+                //"|"
         };
-        
+
         //String quickFile = "FD.db";
         String quickFile = "Figure1.db";
-		String quickDbsrc = Util.readFile(ExprGen.class,quickFile);
-		quickDbsrc += "\n include udf.def;\n";
+        String quickDbsrc = Util.readFile(ExprGen.class,quickFile);
+        quickDbsrc += "\n include udf.def;\n";
         //String fullDb = quickDb;
         String fullDbsrc = Util.readFile(Run.class,"Figure1.db");
         fullDbsrc += "\n include udf.def;\n";
-        
+
         final int threads = Runtime.getRuntime().availableProcessors()-1;
         System.out.println("Using " + threads + " threads");
-        
+
         final Lex lex = new Lex();
-        List<LexerToken> src =  lex.parse(goal);
+        String syntacticallyValidGoal = goal.contains("implication") ? goal.replace("implication", "implic=ation") : goal;            
+        List<LexerToken> src =  lex.parse(syntacticallyValidGoal);
         Earley earley = Program.earley;
         Matrix matrix = new Matrix(earley);
         earley.parse(src, matrix); 
-        SyntaxError err = SyntaxError.checkSyntax(goal, new String[]{"program"}, src, earley, matrix);      
+        SyntaxError err = SyntaxError.checkSyntax(syntacticallyValidGoal, new String[]{"program"}, src, earley, matrix);      
         if( err != null ) {
             System.out.println(err.toString());
             throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);
         }
         ParseNode root = earley.forest(src, matrix);
-        
-        final int subgoal = subgoal(src);
+
         binaryRelsOps = new String[binaryOps.length];
         if( subgoal == Program.implication )
-        	binaryRelsOps = new String[binaryOps.length+binaryRels.length];
+            binaryRelsOps = new String[binaryOps.length+binaryRels.length];
         for( int i = 0; i < binaryOps.length; i++ ) {
-        	binaryRelsOps[i] = binaryOps[i];
+            binaryRelsOps[i] = binaryOps[i];
         }
         if( subgoal == Program.implication )
-        	for( int i = 0; i < binaryRels.length; i++ ) {
-        		binaryRelsOps[i+binaryOps.length] = binaryRels[i];
-        	}              
-        
+            for( int i = 0; i < binaryRels.length; i++ ) {
+                binaryRelsOps[i+binaryOps.length] = binaryRels[i];
+            }              
+
         Verifier[] verifiers= new Verifier[threads];
         for( int i = 0; i < threads; i++ ) {
-        	Database quickDb = new Database("qbql.lang");
-			final Program quick = new Program(quickDb);
-			quick.outputVariables = false;
-			quick.run(quickDbsrc);       
-        	Database fullDb = new Database("qbql.lang");
-			final Program full = new Program(fullDb);
-			full.outputVariables = false;
-			full.run(fullDbsrc);       
+            Database quickDb = new Database("qbql.lang");
+            final Program quick = new Program(quickDb);
+            quick.outputVariables = false;
+            quick.run(quickDbsrc);       
+            Database fullDb = new Database("qbql.lang");
+            final Program full = new Program(fullDb);
+            full.outputVariables = false;
+            full.run(fullDbsrc);       
 
-			
+
             final Set<String> databaseOperations = new HashSet<String>();
             databaseOperations.addAll(full.database.operationNames());
             for( String op : databaseOperations )
-            	quick.database.addOperation(op, full.database.getOperation(op));
-        	verifiers[i] = new Verifier(goal, lex, subgoal, quick, full, databaseOperations);
-		}
-        
+                quick.database.addOperation(op, full.database.getOperation(op));
+            verifiers[i] = new Verifier(goal, lex, subgoal, quick, full, databaseOperations);
+        }
+
         final Set<String> variables = extractVariables(root, src, verifiers[0].full, subgoal);
         variables.remove(earley.allSymbols[subgoal]);
-        
+        variables.remove("implic");
+        variables.remove("ation");
+
         zilliaryOps = new String[variables.size()+constants.length];
         for( int i = 0; i < variables.size(); i++ ) {
             zilliaryOps[i] = variables.toArray(new String[0])[i];
@@ -121,11 +125,11 @@ public class ExprGen {
         for( int i = 0; i < constants.length; i++ ) {
             zilliaryOps[i+variables.size()] = constants[i];
         }
-        
+
         ArrayList<TreeNode> l = new ArrayList<TreeNode>();
         l.add(Polish.leaf());
         l.add(TreeNode.one);
-        
+
         boolean skip = true;
         skip = false;
         for( Polish num = new Polish(l); ; num.next() ) {
@@ -134,8 +138,8 @@ public class ExprGen {
             final TreeNode n = num.decode(); 
             if( n != null ) {
                 //if( n.isRightSkewed() ) // !!!conflicts with other variable assignments!!!
-                    //continue;
-            	
+                //continue;
+
                 //System.out.println();
                 try {
                     init(n);
@@ -143,143 +147,149 @@ public class ExprGen {
                     continue;
                 }
                 n.print();
-                if( skip && "((y ^ y) ^ y)".equals(n.toString()) )
+                if( skip && "((z ^ z) ^ z)".equals(n.toString()) )
                     skip = false;
                 if( skip )
                     continue;
                 do {  
-            		if( n.isRightSkewed() )
-            		    continue;
-            		if( n.isAbsorpIdemp() )
-            			continue;
-            		if( n.isDoubleComplement() )
-            			continue;
-            		//if( n.toString().contains("(y * x) v y") )
-            		    //n.print();
-            		final String node = n.toString();
-            		boolean launched = false;
-            		do {
-            			if( verifiers.length == 1 ) {
-            				verifiers[0].exec(node);
-            				break;
-            			}
-            			for( Verifier verifier : verifiers ) {
-            				if( verifier.thread!=null && verifier.thread.isAlive() ) {
-                    			Thread.yield();
-            					continue;
-            				}
-            				verifier.execThread(node);
-            				launched = true;
-            				break;
-            			}
-            		} while( !launched );
+                    if( n.isRightSkewed() )
+                        continue;
+                    if( n.isAbsorpIdemp() )
+                        continue;
+                    if( n.isDoubleComplement() )
+                        continue;
+                    if( n.toString().contains("(((R00 ^ s) v t) ^ s)") )
+                        n.print();
+                    final String node = n.toString();
+                    boolean launched = false;
+                    do {
+                        if( verifiers.length == 1 ) {
+                            verifiers[0].exec(node);
+                            break;
+                        }
+                        for( Verifier verifier : verifiers ) {
+                            if( verifier.thread!=null && verifier.thread.isAlive() ) {
+                                Thread.yield();
+                                continue;
+                            }
+                            verifier.execThread(node);
+                            launched = true;
+                            break;
+                        }
+                    } while( !launched );
                 } while( ExprGen.next(n) );
             } else {
                 //System.out.print('.');
             }
         }
     }
-    
-	static long startTime = System.currentTimeMillis();
-	static long evalTime = 0;
-    
+
+    static long startTime = System.currentTimeMillis();
+    static long evalTime = 0;
+
 
     private static class Verifier {
-    	final String goal;
-    	final Lex lex;
-    	final int subgoal;
-    	final Program quick;
-    	final Program full;
-    	final Set<String> databaseOperations;
-    	Earley earley;
-		
-		Thread thread = null;
-		
-		public Verifier( String goal, Lex lex, int subgoal, Program quick,
-				Program full, Set<String> databaseOperations ) throws Exception {
-			this.goal = goal;
-			this.lex = lex;
-			this.subgoal = subgoal;
-			this.quick = quick;
-			this.full = full;
-			this.databaseOperations = databaseOperations;
-			earley = new Earley(Program.latticeRules());
-		}
-		
-		public void execThread( final String node ) {
-			thread = new Thread() {
-				public void run() {
-					exec(node); 
-				}
-			};
-			thread.start();
-		}
+        final String goal;
+        final Lex lex;
+        final int subgoal;
+        final Program quick;
+        final Program full;
+        final Set<String> databaseOperations;
+        Earley earley;
 
-		public void exec( final String node ) {
-			try {
-				String input = goal.replace(Program.earley.allSymbols[subgoal], node);
+        Thread thread = null;
 
-				List<LexerToken> src =  lex.parse(input);
-		        Matrix matrix = new Matrix(earley);
-		        earley.parse(src, matrix); 
-		        SyntaxError err = SyntaxError.checkSyntax(goal, new String[]{"program"}, src, earley, matrix);      
-		        if( err != null ) {
-		            System.out.println(err.toString());
-		            throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);
-		        }
-		        ParseNode root = earley.forest(src, matrix);
-				
-				long t2 = System.currentTimeMillis();                   
-				ParseNode eval = quick.program(root, src);
-				evalTime += System.currentTimeMillis()-t2;
-				quick.database.restoreOperations(databaseOperations);
-				if( eval != null )
-					return;
-				t2 = System.currentTimeMillis();                   
-				eval = full.program(root, src);
-				evalTime += System.currentTimeMillis()-t2;
-				full.database.restoreOperations(databaseOperations);
-				if( eval != null )
-					return;
-				System.out.println("*** found *** ");
-				System.out.println(input);
-				System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
-				System.out.println("evalTime="+evalTime);
-				if( singleSolution )
-					System.exit(0);
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(0);
-			}
-		}
-		
-		
+        public Verifier( String goal, Lex lex, int subgoal, Program quick,
+                Program full, Set<String> databaseOperations ) throws Exception {
+            this.goal = goal;
+            this.lex = lex;
+            this.subgoal = subgoal;
+            this.quick = quick;
+            this.full = full;
+            this.databaseOperations = databaseOperations;
+            earley = new Earley(Program.latticeRules());
+        }
+
+        public void execThread( final String node ) {
+            thread = new Thread() {
+                public void run() {
+                    exec(node); 
+                }
+            };
+            thread.start();
+        }
+
+        public void exec( final String node ) {
+            try {
+                String input = goal.replace(Program.earley.allSymbols[subgoal], node);
+                if( goal.equals(input) )
+                    throw new AssertionError("goal didn't change");
+
+                List<LexerToken> src =  lex.parse(input);
+                Matrix matrix = new Matrix(earley);
+                earley.parse(src, matrix); 
+                SyntaxError err = SyntaxError.checkSyntax(goal, new String[]{"program"}, src, earley, matrix);      
+                if( err != null ) {
+                    if( subgoal == Program.implication )
+                        return;
+                    System.out.println(err.toString());
+                    throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);
+                }
+                ParseNode root = earley.forest(src, matrix);
+
+                long t2 = System.currentTimeMillis();                   
+                ParseNode eval = quick.program(root, src);
+                evalTime += System.currentTimeMillis()-t2;
+                quick.database.restoreOperations(databaseOperations);
+                if( eval != null )
+                    return;
+                t2 = System.currentTimeMillis();                   
+                eval = full.program(root, src);
+                evalTime += System.currentTimeMillis()-t2;
+                full.database.restoreOperations(databaseOperations);
+                if( eval != null )
+                    return;
+                System.out.println("*** found *** ");
+                System.out.println(input);
+                System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
+                System.out.println("evalTime="+evalTime);
+                if( singleSolution )
+                    System.exit(0);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(0);
+            }
+        }
+
+
     }
-    
 
-	private static Set<String> extractVariables( ParseNode root, List<LexerToken> src, Program p, int subgoal ) {
+
+    private static Set<String> extractVariables( ParseNode root, List<LexerToken> src, Program p, int subgoal ) {
         if( root.contains(Program.assertion) ) {
-        	for( ParseNode d : root.descendants() )
-        		if( d.contains(subgoal) )
-        			return p.variables(root,src);
+            for( ParseNode d : root.descendants() )
+                if( d.contains(subgoal) )
+                    return p.variables(root,src);
         } 
         for( ParseNode child : root.children() ) {
-        	Set<String> ret = extractVariables(child, src, p, subgoal);       
+            Set<String> ret = extractVariables(child, src, p, subgoal);       
             if( ret != null )
                 return ret;
         }
         return null;
-	}
+    }
 
-    private static int subgoal( List<LexerToken> src ) {
-    	for( LexerToken t : src )
-    		if( t.content.equals(Program.earley.allSymbols[Program.implication]) )
-    			return Program.implication;
-    		else if( t.content.equals(Program.earley.allSymbols[Program.expr]) )
-    			return Program.expr;
+    private static int subgoal( String goal ) {
+        final Lex lex = new Lex();
+        List<LexerToken> src =  lex.parse(goal);
+        for( LexerToken t : src )
+            if( t.content.equals(Program.earley.allSymbols[Program.implication]) )
+                return Program.implication;
+            else if( t.content.equals(Program.earley.allSymbols[Program.expr]) )
+                return Program.expr;
         throw new AssertionError("no subgoal?");
     }
-    
+
     static void init( TreeNode node ) {
         if( node.lft == null ) 
             node.label = zilliaryOps[0];
@@ -306,7 +316,7 @@ public class ExprGen {
             if( ok )
                 return true;
         }
-            
+
         if( node.lft == null ) {
             int index = index(node.label,zilliaryOps)+1;
             if( index == zilliaryOps.length )
@@ -346,6 +356,6 @@ public class ExprGen {
         }
         return ret;
     }
-    
+
 
 }
