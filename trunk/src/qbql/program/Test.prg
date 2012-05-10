@@ -1,4 +1,4 @@
-include "D:/qbql_trunk/src/qbql/program/Figure1.db";
+include Figure1.db;
 include udf.def;
 
 "lft < rgt"^R00=[lft  rgt].
