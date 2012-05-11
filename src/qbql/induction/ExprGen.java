@@ -52,7 +52,7 @@ public class ExprGen {
             "/!",*/
         };
         final String[] binaryRels = new String[] {
-                "<",
+                //"<",
                 "=",
                 //"!=",
                 //"&",
@@ -146,7 +146,8 @@ public class ExprGen {
                 } catch( ArrayIndexOutOfBoundsException e ) { // no unary operations
                     continue;
                 }
-                n.print();
+                if( singleSolution )
+                    n.print();
                 if( skip && "((z ^ z) ^ z)".equals(n.toString()) )
                     skip = false;
                 if( skip )
@@ -158,8 +159,8 @@ public class ExprGen {
                         continue;
                     if( n.isDoubleComplement() )
                         continue;
-                    if( n.toString().contains("(((R00 ^ s) v t) ^ s)") )
-                        n.print();
+                    //if( n.toString().contains("(((R00 ^ s) v t) ^ s)") )
+                        //n.print();
                     final String node = n.toString();
                     boolean launched = false;
                     do {
@@ -250,7 +251,9 @@ public class ExprGen {
                 if( eval != null )
                     return;
                 System.out.println("*** found *** ");
-                System.out.println(input);
+                String output = input.substring(src.get(0).begin,src.get(src.size()-1).end);
+                //if( 12<output.indexOf('x',12) && 12<output.indexOf('y',12) )
+                    System.out.println(output);
                 System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
                 System.out.println("evalTime="+evalTime);
                 if( singleSolution )

@@ -101,7 +101,6 @@ x ^ (y v z) = (x ^ (z v (R00 ^ y))) v (x ^ (y v (R00 ^ z))).
 (R00 ^ (x ^ (y v z))) v (y ^ z) = ((R00 ^ (x ^ y)) v z) ^ ((R00 ^ (x ^ z)) v y).
 */
 
-
 ((s ^ t) ^ s) v (((s ^ t) v s) ^ R00)*  = (((R00 ^ s) v t) ^ s). -- thrm
 
 x < x*.
@@ -124,6 +123,8 @@ R10* = R10.
 R01* = R01.
 R00* = R00.
 
+
+/*
 (s <and> (s^t))* = s* & 
 (t <and> (s^t))* = t* & 
 (u <and> (s^t))* = u* & 
@@ -134,6 +135,7 @@ s ^ t =
 (s v u) ^
 (t v u) ^
 (t v w). 
+*/
 
 (s <and> (s^t))* = s* & 
 (t <and> (s^t))* = t* & 
@@ -146,42 +148,10 @@ s ^ t =
 (t v u) ^
 (t v w) 
 -> s = u | s = w | t = u | t = w | (s v t)^R00 = R00
-| (u v w)^R00 = R00
+| (u v w)^R00 = R00 | s^t=(s^t)*
 .
 
 
-/* Alice p.171 */
-SDT = [Snack   Distr   Price Theater]
-       coffee  Smart   235   Rex
-       coffee  Smart   235   LeChampo
-       coffee  Smart   235   Cinoche
-       coffee  Leclerc 260   Cinoche
-       wine    Smart   80    Rex
-       wine    Smart   80    Cinoche
-       popcorn Leclerc 560   Cinoche
-;
-
-
-sdp = SDT v [Snack Distr Price];
-dt  = SDT v [Distr Theater];
-st  = SDT v [Snack Theater];
-
-SDT = sdp ^ dt ^ st.
-x = SDT;
-
-s = sdp ^ dt;
-t = st; 
-u = sdp;
-w = dt ^ st;
-
-(s <and> x)* = s*.
-
-
-x = 
-(s v w) ^ 
-(s v u) ^
-(t v u) ^
-(t v w).
 
 
 

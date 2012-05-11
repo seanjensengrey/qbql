@@ -46,6 +46,7 @@ D3 = [q] a b c;
 F =  [r] 0;
 F_ = [r];
 
+/*
 S0=[p  r]
    0  0
    0  1
@@ -55,6 +56,7 @@ S1=[p  r]
     0  0
     1  0
 ;
+*/
 
 S2 = [p r]   -- aka "[p=r]" 
            0 0
@@ -97,5 +99,39 @@ T5 = [q r]
 T_ = [q r];
 
 
-S1jT1 = S1 ^ T1;
+--S1jT1 = S1 ^ T1;
+
+/* Alice p.171 original:
+SDT = [Snack   Distr   Price Theater]
+       coffee  Smart   235   Rex
+       coffee  Smart   235   LeChampo
+       coffee  Smart   235   Cinoche
+       coffee  Leclerc 260   Cinoche
+       wine    Smart   80    Rex
+       wine    Smart   80    Cinoche
+       popcorn Leclerc 560   Cinoche
+;
+sdp = SDT v [Snack Distr Price];
+dt  = SDT v [Distr Theater];
+st  = SDT v [Snack Theater];
+sdpJdt = sdp ^ dt;
+sdpJst = sdp ^ st;
+dtJst = dt ^ st; 
+remapped: */
+SDT = [q  s   p   r]
+       c  s   0   0
+       c  s   0   1
+       c  s   0   2
+       c  l   1   2
+       b  s   2   0
+       b  s   2   2
+       a  l   3   2
+;
+sdp = SDT v [q s p];
+dt  = SDT v [s r];
+st  = SDT v [q r];
+sdpJdt = sdp ^ dt;
+sdpJst = sdp ^ st;
+dtJst = dt ^ st; 
+
          
