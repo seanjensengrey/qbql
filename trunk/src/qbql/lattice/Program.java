@@ -51,7 +51,8 @@ public class Program {
     static int almostDisj;
     static int big;
     static int complement;
-    static int closure;
+    static int CPclosure;
+    static int EQclosure;
     static int inverse;
     static int composition;
     static int join;
@@ -114,7 +115,8 @@ public class Program {
             almostDisj = earley.symbolIndexes.get("almostDisj");
             big = earley.symbolIndexes.get("big");
             complement = earley.symbolIndexes.get("complement");
-            closure = earley.symbolIndexes.get("closure");
+            CPclosure = earley.symbolIndexes.get("CPclosure");
+            EQclosure = earley.symbolIndexes.get("EQclosure");
             inverse = earley.symbolIndexes.get("inverse");
             composition = earley.symbolIndexes.get("composition");
             join = earley.symbolIndexes.get("'v'");
@@ -664,8 +666,10 @@ public class Program {
             return binaryOper(root,src, unnamedMeet);
         else if( root.contains(complement) ) 
             return unaryOper(root,complement, src);
-        else if( root.contains(closure) ) 
-            return unaryOper(root,closure, src);
+        else if( root.contains(CPclosure) ) 
+            return unaryOper(root,CPclosure, src);
+        else if( root.contains(EQclosure) ) 
+            return unaryOper(root,EQclosure, src);
         else if( root.contains(inverse) ) 
             return unaryOper(root,inverse, src);
         else if( root.contains(setIX) ) 
@@ -764,8 +768,10 @@ public class Program {
                 return database.complement(rel);
             else if( oper == inverse )
                 return database.inverse((Relation)rel);
-            else if( oper == closure )
-                return ((Relation)rel).closure();
+            else if( oper == CPclosure )
+                return ((Relation)rel).CPclosure();
+            else if( oper == EQclosure )
+                return database.EQclosure(rel);
 
         }
         throw new AssertionError("Unknown case");

@@ -21,9 +21,9 @@ public class ExprGen {
 
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
-        //"<NOT>",
-        //"<INV>",
-        "<CLOSE>"
+        "<NOT>",
+        "<INV>",
+        "<EQ_CLOSE>"
     };
     static String[] binaryRelsOps;
     static final String PARSE_ERROR_IN_ASSERTIONS_FILE = "*** Parse Error in assertions file ***";
@@ -34,8 +34,8 @@ public class ExprGen {
 
         final String[] constants = new String[] {
                 "R00",
-                //"R11",             
-                //"Id",             
+                "R11",             
+                "Id",             
         };
 
         final String[] binaryOps = new String[] {
@@ -258,7 +258,7 @@ public class ExprGen {
                 System.out.println("evalTime="+evalTime);
                 if( singleSolution )
                     System.exit(0);
-            } catch (Exception e) {
+            } catch( Throwable e ) {
                 e.printStackTrace();
                 System.exit(0);
             }

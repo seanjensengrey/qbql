@@ -55,8 +55,4 @@ x <mult> (y v z) = (x <mult> y) v (x <mult> z).
 */
 
 
-(((R00 ^ s) v t) ^ s) = s* & 
-(((R00 ^ t) v s) ^ t) = t* & 
-(((R00 ^ u) v w) ^ u) = u* & 
-(((R00 ^ w) v u) ^ w) = w* & 
-s ^ t = u ^ w <-> implication.
+x* = expr.

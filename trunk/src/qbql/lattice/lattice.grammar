@@ -15,7 +15,7 @@ attribute:   identifier
 big:         expr '/' '!' expr
 ;
 
-closure: identifier '*'
+CPclosure: identifier '*'
       |  parExpr '*'
 ;
 
@@ -43,6 +43,11 @@ content:     value
 count:   expr '|' 'v' '|' expr
 ;
 
+EQclosure: identifier '+'
+        |  parExpr '+'
+;
+
+
 database:    assignment
           |  database assignment
 ;
@@ -61,8 +66,9 @@ expr:        almostDisj
           |  complement
           |  contains
           |  count
-          |  closure
+          |  CPclosure
           |  disjoint
+          |  EQclosure
           |  identifier
           |  string_literal
           |  innerUnion
