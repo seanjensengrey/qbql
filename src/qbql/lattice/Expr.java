@@ -28,7 +28,9 @@ public class Expr {
         else if( "`".equals(type) )
             return d.inverse((Relation)left.eval(d));
         else if( "*".equals(type) )
-            return ((Relation)left.eval(d)).closure();
+            return ((Relation)left.eval(d)).CPclosure();
+        else if( "+".equals(type) )
+            return d.EQclosure(left.eval(d));
         else if( "/^".equals(type) )
             return Predicate.setIX(left.eval(d), right.eval(d));
         else if( "/=".equals(type) ) {
@@ -104,7 +106,8 @@ public class Expr {
                     child.contains(Program.expr)  // <NOT> x
                     || root.contains(Program.complement)          // x'
                     || root.contains(Program.inverse)          
-                    || root.contains(Program.closure)          
+                    || root.contains(Program.CPclosure)          
+                    || root.contains(Program.EQclosure)          
                     ) ) {
                 lft = convert(l,r,child,src);
             } else if( child.contains(Program.parExpr) 

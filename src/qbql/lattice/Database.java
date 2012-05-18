@@ -410,4 +410,47 @@ public class Database {
         throw new RuntimeException("Not impl");
     }
     
+    private Map<String, Integer> columnEqClasses = null;
+    public Predicate EQclosure( Predicate rel ) {
+        if( !(rel instanceof Relation) )
+            throw new AssertionError("!(rel instanceof Relation)");
+        if( columnEqClasses == null ) {
+            columnEqClasses = new HashMap<String, Integer>();
+            int cnt = 0;
+            for( String col : getPredicate("R11").colNames ) {
+                Relation colRel = Relation.union(R11, new Relation(new String[]{col}));
+                String match = null;
+                for( String candidate : columnEqClasses.keySet() ) {
+                    Relation candidatelRel = Relation.union(R11, new Relation(new String[]{candidate}));
+                    if( colRel.content.size() != candidatelRel.content.size() )
+                        continue;
+                    candidatelRel.renameInPlace(candidate, col);
+                    Predicate cmp = quantifier(candidatelRel, colRel,Program.setEQ);
+                    if( cmp.equals(R01) ) {
+                        match = candidate;
+                        break;
+                    }
+                }
+                if( match != null )
+                    columnEqClasses.put(col, columnEqClasses.get(match));
+                else
+                    columnEqClasses.put(col, cnt++);                    
+            }
+        }
+        
+        Predicate ret = rel;
+        for( String col : rel.colNames ) {
+            Integer i = columnEqClasses.get(col);
+            for( String eqCol: columnEqClasses.keySet() ) {
+                if( eqCol.equals(col) )
+                    continue;
+                if( i == columnEqClasses.get(eqCol) )
+                    ret = Relation.join(ret, new EqualityPredicate(col,eqCol));
+            }
+            
+        }
+        
+        return ret;
+    }
+    
 }

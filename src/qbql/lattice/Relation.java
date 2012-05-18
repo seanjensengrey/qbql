@@ -305,7 +305,7 @@ public class Relation extends Predicate {
         return ret;
     }
 
-    public Predicate closure() {
+    public Predicate CPclosure() {
         if( this.equals(Database.R00) )
             return Database.R00;
         
