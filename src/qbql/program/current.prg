@@ -181,6 +181,7 @@ s ^ t =
 .
 */
 
+/*
 (x+)+ = x+.
 x+ < x.
 x < y -> x+ < y+.
@@ -188,5 +189,12 @@ x < y -> x+ < y+.
 x+ ^ y+ = (x ^ y)+. 
 
 ([s]a b)+;         
-          
+*/
 
+([AD]0 1 ^[CP]0 1 ^[FA]0 1 ^[DD]0 1 ^[BM]0 1 ^[EC]0 1
+^ "AD <= BM" ^ "AD <= CP"
+^ "CP <= AD" ^ "CP <= DD"
+^ "EC <= AD" ^ "EC <= BM" ^ "EC <= CP"
+^ "FA <= CP" ^ "FA <= DD" ^ "CP*DD=CPxDD" ^ "AD*BM=ADxBM"
+^ "CPxDD <= BM" ^ "CPxDD <= EC" ^ "CPxDD <= FA"
+^ "ADxBM <= DD")v([CPxDD ADxBM])`;        
