@@ -191,7 +191,10 @@ x+ ^ y+ = (x ^ y)+.
 ([s]a b)+;         
 */
 
-([AD]0 1 ^[CP]0 1 ^[FA]0 1 ^[DD]0 1 ^[BM]0 1 ^[EC]0 1
+Bool = [bool]0 1;
+
+--([AD]0 1 ^[CP]0 1 ^[FA]0 1 ^[DD]0 1 ^[BM]0 1 ^[EC]0 1
+( (Bool /^ "AD=bool") ^ (Bool /^ "CP=bool") ^ (Bool /^ "FA=bool") ^ (Bool /^ "DD=bool") ^ (Bool /^ "BM=bool") ^ (Bool /^ "EC=bool")
 ^ "AD <= BM" ^ "AD <= CP"
 ^ "CP <= AD" ^ "CP <= DD"
 ^ "EC <= AD" ^ "EC <= BM" ^ "EC <= CP"
