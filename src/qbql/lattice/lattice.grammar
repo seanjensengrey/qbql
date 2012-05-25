@@ -103,6 +103,10 @@ implication:
           |  implication '<' '-' '>' implication
           |  disjunction
           |  '(' implication ')'
+          |  inductionFormula
+;
+
+inductionFormula: identifier '(' parameters ')'    -- e.g. find minimal formula satisfying Armstrong axioms, such as FD(r,x,y) introduced at http://arxiv.org/pdf/0902.3532v2
 ;
 
 innerUnion:  expr 'v' expr
@@ -121,6 +125,10 @@ join:        expr '^' expr
 oper:       '^'
           | 'v'
           | userOper
+;
+
+parameters: expr
+          | parameters ',' expr
 ;
 
 parExpr:     '(' expr ')'
@@ -145,6 +153,7 @@ partition:
 
 proposition:     
              "not to confuse with userOper"
+          |  implication
           |  expr '=' expr
           |  expr '~' expr
           |  partition '<' partition
