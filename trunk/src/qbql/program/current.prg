@@ -191,13 +191,20 @@ x+ ^ y+ = (x ^ y)+.
 ([s]a b)+;         
 */
 
-Bool = [bool]0 1;
 
---([AD]0 1 ^[CP]0 1 ^[FA]0 1 ^[DD]0 1 ^[BM]0 1 ^[EC]0 1
-( (Bool /^ "AD=bool") ^ (Bool /^ "CP=bool") ^ (Bool /^ "FA=bool") ^ (Bool /^ "DD=bool") ^ (Bool /^ "BM=bool") ^ (Bool /^ "EC=bool")
-^ "AD <= BM" ^ "AD <= CP"
-^ "CP <= AD" ^ "CP <= DD"
-^ "EC <= AD" ^ "EC <= BM" ^ "EC <= CP"
-^ "FA <= CP" ^ "FA <= DD" ^ "CP*DD=CPxDD" ^ "AD*BM=ADxBM"
-^ "CPxDD <= BM" ^ "CPxDD <= EC" ^ "CPxDD <= FA"
-^ "ADxBM <= DD")v([CPxDD ADxBM])`;        
+
+S=[AD]0 1 ^[CP]0 1 ^[FA]0 1 ^[DD]0 1 ^[BM]0 1 ^[EC]0 1
+^ "AD <= BM" --Burdock Muldoon will come if Albus Dumbledore comes
+^ "BM <= CP" --Carlotta Pinkstone will come if Burdock Muldoon comes
+^ "AD <= CP" --Carlotta Pinkstone will come if Albus Dumbledore comes
+^ "DD <= EC" --Elfrida Clagg will come if Daisy Dodderidge comes
+^ "EC <= FA" --Falco Aesalon will come if Elfrida Clagg comes
+^ "DD <= FA" --Falco Aesalon will come if Daisy Dodderidge comes
+^ "BM <= CP" --Carlotta Pinkstone will come if Burdock Muldoon comes
+^ "CP <= AD" --Albus Dumbledore will come if Carlotta Pinkstone comes
+^ "BM <= AD" --Albus Dumbledore will come if  Burdock Muldoon comes
+^ "EC <= FA" --Falco Aesalon will come if Elfrida Clagg comes
+^ "FA <= DD" --Daisy Dodderidge will come if Falco Aesalon comes
+^ "EC <= DD" --Daisy Dodderidge will come if Elfrida Clagg comes
+; 
+S;       

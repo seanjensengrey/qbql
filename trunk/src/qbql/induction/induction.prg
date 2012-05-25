@@ -2,7 +2,7 @@
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
         //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
         
-        y <and> z = y <-> implication. 
+        y <and> z = y <-> F(y,z). 
         ***Found: 
         y <and> z = y <-> (((R00 ^ (z v y)) v (z ^ y)) = y).
         Elapsed=101427
@@ -13,6 +13,7 @@
         y <and> z = y <-> (((R11 ^ z) v y) = ((R00 ^ y) v z)).
         Elapsed=147369
         evalTime=33376
+        y <and> z = y <-> ((<NOT>(y) v z) = (R11 v y)).
 
         //String goal = "(x @^ y) @v (x @^ z) = expr.";
         //String goal = "x /< y = expr.";
@@ -20,8 +21,6 @@
         //String goal = "x = y <-> R00 = expr.";
 */
 
-
---(x ^ y) v (x ^ <NOT>(<INV>y)) = expr.
 
 --x <op> y = expr. 
 --(x <OR> y) < z <-> x < (y <op> z).
@@ -54,5 +53,10 @@ x <mult> (y <mult> z) = (x <mult> y) <mult> z.
 x <mult> (y v z) = (x <mult> y) v (x <mult> z).
 */
 
+/*
+y < x -> FD(r,x,y).
+FD(r,x,y) & FD(r,y,z) -> FD(r,x,z).   
+FD(r,x,y) -> FD(r,x^z,y^z).
+*/
 
-x* = expr.
+x /< y = expr.

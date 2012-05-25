@@ -1,8 +1,11 @@
 package qbql.induction;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import qbql.lattice.Database;
@@ -23,19 +26,19 @@ public class ExprGen {
     final static String[] unaryOps = new String[] {
         "<NOT>",
         "<INV>",
-        "<EQ_CLOSE>"
+        "<EQ_CLOSE>",
+        "<CP_CLOSE>",
     };
     static String[] binaryRelsOps;
-    static final String PARSE_ERROR_IN_ASSERTIONS_FILE = "*** Parse Error in assertions file ***";
+    private static final String PARSE_ERROR_IN_ASSERTIONS_FILE = "*** Parse Error in assertions file ***";
     public static void main( String[] args ) throws Exception {
         final String goal = Util.readFile(ExprGen.class,"induction.prg");
-        System.out.println("goal: "+goal);
-        final int subgoal = subgoal(goal);
+        System.out.println("goal: "+Util.removeComments(goal));
 
         final String[] constants = new String[] {
                 "R00",
                 "R11",             
-                "Id",             
+                //"Id",             
         };
 
         final String[] binaryOps = new String[] {
@@ -71,25 +74,28 @@ public class ExprGen {
         System.out.println("Using " + threads + " threads");
 
         final Lex lex = new Lex();
-        String syntacticallyValidGoal = goal.contains("implication") ? goal.replace("implication", "implic=ation") : goal;            
-        List<LexerToken> src =  lex.parse(syntacticallyValidGoal);
+        List<LexerToken> src =  lex.parse(goal);
         Earley earley = Program.earley;
         Matrix matrix = new Matrix(earley);
         earley.parse(src, matrix); 
-        SyntaxError err = SyntaxError.checkSyntax(syntacticallyValidGoal, new String[]{"program"}, src, earley, matrix);      
+        SyntaxError err = SyntaxError.checkSyntax(goal, new String[]{"program"}, src, earley, matrix);      
         if( err != null ) {
             System.out.println(err.toString());
             throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);
         }
         ParseNode root = earley.forest(src, matrix);
+        
+        Map<String,Long> assertions = new HashMap<String,Long>();
+        listAssertions(root,src,goal,assertions);
 
+        final ParseNode subgoal = subgoal(root, src);
         binaryRelsOps = new String[binaryOps.length];
-        if( subgoal == Program.implication )
+        if( subgoal.contains(Program.implication) )
             binaryRelsOps = new String[binaryOps.length+binaryRels.length];
         for( int i = 0; i < binaryOps.length; i++ ) {
             binaryRelsOps[i] = binaryOps[i];
         }
-        if( subgoal == Program.implication )
+        if( subgoal.contains(Program.implication) )
             for( int i = 0; i < binaryRels.length; i++ ) {
                 binaryRelsOps[i+binaryOps.length] = binaryRels[i];
             }              
@@ -110,13 +116,11 @@ public class ExprGen {
             databaseOperations.addAll(full.database.operationNames());
             for( String op : databaseOperations )
                 quick.database.addOperation(op, full.database.getOperation(op));
-            verifiers[i] = new Verifier(goal, lex, subgoal, quick, full, databaseOperations);
+            verifiers[i] = new Verifier(assertions, lex, subgoal, quick, full, databaseOperations);
         }
 
-        final Set<String> variables = extractVariables(root, src, verifiers[0].full, subgoal);
-        variables.remove(earley.allSymbols[subgoal]);
-        variables.remove("implic");
-        variables.remove("ation");
+        final Set<String> variables = extractVariables(root, src, verifiers[0].full);
+        variables.remove("expr");
 
         zilliaryOps = new String[variables.size()+constants.length];
         for( int i = 0; i < variables.size(); i++ ) {
@@ -185,111 +189,32 @@ public class ExprGen {
         }
     }
 
-    static long startTime = System.currentTimeMillis();
+	static long startTime = System.currentTimeMillis();
     static long evalTime = 0;
 
 
-    private static class Verifier {
-        final String goal;
-        final Lex lex;
-        final int subgoal;
-        final Program quick;
-        final Program full;
-        final Set<String> databaseOperations;
-        Earley earley;
-
-        Thread thread = null;
-
-        public Verifier( String goal, Lex lex, int subgoal, Program quick,
-                Program full, Set<String> databaseOperations ) throws Exception {
-            this.goal = goal;
-            this.lex = lex;
-            this.subgoal = subgoal;
-            this.quick = quick;
-            this.full = full;
-            this.databaseOperations = databaseOperations;
-            earley = new Earley(Program.latticeRules());
-        }
-
-        public void execThread( final String node ) {
-            thread = new Thread() {
-                public void run() {
-                    exec(node); 
-                }
-            };
-            thread.start();
-        }
-
-        public void exec( final String node ) {
-            try {
-                String input = goal.replace(Program.earley.allSymbols[subgoal], node);
-                if( goal.equals(input) )
-                    throw new AssertionError("goal didn't change");
-
-                List<LexerToken> src =  lex.parse(input);
-                Matrix matrix = new Matrix(earley);
-                earley.parse(src, matrix); 
-                SyntaxError err = SyntaxError.checkSyntax(goal, new String[]{"program"}, src, earley, matrix);      
-                if( err != null ) {
-                    if( subgoal == Program.implication )
-                        return;
-                    System.out.println(err.toString());
-                    throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);
-                }
-                ParseNode root = earley.forest(src, matrix);
-
-                long t2 = System.currentTimeMillis();                   
-                ParseNode eval = quick.program(root, src);
-                evalTime += System.currentTimeMillis()-t2;
-                quick.database.restoreOperations(databaseOperations);
-                if( eval != null )
-                    return;
-                t2 = System.currentTimeMillis();                   
-                eval = full.program(root, src);
-                evalTime += System.currentTimeMillis()-t2;
-                full.database.restoreOperations(databaseOperations);
-                if( eval != null )
-                    return;
-                System.out.println("*** found *** ");
-                String output = input.substring(src.get(0).begin,src.get(src.size()-1).end);
-                //if( 12<output.indexOf('x',12) && 12<output.indexOf('y',12) )
-                    System.out.println(output);
-                System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
-                System.out.println("evalTime="+evalTime);
-                if( singleSolution )
-                    System.exit(0);
-            } catch( Throwable e ) {
-                e.printStackTrace();
-                System.exit(0);
-            }
-        }
 
 
-    }
-
-
-    private static Set<String> extractVariables( ParseNode root, List<LexerToken> src, Program p, int subgoal ) {
+    private static Set<String> extractVariables( ParseNode root, List<LexerToken> src, Program p/*, int subgoal*/ ) {
         if( root.contains(Program.assertion) ) {
             for( ParseNode d : root.descendants() )
-                if( d.contains(subgoal) )
+                //if( d.contains(subgoal) )
                     return p.variables(root,src);
         } 
         for( ParseNode child : root.children() ) {
-            Set<String> ret = extractVariables(child, src, p, subgoal);       
+            Set<String> ret = extractVariables(child, src, p/*, subgoal*/);       
             if( ret != null )
                 return ret;
         }
         return null;
     }
 
-    private static int subgoal( String goal ) {
-        final Lex lex = new Lex();
-        List<LexerToken> src =  lex.parse(goal);
-        for( LexerToken t : src )
-            if( t.content.equals(Program.earley.allSymbols[Program.implication]) )
-                return Program.implication;
-            else if( t.content.equals(Program.earley.allSymbols[Program.expr]) )
-                return Program.expr;
+    private static ParseNode subgoal( ParseNode root, List<LexerToken> src ) {
+    	for( ParseNode p : root.descendants() )
+    		if( p.from+1==p.to && p.contains(Program.expr) && p.content(src).equals(Program.earley.allSymbols[Program.expr]) )
+                return p;
+    		else if( p.contains(Program.inductionFormula) )
+                return p;
         throw new AssertionError("no subgoal?");
     }
 
@@ -360,5 +285,16 @@ public class ExprGen {
         return ret;
     }
 
+    private static void listAssertions( ParseNode root, List<LexerToken> src, String input, Map<String,Long> ret ) {
+		if( root.contains(Program.assertion) ) {
+			ParseNode goal = subgoal(root, src);
+			int offset = src.get(root.from).begin;
+			ret.put(input.substring(offset,src.get(root.to-1).end),
+					                Util.lPair(src.get(goal.from).begin-offset, src.get(goal.to-1).end-offset ));
+			return;
+		}
+		for( ParseNode p : root.children() )
+			listAssertions(p, src, input, ret);
+	}
 
 }

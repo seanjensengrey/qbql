@@ -67,6 +67,7 @@ public class Program {
     public static int openParen;
     public static int closeParen;
     public static int implication;
+    public static int inductionFormula;
     static int proposition;
     static int oper;
     static int lt;
@@ -136,6 +137,7 @@ public class Program {
             openParen = earley.symbolIndexes.get("'('");
             closeParen = earley.symbolIndexes.get("')'");
             implication = earley.symbolIndexes.get("implication");
+            inductionFormula = earley.symbolIndexes.get("inductionFormula");
             proposition = earley.symbolIndexes.get("proposition");
             oper = earley.symbolIndexes.get("oper");
             assertion = earley.symbolIndexes.get("assertion");
@@ -504,6 +506,7 @@ public class Program {
                     && !root.parent(descendant.from, descendant.to).contains(header)
                     && !root.parent(descendant.from, descendant.to).contains(table)
                     && !root.parent(descendant.from, descendant.to).contains(userOper)
+                    && !(root.parent(descendant.from, descendant.to).contains(inductionFormula)&&root.from==descendant.from)
                     && !id.startsWith("\"")
                     && (!notAssignedOnes || database.lookup(id) == null) ) 
                 variables.add(id);

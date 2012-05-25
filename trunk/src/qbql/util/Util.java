@@ -55,6 +55,17 @@ public abstract class Util {
         return b.toString();
     }
     
+    public static String removeComments( String txt ) {
+        int beginComment = txt.indexOf("/*");
+		if( beginComment < 0 )
+        	return txt;
+        int endComment = txt.indexOf("*/");
+		if( endComment < 0 )
+        	throw new AssertionError("Comment not ending?");
+        return txt.substring(beginComment, endComment+2);
+    }
+    
+    
     public static String[] union( String[] x, String[] y ) {
         Set<String> ret = new TreeSet<String>();
         for( String s : x )
