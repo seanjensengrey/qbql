@@ -25,6 +25,15 @@ public class Array {
 		else
 			return indexOf(array, mid, y, value);
 	}
+	private static int indexOf( long[] array, int x, int y, long value ) {
+		if( x+1 == y || x == y )
+			return array[x] < value ? y : x;
+		int mid = (x+y)/2;
+		if( value < array[mid] )
+			return indexOf(array, x, mid, value);
+		else
+			return indexOf(array, mid, y, value);
+	}
 	
 	public static int[] insert( int[] array, int value ) {
 		if( array == null || array.length == 0 ) {
@@ -38,6 +47,27 @@ public class Array {
 			return array;
 		
 		int[] ret = new int[array.length+1];
+		for( int i = 0; i < index; i++ ) {
+			ret[i] = array[i];
+		}
+		ret[index] = value; 
+		for( int i = index+1; i < ret.length; i++ ) {
+			ret[i] = array[i-1];
+		}
+		return ret;
+	}
+	public static long[] insert( long[] array, long value ) {
+		if( array == null || array.length == 0 ) {
+			array = new long[1];
+			array[0] = value;
+			return array;
+		}
+		
+		int index = indexOf(array, 0, array.length, value);
+		if( index < array.length && array[index] == value )
+			return array;
+		
+		long[] ret = new long[array.length+1];
 		for( int i = 0; i < index; i++ ) {
 			ret[i] = array[i];
 		}

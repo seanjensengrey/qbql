@@ -171,7 +171,7 @@ public class Program {
         try {
             input = Util.readFile(Program.class, "lattice.grammar");
         } catch (Exception e) {
-            throw new AssertionError("Faikled to read lattice.grammar file");
+            throw new AssertionError("Failed to read lattice.grammar file");
         }
         HashMap<String, String> specialSymbols = new HashMap<String, String>();
         specialSymbols.put("qtSymbol", "'");
@@ -195,6 +195,8 @@ public class Program {
         for( ParseNode child : root.children() ) 
             if( child.contains(expr) || child.contains(partition) )
                 return atomicProposition(root,src);
+            //else if( child.contains(inductionFormula) )
+                //return inductionFormula(root,src);
             else 
                 return logical(root,src);
         throw new AssertionError("Impossible exception, no children??"+root.content(src));
@@ -499,17 +501,19 @@ public class Program {
     private Set<String> variables( ParseNode root, List<LexerToken> src, boolean notAssignedOnes ) {
         Set<String> variables = new HashSet<String>();
         for( ParseNode descendant : root.descendants() ) {
-            String id = descendant.content(src);
-            if( descendant.from+1 == descendant.to 
+			if( descendant.from+1 == descendant.to 
                     && (descendant.contains(expr) || descendant.contains(identifier))
-                    && !descendant.contains(value)
-                    && !root.parent(descendant.from, descendant.to).contains(header)
-                    && !root.parent(descendant.from, descendant.to).contains(table)
-                    && !root.parent(descendant.from, descendant.to).contains(userOper)
-                    && !(root.parent(descendant.from, descendant.to).contains(inductionFormula)&&root.from==descendant.from)
-                    && !id.startsWith("\"")
-                    && (!notAssignedOnes || database.lookup(id) == null) ) 
-                variables.add(id);
+                    && !descendant.contains(value) ) {
+	            String id = descendant.content(src);
+	            ParseNode parent = root.parent(descendant.from, descendant.to);
+				if( !parent.contains(header)
+						&& !parent.contains(table)
+						&& !parent.contains(userOper)
+						&& !(parent.contains(inductionFormula)/*&&root.from==descendant.from*/)
+						&& !id.startsWith("\"")
+						&& (!notAssignedOnes || database.lookup(id) == null) ) 
+	                variables.add(id);
+			}
         }
         return variables;
     }

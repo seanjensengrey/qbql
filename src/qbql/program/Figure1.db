@@ -134,6 +134,7 @@ M_RQ=[r  q] v MaierP137;
 M_PQjM_RQ = M_PQ ^ M_RQ;
 M_PRjM_RQ = M_PR ^ M_RQ;
 */
+/*
 CE=[s]
    a
 ;
@@ -146,4 +147,5 @@ DDE=[s]
    b
    c
 ;
+*/
        

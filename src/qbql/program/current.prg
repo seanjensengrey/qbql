@@ -1,5 +1,5 @@
 -- 2 different styles of include
-include "D:/qbql_trunk1/src/qbql/program/Figure1.db"; 
+include "c:/qbql_trunk/src/qbql/program/Figure1.db"; 
 include udf.def;  
 --include volume.db;
 
