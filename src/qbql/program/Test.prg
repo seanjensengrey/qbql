@@ -218,5 +218,9 @@ Ap =
 
 ["^^^^^ Generic Predicates ^^^^^"]; 
 
+(y=y <-> x=x).
+!(y=x <-> x=x).
+
+["^^^^^ Negated Assertion ^^^^^"];
 
 ["Time = 14328 ?"];

@@ -191,20 +191,11 @@ x+ ^ y+ = (x ^ y)+.
 ([s]a b)+;         
 */
 
+y < x -> (r ^ y) < x.
+(r ^ y) < x -> (r ^ y ^ z) < x ^ z.
+(r ^ y) < x & (r ^ z) < y -> (r ^ z) < x.
 
+--(y < x) -> (r^x^y < r^x^<NOT>y).
+--r^x^y < r^x^<NOT>y & /*FD(r,y,z)*/r^y^z < r^y^<NOT>z -> /*FD(r,x,z)*/r^x^z < r^x^<NOT>z.   
+--r^x^y < r^x^<NOT>y -> /*FD(r,x^z,y^z)*/r^x^y^z < r^x^<NOT>(y^z).
 
-S=[AD]0 1 ^[CP]0 1 ^[FA]0 1 ^[DD]0 1 ^[BM]0 1 ^[EC]0 1
-^ "AD <= BM" --Burdock Muldoon will come if Albus Dumbledore comes
-^ "BM <= CP" --Carlotta Pinkstone will come if Burdock Muldoon comes
-^ "AD <= CP" --Carlotta Pinkstone will come if Albus Dumbledore comes
-^ "DD <= EC" --Elfrida Clagg will come if Daisy Dodderidge comes
-^ "EC <= FA" --Falco Aesalon will come if Elfrida Clagg comes
-^ "DD <= FA" --Falco Aesalon will come if Daisy Dodderidge comes
-^ "BM <= CP" --Carlotta Pinkstone will come if Burdock Muldoon comes
-^ "CP <= AD" --Albus Dumbledore will come if Carlotta Pinkstone comes
-^ "BM <= AD" --Albus Dumbledore will come if  Burdock Muldoon comes
-^ "EC <= FA" --Falco Aesalon will come if Elfrida Clagg comes
-^ "FA <= DD" --Daisy Dodderidge will come if Falco Aesalon comes
-^ "EC <= DD" --Daisy Dodderidge will come if Elfrida Clagg comes
-; 
-S;       

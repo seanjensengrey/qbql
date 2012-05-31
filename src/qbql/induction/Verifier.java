@@ -56,8 +56,8 @@ class Verifier {
     			for( int i = intervals.length-1; 0 <= i ; i-- ) {
     				String inductionFormula = input.substring(Util.lX(intervals[i]),Util.lY(intervals[i]));
     				List<String> formalArguments = parseInductionFormula(inductionFormula);
-    				node = substituteFormalFariables(node, formalArguments);
-    				input = input.substring(0,Util.lX(intervals[i]))+node+input.substring(Util.lY(intervals[i]));				
+    				String tmp = substituteFormalFariables(node, formalArguments);
+    				input = input.substring(0,Util.lX(intervals[i]))+tmp+input.substring(Util.lY(intervals[i]));				
 				}
     			print.append(input);
     			if( goal.equals(input) )
