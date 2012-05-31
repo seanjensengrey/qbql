@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import com.sun.org.apache.xml.internal.utils.QName;
+import com.sun.org.apache.xpath.internal.FoundIndex;
 
 import qbql.index.IndexedPredicate;
 import qbql.parser.Earley;
@@ -59,9 +60,9 @@ public class Program {
     static int meet;
     static int equivalence;
     static int equality;
+    public static int expr;
     static int num;
     static int minus;
-    public static int expr;
     static int partition;
     static int parExpr;
     public static int openParen;
@@ -352,8 +353,14 @@ public class Program {
 
     public ParseNode assertion( ParseNode root, List<LexerToken> src ) {
         ParseNode ret = null;
+        boolean isNegation = false;
         for( ParseNode child : root.children() ) {
-            if( isDeclaration(child, src) )
+        	if( child.contains(excl) ) {
+        		isNegation = true;
+        		break;
+        	}
+        	
+        	if( isDeclaration(child, src) )
                 return null;
             String[] ops = operIneqArgs(child,src);
             if( ops == null )
@@ -369,6 +376,8 @@ public class Program {
         int[] indexes = new int[variables.size()];
         for( int i = 0; i < indexes.length; i++ )
             indexes[i] = 0;
+        boolean foundCounterExample = false;
+        iterateThroughVariables:
         do {
             int var = 0;
             for( String variable : variables ) {
@@ -377,8 +386,11 @@ public class Program {
             }
 
             for( ParseNode child : root.children() ) {
-                if( child.contains(implication) ) {
+            	if( child.contains(implication) ) {
                     if( !bool(child, src) ) {
+						foundCounterExample = true;
+						if( isNegation )
+							break iterateThroughVariables;
                         for( String variable : variables )
                             if( outputVariables )
                                 System.out.println(variable+" = "
@@ -390,13 +402,19 @@ public class Program {
                         return ret;
                     } 
                     break;
-                } else
+                } else if( child.contains(excl) ) {
+            		continue;
+            	} else 
                     throw new AssertionError("Non boolean assertion???"); 
             }
         } while( Util.next(indexes,tables.length) );
-
+        
         for( String variable : variables )
             database.removePredicate(variable);
+        
+        if( isNegation && !foundCounterExample )
+        	return root;
+
         return ret;
     }
     private String[] operIneqArgs( ParseNode root, List<LexerToken> src )  {

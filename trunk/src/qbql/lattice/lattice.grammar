@@ -2,6 +2,7 @@ almostDisj:  expr '/' '1' expr
 ;
 
 assertion:   implication '.'
+          |  '!' implication '.'  -- negation before unviversal quantification, e.g. -(all x all y x<y <-> x=x).
 ;
 
 assignment:  identifier '=' expr ';'
@@ -166,7 +167,7 @@ proposition:
 ;
 
 program:   stmt  
-          |  stmt program
+          |  program stmt 
 ;
 
 query:       expr ';'

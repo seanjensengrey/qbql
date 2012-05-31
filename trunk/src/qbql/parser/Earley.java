@@ -25,7 +25,7 @@ public class Earley extends Parser {
     protected int[] allXs = null;
 
     public static void main( String[] args ) throws Exception {
-        String input = "x ^ y' =x.";//Util.readFile(Run.class,"current.prg");
+        String input = "!(x<y <-> x=x).";//Util.readFile(Run.class,"current.prg");
         List<LexerToken> src =  (new Lex()).parse(input);
 
         Set<RuleTuple> wiki = new TreeSet<RuleTuple>();
@@ -47,7 +47,7 @@ public class Earley extends Parser {
         wiki.add(new RuleTuple("C",new String[]{"string_literal","string_literal","string_literal"}));*/ 
 
         Set<RuleTuple> rules = Program.latticeRules();
-        // rules = wiki;
+        rules = wiki;
 
         final String symbol = "include";
         for( RuleTuple rule : rules ) 

@@ -56,13 +56,17 @@ public abstract class Util {
     }
     
     public static String removeComments( String txt ) {
-        int beginComment = txt.indexOf("/*");
-		if( beginComment < 0 )
+        int beginMlComment = txt.indexOf("/*");
+        int beginSlComment = txt.indexOf("--");
+		if( beginMlComment < 0 && beginSlComment < 0 )
         	return txt;
-        int endComment = txt.indexOf("*/");
-		if( endComment < 0 )
+        int endMlComment = txt.indexOf("*/", beginMlComment);
+        int endSlComment = txt.indexOf("\n", beginSlComment);
+		if( endMlComment < 0 && endSlComment < 0)
         	throw new AssertionError("Comment not ending?");
-        return txt.substring(beginComment, endComment+2);
+		int beginComment = beginMlComment < beginSlComment ? beginSlComment : beginMlComment;
+		int endComment = beginMlComment < beginSlComment ? endSlComment+1 : endMlComment+2;
+        return removeComments(txt.substring(0, beginComment)+txt.substring(endComment));
     }
     
     

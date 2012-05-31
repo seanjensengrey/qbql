@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import qbql.lattice.Database;
 import qbql.lattice.Program;
@@ -25,8 +26,8 @@ public class ExprGen {
 
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
-        "<NOT>",
-        "<INV>",
+        //"<NOT>",
+        //"<INV>",
         //"<EQ_CLOSE>",
         //"<CP_CLOSE>",
     };
@@ -38,13 +39,13 @@ public class ExprGen {
 
         final String[] constants = new String[] {
                 "R00",
-                "R11",             
+                //"R11",             
                 //"Id",             
         };
 
         final String[] binaryOps = new String[] {
                 "^",
-                "v", 
+                //"v", 
                 //"<and>",
                 //"<\"and\">",
                 //"/^",
@@ -56,13 +57,14 @@ public class ExprGen {
             "/!",*/
         };
         final String[] binaryRels = new String[] {
-                //"<",
-                "=",
+                "<",
+                //"=",
                 //"!=",
                 //"&",
                 //"|"
         };
-        final int threads = 1;//Runtime.getRuntime().availableProcessors();
+        int threads = Runtime.getRuntime().availableProcessors();
+        //threads = 1;
         System.out.println("Using " + threads + " threads");
 
         //String quickFile = "FD.db";
@@ -85,7 +87,7 @@ public class ExprGen {
         }
         ParseNode root = earley.forest(src, matrix);
         
-        Map<String,long[]> assertions = new HashMap<String,long[]>();
+        Map<String,long[]> assertions = new TreeMap<String,long[]>();
         listAssertions(root,src,goal,assertions);
 
         binaryRelsOps = new String[binaryOps.length];
@@ -151,7 +153,14 @@ public class ExprGen {
                 }
                 if( singleSolution )
                     n.print();
-                if( skip && "((z ^ z) ^ z)".equals(n.toString()) )
+                /*if( "((r ^ r) ^ (r ^ r))".equals(n.toString()) ) {
+            		System.out.println("*** reached (<NOT>((<NOT>(r) ^ r)) ^ (<NOT>(r) ^ r)) *** ");
+            		System.out.println("Elapsed="+(System.currentTimeMillis()-ExprGen.startTime));
+            		System.out.println("evalTime="+ExprGen.evalTime);
+            		System.exit(0);                	
+                }*/
+                //if( skip && "(<NOT>((<NOT>((r ^ r)) ^ r)) ^ (<NOT>(r) ^ r))".equals(n.toString()) )
+                if( skip && "(((r ^ r) ^ r) ^ ((<NOT>(r) ^ r) ^ r))".equals(n.toString()) )
                     skip = false;
                 if( skip )
                     continue;
@@ -326,14 +335,16 @@ public class ExprGen {
     }
 
     private static void listAssertions( ParseNode root, List<LexerToken> src, String input, Map<String,long[]> ret ) {
+    	int num = 0;
 		if( root.contains(Program.assertion) ) {
+			final String prefix = "/*"+num+"*/";
 			int offset = src.get(root.from).begin;
 			String assertion = input.substring(offset,src.get(root.to-1).end);
 			long[] entries = null;
 			for( ParseNode goal : subgoals(root, src) ) {
-				entries = Array.insert(entries, Util.lPair(src.get(goal.from).begin-offset, src.get(goal.to-1).end-offset));
+				entries = Array.insert(entries, Util.lPair(src.get(goal.from).begin-offset+prefix.length(), src.get(goal.to-1).end-offset+prefix.length()));
 			}
-			ret.put(assertion,entries);
+			ret.put(prefix+assertion,entries);
 			return;
 		}
 		for( ParseNode p : root.children() )
