@@ -17,6 +17,7 @@ import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.parser.SyntaxError;
 import qbql.program.Run;
+import qbql.util.Array;
 import qbql.util.Util;
 
 public class ExprGen {
@@ -26,8 +27,8 @@ public class ExprGen {
     final static String[] unaryOps = new String[] {
         "<NOT>",
         "<INV>",
-        "<EQ_CLOSE>",
-        "<CP_CLOSE>",
+        //"<EQ_CLOSE>",
+        //"<CP_CLOSE>",
     };
     static String[] binaryRelsOps;
     private static final String PARSE_ERROR_IN_ASSERTIONS_FILE = "*** Parse Error in assertions file ***";
@@ -36,15 +37,15 @@ public class ExprGen {
         System.out.println("goal: "+Util.removeComments(goal));
 
         final String[] constants = new String[] {
-                "R00",
-                "R11",             
+                //"R00",
+                //"R11",             
                 //"Id",             
         };
 
         final String[] binaryOps = new String[] {
                 "^",
                 "v", 
-                //"<and>",
+                "<and>",
                 //"<\"and\">",
                 //"/^",
                 //"/>",
@@ -61,6 +62,8 @@ public class ExprGen {
                 //"&",
                 //"|"
         };
+        final int threads = 1;//Runtime.getRuntime().availableProcessors();
+        System.out.println("Using " + threads + " threads");
 
         //String quickFile = "FD.db";
         String quickFile = "Figure1.db";
@@ -69,9 +72,6 @@ public class ExprGen {
         //String fullDb = quickDb;
         String fullDbsrc = Util.readFile(Run.class,"Figure1.db");
         fullDbsrc += "\n include udf.def;\n";
-
-        final int threads = Runtime.getRuntime().availableProcessors()-1;
-        System.out.println("Using " + threads + " threads");
 
         final Lex lex = new Lex();
         List<LexerToken> src =  lex.parse(goal);
@@ -85,17 +85,17 @@ public class ExprGen {
         }
         ParseNode root = earley.forest(src, matrix);
         
-        Map<String,Long> assertions = new HashMap<String,Long>();
+        Map<String,long[]> assertions = new HashMap<String,long[]>();
         listAssertions(root,src,goal,assertions);
 
-        final ParseNode subgoal = subgoal(root, src);
         binaryRelsOps = new String[binaryOps.length];
-        if( subgoal.contains(Program.implication) )
-            binaryRelsOps = new String[binaryOps.length+binaryRels.length];
+        for( ParseNode subgoal : subgoals(root, src) )
+        	if( subgoal.contains(Program.implication) )
+        		binaryRelsOps = new String[binaryOps.length+binaryRels.length];
         for( int i = 0; i < binaryOps.length; i++ ) {
             binaryRelsOps[i] = binaryOps[i];
         }
-        if( subgoal.contains(Program.implication) )
+        if( binaryRelsOps.length == binaryOps.length+binaryRels.length )
             for( int i = 0; i < binaryRels.length; i++ ) {
                 binaryRelsOps[i+binaryOps.length] = binaryRels[i];
             }              
@@ -116,7 +116,7 @@ public class ExprGen {
             databaseOperations.addAll(full.database.operationNames());
             for( String op : databaseOperations )
                 quick.database.addOperation(op, full.database.getOperation(op));
-            verifiers[i] = new Verifier(assertions, lex, subgoal, quick, full, databaseOperations);
+            verifiers[i] = new Verifier(assertions, lex, quick, full, databaseOperations);
         }
 
         final Set<String> variables = extractVariables(root, src, verifiers[0].full);
@@ -165,11 +165,10 @@ public class ExprGen {
                         continue;
                     //if( n.toString().contains("(((R00 ^ s) v t) ^ s)") )
                         //n.print();
-                    final String node = n.toString();
                     boolean launched = false;
                     do {
                         if( verifiers.length == 1 ) {
-                            verifiers[0].exec(node);
+                            verifiers[0].exec(n);
                             break;
                         }
                         for( Verifier verifier : verifiers ) {
@@ -177,7 +176,7 @@ public class ExprGen {
                                 Thread.yield();
                                 continue;
                             }
-                            verifier.execThread(node);
+                            verifier.execThread(n);
                             launched = true;
                             break;
                         }
@@ -198,24 +197,26 @@ public class ExprGen {
     private static Set<String> extractVariables( ParseNode root, List<LexerToken> src, Program p/*, int subgoal*/ ) {
         if( root.contains(Program.assertion) ) {
             for( ParseNode d : root.descendants() )
-                //if( d.contains(subgoal) )
-                    return p.variables(root,src);
+                 return p.variables(root,src);
         } 
         for( ParseNode child : root.children() ) {
-            Set<String> ret = extractVariables(child, src, p/*, subgoal*/);       
+            Set<String> ret = extractVariables(child, src, p);       
             if( ret != null )
                 return ret;
         }
         return null;
     }
 
-    private static ParseNode subgoal( ParseNode root, List<LexerToken> src ) {
+    private static List<ParseNode> subgoals( ParseNode root, List<LexerToken> src ) {
+    	List<ParseNode> ret = new LinkedList<ParseNode>();
     	for( ParseNode p : root.descendants() )
     		if( p.from+1==p.to && p.contains(Program.expr) && p.content(src).equals(Program.earley.allSymbols[Program.expr]) )
-                return p;
+                ret.add(p);
     		else if( p.contains(Program.inductionFormula) )
-                return p;
-        throw new AssertionError("no subgoal?");
+                ret.add(p);
+    	if( ret.size() == 0 )
+    		throw new AssertionError("no subgoal?");
+        return ret;
     }
 
     static void init( TreeNode node ) {
@@ -276,6 +277,46 @@ public class ExprGen {
             }
         }
     }
+    // for syntactically invalid nodes jump to next operation
+    static boolean nextOp( TreeNode node ) {
+        Boolean ok = false;
+        if( node.lft != null ) {
+            ok = nextOp(node.lft);
+            if( ok )
+                return true;
+        }
+        if( node.rgt != null ) {
+            init(node.lft);
+            ok = nextOp(node.rgt);
+            if( ok )
+                return true;
+        }
+
+        if( node.lft == null ) {
+        	node.label = zilliaryOps[zilliaryOps.length-1];
+            return true;
+        } else {
+            if( node.rgt == null ) {
+                int index = index(node.label,unaryOps)+1;
+                if( index == unaryOps.length )
+                    return false;
+                else {
+                    init(node);
+                    node.label = unaryOps[index];
+                    return true;
+                }
+            } else {
+                int index = index(node.label,binaryRelsOps)+1;
+                if( index == binaryRelsOps.length )
+                    return false;
+                else {
+                    init(node);
+                    node.label = binaryRelsOps[index];
+                    return true;
+                }
+            }
+        }
+    }
     private static int index( String s, String[] src ) {
         int ret = -1;
         for (int i = 0; i < src.length; i++) {
@@ -285,12 +326,15 @@ public class ExprGen {
         return ret;
     }
 
-    private static void listAssertions( ParseNode root, List<LexerToken> src, String input, Map<String,Long> ret ) {
+    private static void listAssertions( ParseNode root, List<LexerToken> src, String input, Map<String,long[]> ret ) {
 		if( root.contains(Program.assertion) ) {
-			ParseNode goal = subgoal(root, src);
 			int offset = src.get(root.from).begin;
-			ret.put(input.substring(offset,src.get(root.to-1).end),
-					                Util.lPair(src.get(goal.from).begin-offset, src.get(goal.to-1).end-offset ));
+			String assertion = input.substring(offset,src.get(root.to-1).end);
+			long[] entries = null;
+			for( ParseNode goal : subgoals(root, src) ) {
+				entries = Array.insert(entries, Util.lPair(src.get(goal.from).begin-offset, src.get(goal.to-1).end-offset));
+			}
+			ret.put(assertion,entries);
 			return;
 		}
 		for( ParseNode p : root.children() )

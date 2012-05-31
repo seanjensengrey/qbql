@@ -14,6 +14,10 @@
         Elapsed=147369
         evalTime=33376
         y <and> z = y <-> ((<NOT>(y) v z) = (R11 v y)).
+        Elapsed=8338
+        evalTime=7054
+        Elapsed=6885 with nextOp optimization
+        evalTime=6505
 
         //String goal = "(x @^ y) @v (x @^ z) = expr.";
         //String goal = "x /< y = expr.";
@@ -53,10 +57,10 @@ x <mult> (y <mult> z) = (x <mult> y) <mult> z.
 x <mult> (y v z) = (x <mult> y) v (x <mult> z).
 */
 
-/*
+
 y < x -> FD(r,x,y).
 FD(r,x,y) & FD(r,y,z) -> FD(r,x,z).   
 FD(r,x,y) -> FD(r,x^z,y^z).
-*/
 
-x /< y = expr.
+--(x /< y)  = expr.
+--y <and> z = y <-> F(y,z).
