@@ -37,15 +37,15 @@ public class ExprGen {
         System.out.println("goal: "+Util.removeComments(goal));
 
         final String[] constants = new String[] {
-                //"R00",
-                //"R11",             
+                "R00",
+                "R11",             
                 //"Id",             
         };
 
         final String[] binaryOps = new String[] {
                 "^",
                 "v", 
-                "<and>",
+                //"<and>",
                 //"<\"and\">",
                 //"/^",
                 //"/>",
@@ -101,6 +101,8 @@ public class ExprGen {
             }              
 
         Verifier[] verifiers= new Verifier[threads];
+        final Set<String> variables = extractVariables(root, src, new Program(new Database("qbql.lang")));
+        variables.remove("expr");
         for( int i = 0; i < threads; i++ ) {
             Database quickDb = new Database("qbql.lang");
             final Program quick = new Program(quickDb);
@@ -116,11 +118,8 @@ public class ExprGen {
             databaseOperations.addAll(full.database.operationNames());
             for( String op : databaseOperations )
                 quick.database.addOperation(op, full.database.getOperation(op));
-            verifiers[i] = new Verifier(assertions, lex, quick, full, databaseOperations);
+            verifiers[i] = new Verifier(assertions, lex, quick, full, databaseOperations, variables.toArray(new String[0]));
         }
-
-        final Set<String> variables = extractVariables(root, src, verifiers[0].full);
-        variables.remove("expr");
 
         zilliaryOps = new String[variables.size()+constants.length];
         for( int i = 0; i < variables.size(); i++ ) {
