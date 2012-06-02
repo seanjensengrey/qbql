@@ -57,18 +57,20 @@ x <mult> (y <mult> z) = (x <mult> y) <mult> z.
 x <mult> (y v z) = (x <mult> y) v (x <mult> z).
 */
 
-
-(y < x -> FD(r,x,y)).
-!(FD(r,x,y) <-> x=x).
-!(FD(r,x,y) <-> y<x).
-!(FD(r,x,y) <-> r^y<x).
-(FD(r,x,y) & FD(r,y,z) -> FD(r,x,z)).   
-(FD(r,x,y) -> FD(r,x^z,y^z)).
-
-
 /*
-!(F(y,z) <-> z=z).
-y <and> z = y <-> F(y,z).
-!(F(y,z) <-> y=y).
+(FD(r,x,y) -> FD(r,x^z,y^z)).
+(FD(r,x,y) & FD(r,y,z) -> FD(r,x,z)).   
+!(FD(r,x,y) <-> x=x).
+!(FD(r,x,y) <-> x<y).
+(x < y -> FD(r,x,y)).
+!(FD(r,x,y) <-> r^x<y).
+!(FD(r,x,y) <-> R00^x<y).
 */
+
+(FD(x,y) -> FD(x^z,y^z)).
+(FD(x,y) & FD(y,z) -> FD(x,z)).   
+!(FD(x,y) <-> x=x).
+!(FD(x,y) <-> x<y).
+(x < y -> FD(x,y)).
+!(FD(x,y) <-> R00^x<y).
 

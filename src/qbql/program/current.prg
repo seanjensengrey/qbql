@@ -191,11 +191,12 @@ x+ ^ y+ = (x ^ y)+.
 ([s]a b)+;         
 */
 
+/*
 y < x -> (r ^ y) < x.
 (r ^ y) < x -> (r ^ y ^ z) < x ^ z.
 (r ^ y) < x & (r ^ z) < y -> (r ^ z) < x.
+*/
 
---(y < x) -> (r^x^y < r^x^<NOT>y).
---r^x^y < r^x^<NOT>y & /*FD(r,y,z)*/r^y^z < r^y^<NOT>z -> /*FD(r,x,z)*/r^x^z < r^x^<NOT>z.   
---r^x^y < r^x^<NOT>y -> /*FD(r,x^z,y^z)*/r^x^y^z < r^x^<NOT>(y^z).
+
+
 

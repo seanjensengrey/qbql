@@ -26,7 +26,7 @@ public class ExprGen {
 
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
-        //"<NOT>",
+        "<NOT>",
         //"<INV>",
         //"<EQ_CLOSE>",
         //"<CP_CLOSE>",
@@ -38,7 +38,7 @@ public class ExprGen {
         System.out.println("goal: "+Util.removeComments(goal));
 
         final String[] constants = new String[] {
-                "R00",
+                //"R00",
                 //"R11",             
                 //"Id",             
         };
@@ -64,8 +64,11 @@ public class ExprGen {
                 //"|"
         };
         int threads = Runtime.getRuntime().availableProcessors();
-        //threads = 1;
+        threads = 1;
         System.out.println("Using " + threads + " threads");
+        //String skipTo = "((r ^ r) ^ (r ^ <NOT>(r)))";
+        String skipTo = "((z ^ z) ^ (z ^ <NOT>(z)))";
+        //skipTo = null;
 
         //String quickFile = "FD.db";
         String quickFile = "Figure1.db";
@@ -135,8 +138,6 @@ public class ExprGen {
         l.add(Polish.leaf());
         l.add(TreeNode.one);
 
-        boolean skip = true;
-        skip = false;
         for( Polish num = new Polish(l); ; num.next() ) {
             if( !num.wellBuilt() )
                 continue;
@@ -160,9 +161,9 @@ public class ExprGen {
             		System.exit(0);                	
                 }*/
                 //if( skip && "(<NOT>((<NOT>((r ^ r)) ^ r)) ^ (<NOT>(r) ^ r))".equals(n.toString()) )
-                if( skip && "(((r ^ r) ^ r) ^ ((<NOT>(r) ^ r) ^ r))".equals(n.toString()) )
-                    skip = false;
-                if( skip )
+				if( n.toString().equals(skipTo) )
+					skipTo = null;
+                if( skipTo != null )
                     continue;
                 do {  
                     if( n.isRightSkewed() )
@@ -335,7 +336,9 @@ public class ExprGen {
     }
 
     private static void listAssertions( ParseNode root, List<LexerToken> src, String input, Map<String,long[]> ret ) {
-    	int num = 0;
+    	listAssertions(root, src, input, ret, 0 );
+    }
+    private static void listAssertions( ParseNode root, List<LexerToken> src, String input, Map<String,long[]> ret, int num ) {
 		if( root.contains(Program.assertion) ) {
 			final String prefix = "/*"+num+"*/";
 			int offset = src.get(root.from).begin;
@@ -348,7 +351,7 @@ public class ExprGen {
 			return;
 		}
 		for( ParseNode p : root.children() )
-			listAssertions(p, src, input, ret);
+			listAssertions(p, src, input, ret, ++num);
 	}
 
 }
