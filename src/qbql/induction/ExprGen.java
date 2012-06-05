@@ -1,5 +1,6 @@
 package qbql.induction;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,7 +28,7 @@ public class ExprGen {
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
         "<NOT>",
-        //"<INV>",
+        "<INV>",
         //"<EQ_CLOSE>",
         //"<CP_CLOSE>",
     };
@@ -45,16 +46,16 @@ public class ExprGen {
 
         final String[] binaryOps = new String[] {
                 "^",
-                //"v", 
+                "v", 
                 //"<and>",
                 //"<\"and\">",
                 //"/^",
                 //"/>",
                 //"/<",
-                /*"/=",
-            "/0",
-            "/1",
-            "/!",*/
+                //"/=",
+            //"/0",
+            //"/1",
+            //"/!",
         };
         final String[] binaryRels = new String[] {
                 "<",
@@ -63,11 +64,8 @@ public class ExprGen {
                 //"&",
                 //"|"
         };
-        int threads = Runtime.getRuntime().availableProcessors();
-        threads = 1;
-        System.out.println("Using " + threads + " threads");
         //String skipTo = "((r ^ r) ^ (r ^ <NOT>(r)))";
-        String skipTo = "((z ^ z) ^ (z ^ <NOT>(z)))";
+        String skipTo = "(y ^ (<NOT>(y) ^ y))";
         //skipTo = null;
 
         //String quickFile = "FD.db";
@@ -105,6 +103,10 @@ public class ExprGen {
                 binaryRelsOps[i+binaryOps.length] = binaryRels[i];
             }              
 
+        int threads = Runtime.getRuntime().availableProcessors();
+        if(  java.lang.management.ManagementFactory.getRuntimeMXBean(). getInputArguments().toString().contains("-agentlib:jdwp") )        	
+        	threads = 1;
+        System.out.println("Using " + threads + " threads");
         Verifier[] verifiers= new Verifier[threads];
         final Set<String> variables = extractVariables(root, src, new Program(new Database("qbql.lang")));
         variables.remove("expr");
@@ -154,7 +156,7 @@ public class ExprGen {
                 }
                 if( singleSolution )
                     n.print();
-                /*if( "((r ^ r) ^ (r ^ r))".equals(n.toString()) ) {
+                /*if( "((<NOT>(z) ^ z) ^ (z ^ z))".equals(n.toString()) ) {
             		System.out.println("*** reached (<NOT>((<NOT>(r) ^ r)) ^ (<NOT>(r) ^ r)) *** ");
             		System.out.println("Elapsed="+(System.currentTimeMillis()-ExprGen.startTime));
             		System.out.println("evalTime="+ExprGen.evalTime);
@@ -166,14 +168,16 @@ public class ExprGen {
                 if( skipTo != null )
                     continue;
                 do {  
+                    if( n.toString().contains("((<NOT>(y) ^ x) < (y ^ x))") )
+                        n.print();
                     if( n.isRightSkewed() )
                         continue;
                     if( n.isAbsorpIdemp() )
                         continue;
                     if( n.isDoubleComplement() )
                         continue;
-                    //if( n.toString().contains("(((R00 ^ s) v t) ^ s)") )
-                        //n.print();
+                    //if( !n.variables().containsAll(variables) )
+                    	//continue;
                     boolean launched = false;
                     do {
                         if( verifiers.length == 1 ) {

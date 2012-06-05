@@ -57,20 +57,15 @@ x <mult> (y <mult> z) = (x <mult> y) <mult> z.
 x <mult> (y v z) = (x <mult> y) v (x <mult> z).
 */
 
-/*
-(FD(r,x,y) -> FD(r,x^z,y^z)).
-(FD(r,x,y) & FD(r,y,z) -> FD(r,x,z)).   
-!(FD(r,x,y) <-> x=x).
-!(FD(r,x,y) <-> x<y).
-(x < y -> FD(r,x,y)).
-!(FD(r,x,y) <-> r^x<y).
-!(FD(r,x,y) <-> R00^x<y).
-*/
+--(x /! x) ^ x = expr.  -- = (<NOT>((<INV>((<NOT>(x) ^ <INV>(x))) ^ x)) ^ x).
+--(x /< x) <and> y= expr.  -- = <INV>(y) v y
 
-(FD(x,y) -> FD(x^z,y^z)).
-(FD(x,y) & FD(y,z) -> FD(x,z)).   
-!(FD(x,y) <-> x=x).
-!(FD(x,y) <-> x<y).
-(x < y -> FD(x,y)).
+--!(FD(x,y) <-> x < <INV>(y) v y).
+!(FD(x,y) <-> <NOT>(y)^x < y). -- <-> <NOT>(y)^x < y^x. <-> <INV>(x) ^ x < y.
 !(FD(x,y) <-> R00^x<y).
+!(FD(x,y) <-> x<y).
+!(FD(x,y) <-> x=x).
+(x < y -> FD(x,y)).
+(FD(x,y) & FD(y,z) -> FD(x,z)).   
+(FD(x,y) -> FD(x^z,y^z)).
 

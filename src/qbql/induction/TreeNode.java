@@ -1,6 +1,8 @@
 package qbql.induction;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class TreeNode {
     TreeNode lft;
@@ -11,7 +13,7 @@ public class TreeNode {
         this.rgt = rgt;
     }   
     
-    void print() {
+	void print() {
         System.out.println(toString()); 
     }
     String toString( int depth ) {      
@@ -97,10 +99,7 @@ public class TreeNode {
     // algebraic optimizations
     boolean isRightSkewed() {
         boolean ret = false;
-        
-        if( "<".equals(label) || ">".equals(label) )
-            return ret;
-        
+                
         if( lft != null )
             ret = lft.isRightSkewed();
         if( ret )
@@ -111,12 +110,15 @@ public class TreeNode {
         if( ret )
             return ret;
         
+        if( "<".equals(label) || ">".equals(label) ) 
+        	return false;
+        
         if( lft != null && rgt != null ) {
             if( label != null && // idempotence
                 ("^".equals(label) || "v".equals(label) || "<AND>".equals(label) || "<OR>".equals(label) ) ) 
                 if( lft.weight(true) == rgt.weight(true) )
                     return true;
-            return lft.weight() < rgt.weight();
+            return lft.weight(true) < rgt.weight(true);
         }
         return ret;
     }
@@ -155,6 +157,10 @@ public class TreeNode {
                            ) return true;
                 }
             }
+            if( lft.weight(true) == rgt.weight(true) ) 
+            	if( "^".equals(label)||"v".equals(label)||"<AND>".equals(label)||"<OR>".equals(label) ) 
+            	    return true;
+            
         }
         
         return ret;
@@ -179,5 +185,40 @@ public class TreeNode {
         
         return ret;
     }
+    
+    Set<String> variables() {
+    	Set<String> ret = new HashSet<String>();
+    	if( lft == null && rgt == null) {
+    		ret.add(label);
+    		return ret;
+    	}
+        if( lft != null )
+    		ret.addAll(lft.variables());
+    	if( rgt != null )
+    		ret.addAll(rgt.variables());
+    	return ret;
+    }
 
+    private TreeNode( TreeNode lft, String label, TreeNode rgt ) {
+		this.lft = lft;
+		this.rgt = rgt;
+		this.label = label;
+	}
+
+    public static void main( String[] args ) {
+    	TreeNode l = new TreeNode(
+				new TreeNode(null,"y",null),
+				"^",
+				new TreeNode(null,"x",null));
+		TreeNode r = new TreeNode(
+				new TreeNode(new TreeNode(null,"x",null),"<NOT>",null),
+				"^",
+				new TreeNode(null,"y",null));
+		TreeNode n = new TreeNode(
+    			l,
+    			"<",
+    			r
+        );
+    	System.out.println("isRightSkewed="+n.isRightSkewed());
+	}
 }

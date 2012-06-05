@@ -198,5 +198,7 @@ y < x -> (r ^ y) < x.
 */
 
 
+<NOT>(y)^x < y <-> <NOT>(y)^x < y^x.
 
+<INV>(x) ^ x < y <-> <NOT>(y)^x < y^x.
 
