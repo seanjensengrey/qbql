@@ -117,6 +117,8 @@ public class Expr {
                 rgt = convert(l,r,child,src);
             } else if( oper == null )
                 oper = child.content(src);
+            else if( "/".equals(oper) )
+            	oper += child.content(src);
             else {   //oper += child.content(src); 
                 root.printTree();System.out.println(root.content(src));
                 throw new AssertionError("oper += child.content(src)");
