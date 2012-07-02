@@ -110,15 +110,18 @@ public class TreeNode {
         if( ret )
             return ret;
         
-        if( "<".equals(label) || ">".equals(label) ) 
+        if( "<".equals(label) || ">".equals(label) || "/<".equals(label) || "/>".equals(label) ) 
         	return false;
         
         if( lft != null && rgt != null ) {
-            if( label != null && // idempotence
-                ("^".equals(label) || "v".equals(label) || "<AND>".equals(label) || "<OR>".equals(label) ) ) 
-                if( lft.weight(true) == rgt.weight(true) )
-                    return true;
-            return lft.weight(true) < rgt.weight(true);
+            if( label != null && 
+                ("^".equals(label) || "v".equals(label) 
+               || "<AND>".equals(label) || "<OR>".equals(label) 
+               || "<and>".equals(label) || "<\"and\">".equals(label) 
+               || "/=".equals(label) || "/^".equals(label) 
+               || "/0".equals(label) || "/1".equals(label) || "/!".equals(label) 
+           ) ) 
+                return lft.weight(true) < rgt.weight(true);
         }
         return ret;
     }
