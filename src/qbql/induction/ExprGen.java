@@ -49,6 +49,7 @@ public class ExprGen {
                 "v", 
                 //"<and>",
                 //"<\"and\">",
+                //"<OR>",
                 //"/^",
                 //"/>",
                 //"/<",
@@ -59,14 +60,13 @@ public class ExprGen {
         };
         final String[] binaryRels = new String[] {
                 "<",
-                //"=",
+                "=",
                 //"!=",
                 //"&",
                 //"|"
         };
-        //String skipTo = "((r ^ r) ^ (r ^ <NOT>(r)))";
-        String skipTo = "(y ^ (<NOT>(y) ^ y))";
-        //skipTo = null;
+        String skipTo = "((<NOT>(y) ^ <NOT>(y)) ^ (<NOT>(y) ^ <NOT>(y)))";
+        skipTo = null;
 
         //String quickFile = "FD.db";
         String quickFile = "Figure1.db";
@@ -167,8 +167,9 @@ public class ExprGen {
 					skipTo = null;
                 if( skipTo != null )
                     continue;
+                //System.out.println("-----------------");
                 do {  
-                    if( n.toString().contains("((<NOT>(y) ^ x) < (y ^ x))") )
+                    if( n.toString().contains("((<NOT>(y) ^ <NOT>(x)) ^ (<INV>(y) ^ <INV>(x)))") )
                         n.print();
                     if( n.isRightSkewed() )
                         continue;
@@ -227,8 +228,8 @@ public class ExprGen {
                 ret.add(p);
     		else if( p.contains(Program.inductionFormula) )
                 ret.add(p);
-    	if( ret.size() == 0 )
-    		throw new AssertionError("no subgoal?");
+    	//if( ret.size() == 0 )
+    		//return null; //e.g. x <op> y = expr. ...  //throw new AssertionError("no subgoal?");
         return ret;
     }
 
@@ -340,14 +341,16 @@ public class ExprGen {
     }
 
     private static void listAssertions( ParseNode root, List<LexerToken> src, String input, Map<String,long[]> ret ) {
-    	listAssertions(root, src, input, ret, 0 );
-    }
-    private static void listAssertions( ParseNode root, List<LexerToken> src, String input, Map<String,long[]> ret, int num ) {
 		if( root.contains(Program.assertion) ) {
-			final String prefix = "/*"+num+"*/";
+		    String prefix = "/*"; 
+		    for( String assertion : ret.keySet() ) {
+		        prefix = assertion.substring(0,assertion.indexOf("*/"));
+		        break;
+		    }
+			prefix += "_*/";
 			int offset = src.get(root.from).begin;
 			String assertion = input.substring(offset,src.get(root.to-1).end);
-			long[] entries = null;
+			long[] entries = new long[0];
 			for( ParseNode goal : subgoals(root, src) ) {
 				entries = Array.insert(entries, Util.lPair(src.get(goal.from).begin-offset+prefix.length(), src.get(goal.to-1).end-offset+prefix.length()));
 			}
@@ -355,7 +358,7 @@ public class ExprGen {
 			return;
 		}
 		for( ParseNode p : root.children() )
-			listAssertions(p, src, input, ret, ++num);
+			listAssertions(p, src, input, ret);
 	}
 
 }

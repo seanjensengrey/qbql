@@ -59,13 +59,38 @@ x <mult> (y v z) = (x <mult> y) v (x <mult> z).
 
 --(x /! x) ^ x = expr.  -- = (<NOT>((<INV>((<NOT>(x) ^ <INV>(x))) ^ x)) ^ x).
 --(x /< x) <and> y= expr.  -- = <INV>(y) v y
-
---!(FD(x,y) <-> x < <INV>(y) v y).
-!(FD(x,y) <-> <NOT>(y)^x < y). -- <-> <NOT>(y)^x < y^x. <-> <INV>(x) ^ x < y.
+--((R11 v R00) ^ x) /*< y*/ = expr.
+--<NOT>(R00 v <NOT>x) ^ x = expr.
+/*
+!(FD(x,y) <-> <NOT>(R00 v <NOT>x) ^ x < y). 
+!(FD(x,y) <-> <NOT>y < R00 v <NOT>x).
+!(FD(x,y) <-> x^<NOT>y < y). -- <-> x^<NOT>y < x^y. <-> <INV>(x) ^ x < y.
 !(FD(x,y) <-> R00^x<y).
 !(FD(x,y) <-> x<y).
-!(FD(x,y) <-> x=x).
+!(FD(x,y)).-- <-> x=x
 (x < y -> FD(x,y)).
 (FD(x,y) & FD(y,z) -> FD(x,z)).   
 (FD(x,y) -> FD(x^z,y^z)).
+*/
+/*
+!(FD(r,x,y) <-> <NOT>(R00 v <NOT>x) ^ x < y). 
+!(FD(r,x,y) <-> <NOT>y < R00 v <NOT>x).
+!(FD(r,x,y) <-> x^<NOT>y < y). -- <-> x^<NOT>y < x^y. <-> <INV>(x) ^ x < y.
+!(FD(r,x,y) <-> R00^x^r < y).
+!(FD(r,x,y) <-> x^<NOT>r < y).
+!(FD(r,x,y) <-> x^<INV>r < y).
+!(FD(r,x,y) <-> x^r < y).
+!(FD(r,x,y) <-> R00^x<y).
+!(FD(r,x,y) <-> x<y).
+!(FD(r,x,y)).-- <-> x=x
+(x < y -> FD(r,x,y)).
+(FD(r,x,y) & FD(r,y,z) -> FD(r,x,z)).   
+(FD(r,x,y) -> FD(r,x^z,y^z)).
+*/
+x <op> y = expr. 
+x <op> R00 = <NOT>x.
+R00 <op> y = <INV>y.
+
+ 
+
 
