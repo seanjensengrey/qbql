@@ -135,7 +135,7 @@ x`=y`-> x v R00 = y v R00.
 x < y <-> R00 = ((y' ^ x)` ^ x)`.
 x = y <-> R00 = ((((y)' <and> x))` v ((x)' ^ y)).
 
-x < y & x @^ y = x <-> x /< y = R01.
+x < y & x <OR> y = y <-> x /< y = R01.
 
 
 x = (x <OR> y) <and> ( x <OR> <NOT>(<INV>(y)) ).

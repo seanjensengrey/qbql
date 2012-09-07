@@ -19,7 +19,10 @@ x <OR> y = --(x ^ R11) v (y ^ (x v R11)). -- x <OR> (y <OR> z) = (x <OR> y) <OR>
 x <REMOVE> y = x v y`. -- project relation x onto all attributes except those in y
                        -- typical usage: EMP <REMOVE> [SAL MGR] 
         
--------------------------- More fancy operations -----------------------        
+-------------------------- More fancy operations -----------------------  
+
+--x <"->"> y = y <OR> <NOT>x.    
+x <"->"> y = (y v x) /< y.  
         
 x <and> y = --(x ^ R00) v (x ^ y) v (R00 ^ y). -- 4.9 sec R00 ^ (x v y) = R00 ^ (y v z) -> x @* (y @* z) = (x @* y) @* z.
          (x ^ y) v ((x v y) ^ R00). -- 4.9 sec (compared with join ^ associativity taking 3.7 sec)
@@ -52,6 +55,8 @@ x <Decomp> y = (x ^ <INV>y) v (x ^ <NOT>y).
 --x <mult> y = <NOT>((<NOT>(y) v <NOT>(x))).
 x <mult> y = x <"and"> y.
 
+
+x <gn> y = (<NOT>x ^ <INV>y) v (<INV>x ^ <NOT>y).
 -----------------------------------------------------------------------
 
 "f1 <*> f2 = p" = 

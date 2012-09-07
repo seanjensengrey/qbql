@@ -49,8 +49,8 @@ class Verifier {
     public void exec( final TreeNode n ) {
         String node = n.toString();
     	StringBuilder print = new StringBuilder();
-    	for( String goal : assertions.keySet() )
-    		try {
+        try {
+            for( String goal : assertions.keySet() ) {
     			String input = goal;
     			long[] intervals = assertions.get(goal);
     			for( int i = intervals.length-1; 0 <= i ; i-- ) {
@@ -60,8 +60,8 @@ class Verifier {
     				input = input.substring(0,Util.lX(intervals[i]))+tmp+input.substring(Util.lY(intervals[i]));				
 				}
     			print.append(input);
-    			if( goal.equals(input) )
-    				throw new AssertionError("goal didn't change");
+    			//if( goal.equals(input) )
+    				//throw new AssertionError("goal didn't change");
 
     			List<LexerToken> src =  lex.parse(input);
     			Matrix matrix = new Matrix(earley);
@@ -75,19 +75,21 @@ class Verifier {
     			long t2 = System.currentTimeMillis();                   
     			ParseNode eval = quick.program(root, src);
     			ExprGen.evalTime += System.currentTimeMillis()-t2;
-    			quick.database.restoreOperations(databaseOperations);
     			if( eval != null )
     				return;
     			t2 = System.currentTimeMillis();                   
     			eval = full.program(root, src);
     			ExprGen.evalTime += System.currentTimeMillis()-t2;
-    			full.database.restoreOperations(databaseOperations);
     			if( eval != null )
     				return;
-    		} catch( Throwable e ) {
-    			e.printStackTrace();
-    			System.exit(0);
-    		}
+            }
+        } catch( Throwable e ) {
+            e.printStackTrace();
+            System.exit(0);
+        } finally {
+            quick.database.restoreOperations(databaseOperations);
+            full.database.restoreOperations(databaseOperations);
+        }
 		System.out.println("*** found *** ");
    
 		System.out.println(print.toString());

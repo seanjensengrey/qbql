@@ -28,7 +28,7 @@ public abstract class Util {
         byte[] bytes = new byte[4096];
         int bytesRead = 0;
         BufferedInputStream bin = null;
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         try {
             bin = new BufferedInputStream(is);
             bytesRead = bin.read(bytes, 0, bytes.length);

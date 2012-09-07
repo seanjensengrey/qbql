@@ -678,6 +678,7 @@ public class Earley extends Parser {
                 if( pI+1 != pos )
                     continue;
                 for( int j = 0; j < post.size(); j++ ) {
+                //for( int j = post.size()-1; 0 <= j ; j-- ) {
                     int rJ = post.getRule(j);
                     int pJ = post.getPosition(j);
                     if( rules[rJ].rhs.length != pJ )

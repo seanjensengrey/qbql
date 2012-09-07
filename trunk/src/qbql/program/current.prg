@@ -197,8 +197,50 @@ y < x -> (r ^ y) < x.
 (r ^ y) < x & (r ^ z) < y -> (r ^ z) < x.
 */
 
-
+/*
 <NOT>(y)^x < y <-> <NOT>(y)^x < y^x.
 
 <INV>(x) ^ x < y <-> <NOT>(y)^x < y^x.
+
+x^<NOT>y < y <-> (R11 ^ x) < y.
+
+x^r < y <-> x^r < y^r.
+*/
+
+/*
+x < y <-> R01 < x <"->"> y.
+x ^ (x <"->"> y) < y.
+(x <"->"> y) ^ <NOT>y < <NOT>x.
+(x <"->"> y) ^ (y <"->"> z) < (x <"->"> z).
+(x <"->"> y) ^ (x <"->"> z) < (x <"->"> (y^z)).
+
+R01 = (x <"->"> (y <"->"> x)). 
+R01 = ((x <"->"> (y <"->"> z)) <"->"> ((x <"->"> y) <"->"> (x <"->"> z))).
+R01 = (((<NOT>x) <"->"> <NOT>y) <"->"> (((<NOT>x) <"->"> y) <"->"> x)). 
+*/
+/*
+R11 < (x <"->"> (y <"->"> x)). -- <--> R11 < R11 v (y ^ x) 
+R11 < ((x <"->"> (y <"->"> z)) <"->"> ((x <"->"> y) <"->"> (x <"->"> z))). -- <-->  R11 v ((z ^ x) ^ y)
+R11 < (((<NOT>x) <"->"> <NOT>y) <"->"> (((<NOT>x) <"->"> y) <"->"> x)). -- <--> R00 /< (y ^ x), R11 v (y ^ x)
+-- not interesting because:
+x <"->"> (y <"->"> x) = ((<NOT>x) <"->"> <NOT>y) <"->"> (((<NOT>x) <"->"> y) <"->"> x).
+*/
+
+R00 = <NOT>(x v <NOT>(x v <INV>x)).
+R11 = <INV>(x v <NOT>(x v <INV>x)).
+--R00 = (x v (x v x`)')'.
+(x ^ y) v (x ^ z) = x ^ ( ((x v z) ^ y) v ((x v y) ^ z) ).
+--false:(x ^ (y v (x ^ z))) ^ (x ^ (z v (x ^ y))) = x ^ (z v y).
+--false:x ^ (y v z) = x ^ (y v ((x v y) ^ (z v (x ^ y)))).
+
+--x <gn> y = (<NOT>y v <NOT>x) ^ (<INV>y v <INV>x).
+--false:x <gn> x = x.
+x <gn> y = y <gn> x.
+-- false: x <gn> (y <gn> z) = (x <gn> y) <gn> z.
+x <gn> R00 = <INV>x.
+x <gn> R11 = <NOT>x.
+
+x <gn2> y = (<NOT>(x) ^ <INV>(y)).
+x <gn2> R11 = <NOT>x.
+R00 <gn2> y = <INV>y.
 
