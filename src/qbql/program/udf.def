@@ -22,7 +22,8 @@ x <REMOVE> y = x v y`. -- project relation x onto all attributes except those in
 -------------------------- More fancy operations -----------------------  
 
 --x <"->"> y = y <OR> <NOT>x.    
-x <"->"> y = (y v x) /< y.  
+x <"->"> y = (y v x) /< y. 
+x <"1"> y = (x /1 y) ^ x ^ y. 
         
 x <and> y = --(x ^ R00) v (x ^ y) v (R00 ^ y). -- 4.9 sec R00 ^ (x v y) = R00 ^ (y v z) -> x @* (y @* z) = (x @* y) @* z.
          (x ^ y) v ((x v y) ^ R00). -- 4.9 sec (compared with join ^ associativity taking 3.7 sec)
@@ -83,5 +84,4 @@ a a a
 b b b
 c c c
 ;*/
-
 

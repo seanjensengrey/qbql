@@ -3,69 +3,69 @@
 -- Attributes are renamed: x -> p, y -> q, z -> r, because 
 -- elsewhere x, y, and z are relation variables!
 
-A=[p]
-   1
+"[p]1"=[p]
+    1
 ;
-B=[p]
+"[p]12"=[p] 
    1
    2
 ;
-C=[q]
+"[q]a"=[q]
    a
 ;
-D=[q]
+"[q]a b"=[q]
    a
    b
 ;
 
-JAC = A ^ C;
+JAC = "[p]1" ^ "[q]a";
 
-JAD = A ^ D;
+JAD = "[p]1" ^ "[q]a b";
 
-JBC = B ^ C;
+JBC = "[p]12" ^ "[q]a";
 
-_A = A ^ R00;
+P1_ = "[p]1" ^ R00;
 
-_C = C ^ R00;
+Qa_ = "[q]a" ^ R00;
 
-ADvBC = (A ^ D) v (B ^ C);
+ADvBC = ("[p]1" ^ "[q]a b") v ("[p]12" ^ "[q]a");
 
 -- Additional relations (beyond the scope of Figure 1)
 
-A0 = [p] 0;
-A1 = [p] 2;
-A2 = [p] 0 2;
-A3 = [p] 0 1;
-A4 = [p] 0 1 2;
+"[p]0" = [p] 0;
+"[p]2" = [p] 2;
+P02 = [p] 0 2;
+P01 = [p] 0 1;
+P012 = [p] 0 1 2;
 		
-D0 = [q] b;
-D1 = [q] c;
-D2 = [q] b c;
-D3 = [q] a b c;
+Qb = [q] b;
+Qc = [q] c;
+Qbc = [q] b c;
+Qabc = [q] a b c;
 
-F =  [r] 0;
-F_ = [r];
+"[r]0" =  [r] 0;
+"[r]" = [r];
 
 /*
-S0=[p  r]
+PR000110=[p  r]
    0  0
    0  1
    1  0
 ;
-S1=[p  r]
+PR0010=[p  r]
     0  0
     1  0
 ;
 */
 
-S2 = [p r]   -- aka "[p=r]" 
+"[p=r]" = [p r]     
            0 0
            1 1
            2 2
 ;
   
 
-S3= [p r]   -- aka "[p<r]" 
+"[p<r]" = [p r]     
            0 0
            0 1
            0 2
@@ -73,36 +73,54 @@ S3= [p r]   -- aka "[p<r]"
            1 2
            2 2
 ;
-S_ = [p r];
+"[p r]" = [p r];
 
-T1 = [q r]
+"[q r]a0" = [q r]
       a 0
 ;
-T2 = [q r]
+"[q r]b0" = [q r]
       b 0
 ;
-T3 = [q r]
+"[q r]a0b0" = [q r]
       a 0
       b 0
 ;
-T4 = [q r]
+"[q r]a0b0a1" = [q r]
       a 0
       b 0
       a 1
 ;
-T5 = [q r]
+"[q r]a0b0a1b1" = [q r]
       a 0
       b 0
       a 1
       b 1
 ;
-T_ = [q r];
+"[q r]" = [q r];
 
+
+"p->q"=[p  q  r]
+   0  a  0
+   0  a  1
+   1  c  0
+   1  c  1
+   2  a  0
+;
+/*"p->q t"=[p  q  r  t]
+   0  a  0  "<0,a,0>"
+   0  a  1  "<0,a,1>"
+   1  c  0  "<1,c,0>"
+   1  c  1  "<1,c,1>"
+   2  a  0  "<2,a,0>"
+;
+T0 = [t] "<0,a,0>";
+TT = [t];
+*/
 
 --S1jT1 = S1 ^ T1;
 
 
-/* Alice p.171 remapped: 
+/* Alice p.171 remapped: */
 SDT = [q  s   p   r]
        c  s   0   0
        c  s   0   1
@@ -119,7 +137,9 @@ SDPjDT = SDP ^ DT;
 SDPjST = SDP ^ ST;
 DTjST = DT ^ ST; 
 
-MaierP137=[p  q  r] 
+PQS = SDT v [p r s];
+
+/*MaierP137=[p  q  r] 
            0  a  0 
            0  b  1 
            1  c  2 

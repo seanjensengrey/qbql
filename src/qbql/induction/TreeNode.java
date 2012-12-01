@@ -12,6 +12,11 @@ public class TreeNode {
         this.lft = lft;
         this.rgt = rgt;
     }   
+    public TreeNode( TreeNode lft, String label, TreeNode rgt ) {
+        this.lft = lft;
+        this.rgt = rgt;
+        this.label = label;
+    }
     
 	void print() {
         System.out.println(toString()); 
@@ -202,11 +207,6 @@ public class TreeNode {
     	return ret;
     }
 
-    private TreeNode( TreeNode lft, String label, TreeNode rgt ) {
-		this.lft = lft;
-		this.rgt = rgt;
-		this.label = label;
-	}
 
     public static void main( String[] args ) {
     	TreeNode l = new TreeNode(

@@ -1,5 +1,5 @@
 -- 2 different styles of include
-include "c:/qbql_trunk/src/qbql/program/Figure1.db"; 
+--include "c:/qbql_trunk/src/qbql/program/Figure1.db"; 
 include udf.def;  
 --include volume.db;
 
@@ -54,6 +54,7 @@ CB = Colored v ([name]B ^ ([color])');
  0 c
 ;
 */
+
 /*
 X=[p  q  r]
    0  a  0
@@ -80,6 +81,7 @@ X#[p] /^ X#[r p];
 X#[p] /^ X#R00;
 X#[p] /^ X#R10;
 */
+
 /*x /< y = <NOT>( <INV>(x v y) <and> (x ^ <NOT>y) ).
 
 x <mult> y = x ^ y.
@@ -226,6 +228,7 @@ R11 < (((<NOT>x) <"->"> <NOT>y) <"->"> (((<NOT>x) <"->"> y) <"->"> x)). -- <--> 
 x <"->"> (y <"->"> x) = ((<NOT>x) <"->"> <NOT>y) <"->"> (((<NOT>x) <"->"> y) <"->"> x).
 */
 
+/*
 R00 = <NOT>(x v <NOT>(x v <INV>x)).
 R11 = <INV>(x v <NOT>(x v <INV>x)).
 --R00 = (x v (x v x`)')'.
@@ -243,4 +246,41 @@ x <gn> R11 = <NOT>x.
 x <gn2> y = (<NOT>(x) ^ <INV>(y)).
 x <gn2> R11 = <NOT>x.
 R00 <gn2> y = <INV>y.
+*/
 
+/*
+p^R00=p & q^R00=q & r^R00=r & x^R00 < p^q^r
+&
+x /^ (x v t) = x v t`
+&
+x v (p ^ q) < (x v p) /< (x v q)
+&
+x v (q ^ r) < (x v q) /< (x v r)
+->
+x v (p ^ r) < (x v p) /< (x v r).
+*/
+/*
+x^R00 < t --& t ^ R00 = t
+&
+(x v t) /= x = x v <INV>t 
+&
+x < (x v p) /< (x v q)
+->
+((x v <INV>t) v (p ^ q)) ^ ((x v <INV>t) v (p ^ <INV>q)) < x v <INV>t.
+*/
+
+
+
+    R = [p q]
+         1 2
+         3 4
+;
+
+S = [q r]
+         4 5
+         6 7
+;
+
+R <OR> S;
+
+R11;

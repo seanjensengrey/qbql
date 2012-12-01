@@ -39,9 +39,13 @@ public class ExprGen {
         System.out.println("goal: "+Util.removeComments(goal));
 
         final String[] constants = new String[] {
-                //"R00",
+                "R00",
                 //"R11",             
-                //"Id",             
+                //"Id", 
+                //"R",
+                //"A1A2",
+                //"A1",
+                //"A2",
         };
 
         final String[] binaryOps = new String[] {
@@ -59,8 +63,8 @@ public class ExprGen {
             //"/!",
         };
         final String[] binaryRels = new String[] {
-                "<",
-                "=",
+                //"<",
+                //"=",
                 //"!=",
                 //"&",
                 //"|"
@@ -110,6 +114,10 @@ public class ExprGen {
         Verifier[] verifiers= new Verifier[threads];
         final Set<String> variables = extractVariables(root, src, new Program(new Database("qbql.lang")));
         variables.remove("expr");
+variables.remove("R");
+variables.remove("A1");
+variables.remove("A2");
+variables.remove("A1A2");
         for( int i = 0; i < threads; i++ ) {
             Database quickDb = new Database("qbql.lang");
             final Program quick = new Program(quickDb);
