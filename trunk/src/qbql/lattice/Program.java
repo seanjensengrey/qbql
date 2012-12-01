@@ -163,7 +163,7 @@ public class Program {
             //namedValue = earley.symbolIndexes.get("namedValue");
             //System.out.println(earley.allSymbols[20]);
         } catch( Exception e ) {
-            e.printStackTrace(); // (authorized)
+            e.printStackTrace(); 
         }
     }
 

@@ -19,10 +19,6 @@
         Elapsed=6885 with nextOp optimization
         evalTime=6505
 
-        //String goal = "(x @^ y) @v (x @^ z) = expr.";
-        //String goal = "x /< y = expr.";
-        //String goal = "r#x < r#y <-> implication.";
-        //String goal = "x = y <-> R00 = expr.";
 */
 
 
@@ -61,8 +57,9 @@ x <mult> (y v z) = (x <mult> y) v (x <mult> z).
 --(x /< x) <and> y= expr.  -- = <INV>(y) v y
 --((R11 v R00) ^ x) /*< y*/ = expr.
 --<NOT>(R00 v <NOT>x) ^ x = expr.
-/*
-!(FD(x,y) <-> <NOT>(R00 v <NOT>x) ^ x < y). 
+
+
+/*!(FD(x,y) <-> <NOT>(R00 v <NOT>x) ^ x < y). 
 !(FD(x,y) <-> <NOT>y < R00 v <NOT>x).
 !(FD(x,y) <-> x^<NOT>y < y). -- <-> x^<NOT>y < x^y. <-> <INV>(x) ^ x < y.
 !(FD(x,y) <-> R00^x<y).
@@ -70,9 +67,11 @@ x <mult> (y v z) = (x <mult> y) v (x <mult> z).
 !(FD(x,y)).-- <-> x=x
 (x < y -> FD(x,y)).
 (FD(x,y) & FD(y,z) -> FD(x,z)).   
-(FD(x,y) -> FD(x^z,y^z)).
-*/
-/*
+(FD(x,y) -> FD(x^z,y^z)).*/
+
+
+/*!(FD(r,x,y) <-> ((r /1 r) ^ x) < y).
+!(FD(r,x,y) <-> ((R00 v r) ^ x) < y).
 !(FD(r,x,y) <-> <NOT>(R00 v <NOT>x) ^ x < y). 
 !(FD(r,x,y) <-> <NOT>y < R00 v <NOT>x).
 !(FD(r,x,y) <-> x^<NOT>y < y). -- <-> x^<NOT>y < x^y. <-> <INV>(x) ^ x < y.
@@ -83,14 +82,13 @@ x <mult> (y v z) = (x <mult> y) v (x <mult> z).
 !(FD(r,x,y) <-> R00^x<y).
 !(FD(r,x,y) <-> x<y).
 !(FD(r,x,y)).-- <-> x=x
+!(FD(r,x,y) -> R00^x<y | R00^x<y).
 (x < y -> FD(r,x,y)).
 (FD(r,x,y) & FD(r,y,z) -> FD(r,x,z)).   
 (FD(r,x,y) -> FD(r,x^z,y^z)).
-*/
-x <op> y = expr. 
-x <op> R00 = <NOT>x.
-R00 <op> y = <INV>y.
 
- 
+(r v x) ^ (r v y) < r  <-> F(x,y,r).*/
 
+--((x v (u ^ R00)`) ^ (y v (z ^ R00)`)) /^ (z ^ u) = expr.
 
+(x v <INV>y) /< (y /< z) = expr.
