@@ -242,33 +242,33 @@ variables.remove("A1A2");
     }
 
     static void init( TreeNode node ) {
-        if( node.lft == null ) 
+        if( node.getLft() == null ) 
             node.label = zilliaryOps[0];
         else {
-            init(node.lft);
-            if( node.rgt == null ) 
+            init(node.getLft());
+            if( node.getRgt() == null ) 
                 node.label = unaryOps[0];
             else {
-                init(node.rgt);
+                init(node.getRgt());
                 node.label = binaryRelsOps[0];
             }
         }
     }
     static boolean next( TreeNode node ) {
         Boolean ok = false;
-        if( node.lft != null ) {
-            ok = next(node.lft);
+        if( node.getLft() != null ) {
+            ok = next(node.getLft());
             if( ok )
                 return true;
         }
-        if( node.rgt != null ) {
-            init(node.lft);
-            ok = next(node.rgt);
+        if( node.getRgt() != null ) {
+            init(node.getLft());
+            ok = next(node.getRgt());
             if( ok )
                 return true;
         }
 
-        if( node.lft == null ) {
+        if( node.getLft() == null ) {
             int index = index(node.label,zilliaryOps)+1;
             if( index == zilliaryOps.length )
                 return false;
@@ -278,7 +278,7 @@ variables.remove("A1A2");
                 return true;
             }
         } else {
-            if( node.rgt == null ) {
+            if( node.getRgt() == null ) {
                 int index = index(node.label,unaryOps)+1;
                 if( index == unaryOps.length )
                     return false;
@@ -302,23 +302,23 @@ variables.remove("A1A2");
     // for syntactically invalid nodes jump to next operation
     static boolean nextOp( TreeNode node ) {
         Boolean ok = false;
-        if( node.lft != null ) {
-            ok = nextOp(node.lft);
+        if( node.getLft() != null ) {
+            ok = nextOp(node.getLft());
             if( ok )
                 return true;
         }
-        if( node.rgt != null ) {
-            init(node.lft);
-            ok = nextOp(node.rgt);
+        if( node.getRgt() != null ) {
+            init(node.getLft());
+            ok = nextOp(node.getRgt());
             if( ok )
                 return true;
         }
 
-        if( node.lft == null ) {
+        if( node.getLft() == null ) {
         	node.label = zilliaryOps[zilliaryOps.length-1];
             return true;
         } else {
-            if( node.rgt == null ) {
+            if( node.getRgt() == null ) {
                 int index = index(node.label,unaryOps)+1;
                 if( index == unaryOps.length )
                     return false;

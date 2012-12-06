@@ -8,4 +8,8 @@ public class Postulate extends TreeNode {
         super( lft, "=", rgt );
     }
 
+    public Postulate substitute( String x, TreeNode treeNode ) {
+        return new Postulate(getLft().substitute(x, treeNode),getRgt().substitute(x, treeNode));
+    }
+
 }
