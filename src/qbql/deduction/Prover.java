@@ -2,7 +2,9 @@ package qbql.deduction;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import qbql.induction.TreeNode;
 import qbql.lattice.Predicate;
@@ -17,132 +19,28 @@ import qbql.util.Util;
 
 public class Prover {
    public static Earley earley;
-   public static int naturalJoin;
-   public static int innerUnion;
-   public static int count;
-   static int userDefined;
-   static int unaryUserDefined;
-   static int userOper;
-   static int unnamedJoin;
-   static int unnamedMeet;
-   static int setIX;
-   static int setEQ;
-   static int contains;
-   static int transpCont;
-   static int disjoint;
-   static int almostDisj;
-   static int big;
-   static int complement;
-   static int CPclosure;
-   static int EQclosure;
-   static int inverse;
-   static int composition;
-   static int join;
-   static int meet;
-   static int equivalence;
-   static int equality;
-   public static int expr;
-   static int num;
-   static int minus;
-   static int partition;
-   static int parExpr;
-   public static int openParen;
-   public static int closeParen;
-   public static int implication;
-   public static int inductionFormula;
    static int proposition;
-   static int oper;
-   static int lt;
-   static int gt;
-   static int amp;
-   static int bar;
-   static int excl;
-   public static int assertion;
-   static int query;
+   static int assertion;
+   static int equality;
+   static int openParen;
 
    static int include;
    static int filename;
 
-   public static int identifier;
-   //public static int string_literal;
-
-
-   static int assignment;
-   static int relation;
-   static int table;
-   /*static int tuples;
-   static int tuple;*/
-   static int header;
-   static int content;
-   static int value;
-   public static int attribute;
-   //static int values;
-   //static int namedValue;
-   static int comma;
+   static int identifier;
+   
    static {        
        try {
            earley = new Earley(Program.latticeRules());
-           naturalJoin = earley.symbolIndexes.get("join");
-           userDefined = earley.symbolIndexes.get("userDefined");
-           unaryUserDefined = earley.symbolIndexes.get("unaryUserDefined");
-           userOper = earley.symbolIndexes.get("userOper");
-           innerUnion = earley.symbolIndexes.get("innerUnion");
-           count = earley.symbolIndexes.get("count");
-           unnamedJoin = earley.symbolIndexes.get("unnamedJoin");
-           unnamedMeet = earley.symbolIndexes.get("unnamedMeet");
-           setIX = earley.symbolIndexes.get("setIX");
-           setEQ = earley.symbolIndexes.get("setEQ");
-           contains = earley.symbolIndexes.get("contains");
-           transpCont = earley.symbolIndexes.get("transpCont");
-           disjoint = earley.symbolIndexes.get("disjoint");
-           almostDisj = earley.symbolIndexes.get("almostDisj");
-           big = earley.symbolIndexes.get("big");
-           complement = earley.symbolIndexes.get("complement");
-           CPclosure = earley.symbolIndexes.get("CPclosure");
-           EQclosure = earley.symbolIndexes.get("EQclosure");
-           inverse = earley.symbolIndexes.get("inverse");
-           composition = earley.symbolIndexes.get("composition");
-           join = earley.symbolIndexes.get("'v'");
-           meet = earley.symbolIndexes.get("'^'");
-           equivalence = earley.symbolIndexes.get("'~'");
            equality = earley.symbolIndexes.get("'='");
-           minus = earley.symbolIndexes.get("'-'");
-           lt = earley.symbolIndexes.get("'<'");
-           gt = earley.symbolIndexes.get("'>'");
-           amp = earley.symbolIndexes.get("'&'");
-           num = earley.symbolIndexes.get("'#'");
-           bar = earley.symbolIndexes.get("'|'");
-           excl = earley.symbolIndexes.get("'!'");
-           expr = earley.symbolIndexes.get("expr");
-           partition = earley.symbolIndexes.get("partition");
-           parExpr = earley.symbolIndexes.get("parExpr");
            openParen = earley.symbolIndexes.get("'('");
-           closeParen = earley.symbolIndexes.get("')'");
-           implication = earley.symbolIndexes.get("implication");
-           inductionFormula = earley.symbolIndexes.get("inductionFormula");
            proposition = earley.symbolIndexes.get("proposition");
-           oper = earley.symbolIndexes.get("oper");
            assertion = earley.symbolIndexes.get("assertion");
-           query = earley.symbolIndexes.get("query");
 
            include = earley.symbolIndexes.get("include");
            filename = earley.symbolIndexes.get("filename");
 
            identifier = earley.symbolIndexes.get("identifier");
-           //string_literal = earley.symbolIndexes.get("string_literal");
-
-           assignment = earley.symbolIndexes.get("assignment");
-           relation = earley.symbolIndexes.get("relation");
-           table = earley.symbolIndexes.get("table");
-           /*tuples = earley.symbolIndexes.get("tuples");
-           tuple = earley.symbolIndexes.get("tuple");*/
-           header = earley.symbolIndexes.get("header");
-           content = earley.symbolIndexes.get("content");
-           value = earley.symbolIndexes.get("value");
-           attribute = earley.symbolIndexes.get("attribute");
-           //values = earley.symbolIndexes.get("values");
-           //namedValue = earley.symbolIndexes.get("namedValue");
-           //System.out.println(earley.allSymbols[20]);
        } catch( Exception e ) {
            e.printStackTrace(); // (authorized)
        }
@@ -150,12 +48,12 @@ public class Prover {
           
    public static void main( String[] args ) throws Exception {
         String file = "boolean algebra.axm";
-        String axioms = Util.readFile(Prover.class,file);
+        String text = Util.readFile(Prover.class,file);
 
-        List<LexerToken> src =  new Lex().parse(axioms);
+        List<LexerToken> src =  new Lex().parse(text);
         Matrix matrix = new Matrix(earley);
         earley.parse(src, matrix); 
-        SyntaxError err = SyntaxError.checkSyntax(axioms, new String[]{"program"}, src, earley, matrix);      
+        SyntaxError err = SyntaxError.checkSyntax(text, new String[]{"program"}, src, earley, matrix);      
         if( err != null ) {
             System.out.println(err.toString());
             throw new AssertionError("Syntax Error");
@@ -163,21 +61,36 @@ public class Prover {
 
         ParseNode root = earley.forest(src, matrix);
         //root.printTree();
-        List<Postulate> theory = new Prover().program(root, src); 
-        for( Postulate p : theory )
-            System.out.println(p.toString());
+        Map<Integer,Postulate> theory = new Prover().program(root, src); 
+        
+        String divider = "-----------------";
+        int dividerLoc = text.indexOf(divider);
+        
+        List<Postulate> axioms = new LinkedList<Postulate>();
+        Postulate goal = null;
+        for( int i : theory.keySet() ) {
+            if( i < dividerLoc ) 
+                axioms.add(theory.get(i));
+            else {
+                if( goal != null )
+                    throw new AssertionError("more than one goal");
+                goal = theory.get(i);
+            }
+            //System.out.println(theory.get(i).toString());
+        }
+        prove(axioms,goal);
     }
    
-   public List<Postulate> program( ParseNode root, List<LexerToken> src ) {
-       List<Postulate> ret = new LinkedList<Postulate>();
+   public Map<Integer, Postulate> program( ParseNode root, List<LexerToken> src ) {
+       Map<Integer, Postulate> ret = new TreeMap<Integer, Postulate>();
        //if( root.contains(include) )
-           //return include(root, src);
+       //return include(root, src);
        if( root.contains(assertion) ) {
-           ret.add(assertion(root, src));
+           ret.put(src.get(root.from).begin ,assertion(root, src));
            return ret;
        }
        for( ParseNode child : root.children() ) 
-           ret.addAll(program(child, src));             
+           ret.putAll(program(child, src));             
        return ret;
    }
 
@@ -234,4 +147,15 @@ public class Prover {
 
        return new TreeNode(left,oper,right);
    }
+   
+   //////////////////////////////////////////////////////////////////////////
+   
+   private static void prove( List<Postulate> axioms, Postulate goal ) {
+       for( Postulate i : axioms ) {
+           Postulate o = i.substitute("x",  new TreeNode(new TreeNode(null,"x",null),"'",null));
+           System.out.println(o.toString());
+       }
+   }
+
+
 }

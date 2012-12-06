@@ -4,9 +4,18 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import qbql.deduction.Postulate;
+
 public class TreeNode {
-    TreeNode lft;
-    TreeNode rgt;
+    private TreeNode lft;
+    private TreeNode rgt;
+    public TreeNode getLft() {
+        return lft;
+    }
+    public TreeNode getRgt() {
+        return rgt;
+    }
+
     String label;
     public TreeNode( TreeNode lft, TreeNode rgt ) {
         this.lft = lft;
@@ -44,10 +53,15 @@ public class TreeNode {
         
         StringBuilder s = new StringBuilder();
         if( lft != null && rgt == null ) { // unary
-            s.append(label);
-            s.append("(");
-            s.append(lft.toString());
-            s.append(")");
+            if( label.startsWith("<") ) {
+                s.append(label);
+                s.append("(");
+                s.append(lft.toString());
+                s.append(")");
+            } else {
+                s.append(lft.toString());
+                s.append(label);
+            }
             return s.toString();
         }
         if( lft != null ) {
@@ -224,4 +238,23 @@ public class TreeNode {
         );
     	System.out.println("isRightSkewed="+n.isRightSkewed());
 	}
+    
+    public TreeNode substitute( String x, TreeNode treeNode ) {
+        TreeNode l = null;
+        TreeNode r = null;
+        TreeNode ret = null;
+        if( rgt != null ) 
+            r = rgt.substitute(x, treeNode);
+        if( lft != null ) {
+            l = lft.substitute(x, treeNode);
+            ret = new TreeNode(l,label,r);
+        } else if( x.equals(label) )
+            ret = new TreeNode(treeNode,null);
+        else
+            ret = this;
+        if( ret.label == null && ret.rgt == null )
+            return ret.lft;
+        return ret;
+    }
+
 }
