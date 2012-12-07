@@ -47,7 +47,7 @@ public class Polish {
         if( insert != null ) {
             code.remove(pos);
             code.remove(pos);
-            if( insert.getRgt() != null ) 
+            if( insert.right() != null ) 
                 code.remove(pos);
             code.add(pos, insert);    
             return true;
