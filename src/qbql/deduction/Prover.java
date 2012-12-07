@@ -15,6 +15,7 @@ import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.parser.SyntaxError;
+import qbql.symbolic.Expr;
 import qbql.util.Util;
 
 public class Prover {
@@ -61,13 +62,13 @@ public class Prover {
 
         ParseNode root = earley.forest(src, matrix);
         //root.printTree();
-        Map<Integer,Postulate> theory = new Prover().program(root, src); 
+        Map<Integer,Eq> theory = new Prover().program(root, src); 
         
         String divider = "-----------------";
         int dividerLoc = text.indexOf(divider);
         
-        List<Postulate> axioms = new LinkedList<Postulate>();
-        Postulate goal = null;
+        List<Eq> axioms = new LinkedList<Eq>();
+        Eq goal = null;
         for( int i : theory.keySet() ) {
             if( i < dividerLoc ) 
                 axioms.add(theory.get(i));
@@ -81,8 +82,8 @@ public class Prover {
         prove(axioms,goal);
     }
    
-   public Map<Integer, Postulate> program( ParseNode root, List<LexerToken> src ) {
-       Map<Integer, Postulate> ret = new TreeMap<Integer, Postulate>();
+   public Map<Integer, Eq> program( ParseNode root, List<LexerToken> src ) {
+       Map<Integer, Eq> ret = new TreeMap<Integer, Eq>();
        //if( root.contains(include) )
        //return include(root, src);
        if( root.contains(assertion) ) {
@@ -94,7 +95,7 @@ public class Prover {
        return ret;
    }
 
-   public Postulate assertion( ParseNode root, List<LexerToken> src ) {
+   public Eq assertion( ParseNode root, List<LexerToken> src ) {
        for( ParseNode child : root.children() ) {
            if( !child.contains(proposition) )
                throw new AssertionError("!child.contains(proposition)");
@@ -102,9 +103,9 @@ public class Prover {
        }
        throw new AssertionError("empty assertion?");
    }
-   public Postulate proposition( ParseNode root, List<LexerToken> src ) {
-       TreeNode left = null;
-       TreeNode right = null;
+   public Eq proposition( ParseNode root, List<LexerToken> src ) {
+       Expr left = null;
+       Expr right = null;
        for( ParseNode child : root.children() ) {
            if( left == null )
                left = expr(child, src);
@@ -117,16 +118,16 @@ public class Prover {
            }
        }
 
-       return new Postulate(left,right);
+       return new Eq(left,right);
    }
 
-   private TreeNode expr( ParseNode root, List<LexerToken> src ) {
+   private Expr expr( ParseNode root, List<LexerToken> src ) {
        if( root.from+1 == root.to )
-           return new TreeNode(null,src.get(root.from).content,null);
+           return compose(null,src.get(root.from).content,null);
        
-       TreeNode left = null;
+       Expr left = null;
        String oper = null;
-       TreeNode right = null;
+       Expr right = null;
        for( ParseNode child : root.children() ) {
            if( left == null && !"(".equals(oper) ) {
                if( child.contains(openParen) ) {
@@ -145,16 +146,29 @@ public class Prover {
            }
        }
 
-       return new TreeNode(left,oper,right);
+       return compose(left,oper,right);
    }
+   
+   static Expr compose( Expr left, String oper, Expr right ) {
+       return new TreeNode((TreeNode)left,oper,(TreeNode)right);
+   }
+   
    
    //////////////////////////////////////////////////////////////////////////
    
-   private static void prove( List<Postulate> axioms, Postulate goal ) {
-       for( Postulate i : axioms ) {
-           Postulate o = i.substitute("x",  new TreeNode(new TreeNode(null,"x",null),"'",null));
+   private static void prove( List<Eq> assertions, Eq goal ) {
+       for( Eq e1 : assertions ) for( Eq e2 : assertions ) {
+           if( e1 == e2 ) //?????
+               continue;
+           Eq o = e1.substitute(e2);
+           o = Eq.merge(o, e1);
+           //for( Eq e3 : assertions )
+               //if( o.equals(e3) )
+                   
            System.out.println(o.toString());
        }
+       for( Eq e1 : assertions )
+           System.out.println(e1.toString());
    }
 
 

@@ -1,22 +1,31 @@
 package qbql.induction;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import qbql.deduction.Postulate;
+import qbql.deduction.Eq;
+import qbql.symbolic.Expr;
 
-public class TreeNode {
+public class TreeNode implements Expr {
     private TreeNode lft;
     private TreeNode rgt;
-    public TreeNode getLft() {
+    String label;
+    @Override
+    public TreeNode left() {
         return lft;
     }
-    public TreeNode getRgt() {
+    @Override
+    public TreeNode right() {
         return rgt;
     }
+    @Override
+    public String operation() {
+        return label;
+    }
 
-    String label;
     public TreeNode( TreeNode lft, TreeNode rgt ) {
         this.lft = lft;
         this.rgt = rgt;
@@ -238,8 +247,10 @@ public class TreeNode {
         );
     	System.out.println("isRightSkewed="+n.isRightSkewed());
 	}
-    
-    public TreeNode substitute( String x, TreeNode treeNode ) {
+ 
+    /*@Override
+    public TreeNode substitute( String x, Expr expr ) {
+        TreeNode treeNode = (TreeNode)expr;
         TreeNode l = null;
         TreeNode r = null;
         TreeNode ret = null;
@@ -255,6 +266,55 @@ public class TreeNode {
         if( ret.label == null && ret.rgt == null )
             return ret.lft;
         return ret;
+    }*/
+    
+    
+    @Override
+    public boolean equals( Object obj ) {
+        if( this == obj )
+            return true;
+        TreeNode cmp = (TreeNode) obj;
+        if( lft == null && rgt == null && cmp.lft == null && cmp.rgt == null )
+            return label.equals(cmp.label);
+        if( lft == null && cmp.lft != null || lft != null && cmp.lft == null )
+            return false;
+        if( rgt == null && cmp.rgt != null || rgt != null && cmp.rgt == null )
+            return false;
+        if( lft != null && !lft.equals(cmp.lft) )
+            return false;
+        if( rgt != null && !rgt.equals(cmp.rgt) )
+            return false;
+        return true;
     }
+    
+    private TreeNode substitute( TreeNode e1, TreeNode e2 ) {
+        if( equals(e1) )
+            return e2;
+        if( lft == null )
+            return null;
+        TreeNode res = lft.substitute(e1, e2);
+        if( lft != res && res != null )
+            return new TreeNode(res,label,rgt);
+        if( rgt != null ) {
+            res = rgt.substitute(e1, e2);
+            if( rgt != res && res != null )
+                return new TreeNode(lft,label,res);            
+        }
+        return this;
+    }
+    
+    @Override
+    public List<Expr> substitute( List<Expr> src ) {
+        List<Expr> ret = new LinkedList<Expr>();
+        for( Expr e1 : src ) for( Expr e2 : src ) {
+            if( e1 == e2 )
+                continue;
+            Expr tmp = substitute((TreeNode)e1,(TreeNode)e2);
+            if( tmp != null && tmp != this )
+                ret.add(tmp);
+        }
+        return ret;
+    }
+    
 
 }
