@@ -217,7 +217,8 @@ public class TreeNode implements Expr {
         return ret;
     }
     
-    Set<String> variables() {
+    @Override
+    public Set<String> variables() {
     	Set<String> ret = new HashSet<String>();
     	if( lft == null && rgt == null) {
     		ret.add(label);
@@ -248,7 +249,7 @@ public class TreeNode implements Expr {
     	System.out.println("isRightSkewed="+n.isRightSkewed());
 	}
  
-    /*@Override
+    @Override
     public TreeNode substitute( String x, Expr expr ) {
         TreeNode treeNode = (TreeNode)expr;
         TreeNode l = null;
@@ -266,7 +267,7 @@ public class TreeNode implements Expr {
         if( ret.label == null && ret.rgt == null )
             return ret.lft;
         return ret;
-    }*/
+    }
     
     
     @Override
