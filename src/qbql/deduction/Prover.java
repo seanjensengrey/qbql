@@ -1,8 +1,11 @@
 package qbql.deduction;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -67,7 +70,7 @@ public class Prover {
         String divider = "-----------------";
         int dividerLoc = text.indexOf(divider);
         
-        List<Eq> axioms = new LinkedList<Eq>();
+        Theory axioms = new Theory();
         Eq goal = null;
         for( int i : theory.keySet() ) {
             if( i < dividerLoc ) 
@@ -156,20 +159,26 @@ public class Prover {
    
    //////////////////////////////////////////////////////////////////////////
    
-   private static void prove( List<Eq> assertions, Eq goal ) {
-       for( Eq e1 : assertions ) for( Eq e2 : assertions ) {
-           if( e1 == e2 ) //?????
-               continue;
-           Eq o = e1.substitute(e2);
-           o = Eq.merge(o, e1);
-           //for( Eq e3 : assertions )
-               //if( o.equals(e3) )
-                   
-           System.out.println(o.toString());
+   private static void prove( Theory axioms, Eq goal ) {
+       Set<String> usedVars = new HashSet<String>();
+       for( Expr ge : goal.expressions )
+           usedVars.addAll(ge.variables());
+       axioms = axioms.assign(usedVars);
+       for( Expr ge : goal.expressions ) {
+           List<Expr> tmp = new LinkedList<Expr>();
+           tmp.add(ge);
+           axioms.add(new Eq(tmp));
        }
-       for( Eq e1 : assertions )
-           System.out.println(e1.toString());
+       System.out.println(axioms.toString());
+       System.out.println("---------------------------------------------------------------");
+       
+       for (int i = 0; i < 3; i++) {
+           axioms.step();
+           System.out.println(axioms.toString());
+           System.out.println("========================================" +i+ "====================================");
+       }
    }
+
 
 
 }
