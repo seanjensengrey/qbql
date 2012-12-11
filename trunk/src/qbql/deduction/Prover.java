@@ -126,7 +126,7 @@ public class Prover {
 
    private Expr expr( ParseNode root, List<LexerToken> src ) {
        if( root.from+1 == root.to )
-           return compose(null,src.get(root.from).content,null);
+           return compose(src.get(root.from).content);
        
        Expr left = null;
        String oper = null;
@@ -155,28 +155,63 @@ public class Prover {
    static Expr compose( Expr left, String oper, Expr right ) {
        return new TreeNode((TreeNode)left,oper,(TreeNode)right);
    }
+   static Expr compose( String oper ) {
+       return compose(null,oper,null);
+   }
    
    
    //////////////////////////////////////////////////////////////////////////
    
    private static void prove( Theory axioms, Eq goal ) {
-       Set<String> usedVars = new HashSet<String>();
+       
+       
+       final Set<String> allVars = new HashSet<String>();
+       for( Eq eq : axioms.assertions ) {
+           for( Expr ge : eq.expressions )
+               allVars.addAll(ge.variables());
+       }
+
+       /*Set<String> usedVars = new HashSet<String>();
        for( Expr ge : goal.expressions )
            usedVars.addAll(ge.variables());
-       axioms = axioms.assign(usedVars);
+       */
+       
+       //axioms = axioms.assign(usedVars);
+       axioms = axioms.assign(allVars);
        for( Expr ge : goal.expressions ) {
            List<Expr> tmp = new LinkedList<Expr>();
            tmp.add(ge);
            axioms.add(new Eq(tmp));
        }
+             
        System.out.println(axioms.toString());
-       System.out.println("---------------------------------------------------------------");
+       System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
        
-       for (int i = 0; i < 3; i++) {
+       axioms.add(axioms.substitute("x",compose(compose("x"),"'",null)));
+       axioms.add(axioms.substitute("x",compose(compose("x"),"'",null)));
+       axioms.add(axioms.substitute("y",compose(compose("x"),"'",null)));
+       /*
+       grow(axioms, 0, 2);
+       grow(axioms, 8, 5);
+       grow(axioms, 2, 5);
+       */
+       
+       for( int i = 0; i < 20; i++) {
+           int before = axioms.complexity();
+           int axiomsSize = axioms.size();
            axioms.step();
+           if( axiomsSize == axioms.size() && before == axioms.complexity() )
+               return;
            System.out.println(axioms.toString());
            System.out.println("========================================" +i+ "====================================");
        }
+   }
+
+   private static void grow(Theory axioms, int src, int with) {
+       Eq e1 = axioms.assertions.get(src);
+       Eq e2 = axioms.assertions.get(with);
+       Eq o = e1.leverage(e2, true);
+       axioms.add(Eq.merge(o, e1));
    }
 
 

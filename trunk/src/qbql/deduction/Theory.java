@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.Set;
 
 import qbql.symbolic.Expr;
+import qbql.util.Array;
 import qbql.util.Util;
 
 public class Theory {
@@ -22,19 +23,34 @@ public class Theory {
         return ret.toString();
     }
 
+    public void add( Theory theory ) {
+        for( Eq eq : theory.assertions )
+            add(eq);
+    }
+    
     public void add( Eq eq ) {
         if( eq.size() == 0 )
             return;
         Eq add = eq;
-        Eq remove = null;
-        for( Eq e : assertions )
+        int[] indexes = new int[0];
+        int i = -1;
+        for( Eq e : assertions ) {
+            i++;
             if( e.equals(eq) ) {
-                add = Eq.merge(e, eq); 
-                remove = e;
+                add = Eq.merge(e, add); 
+                indexes = Array.insert(indexes, i);
             }
-        if( remove != null )
-            assertions.remove(remove);
-        assertions.add(add);        
+        }
+        for( int j = indexes.length-1; 0 <= j; j-- ) 
+            assertions.remove(indexes[j]);        
+        assertions.add(add);
+    }
+    
+    Theory substitute( String variable, Expr expr ) {
+        Theory ret = new Theory();
+        for( Eq eq : assertions )
+            ret.add(eq.substitute(variable, expr));
+        return ret;
     }
     
     Theory assign( Set<String> variables ) {
@@ -42,7 +58,7 @@ public class Theory {
         String[] vars = variables.toArray(new String[0]);
         
         for( Eq eq : assertions ) {
-            Set<String> allVars = new HashSet<String>();
+            final Set<String> allVars = new HashSet<String>();
             for( Expr ge : eq.expressions )
                 allVars.addAll(ge.variables());
             
@@ -67,23 +83,50 @@ public class Theory {
         return ret;
     }
     
-    private boolean step( int i, int j ) {
-        int before = assertions.size();
+    private void step( int i, int j ) {
         Eq e1 = assertions.get(i);
         Eq e2 = assertions.get(j);
-        Eq o = e1.leverage(e2);
+        Eq o = e1.leverage(e2, false);
         if( o.size() == 0 )
-            return true;
+            return;
         add(Eq.merge(o, e1));
-        return assertions.size() == before;
+    }
+    
+    private boolean step( int i ) {
+        int assertionsSize = assertions.size();
+        int qlassSize = assertions.get(i).size();
+        for( int j = 0; j < assertions.size(); j++ ) {
+            step(i,j);
+            
+            //System.out.println("----- Step (" +i+','+j+ ") ----- : ");
+            //System.out.println(toString());  
+            
+            //if( 10 < assertions.get(i).size() )
+                //System.exit(0);
+            if( assertions.size() < assertionsSize ) 
+                return false;
+            else if( assertions.get(i).size() != qlassSize )
+                break;
+        }
+        return true;
     }
     
     void step() {
         for( int i = 0; i < assertions.size(); i++ ) 
-            for( int j = 0; j < assertions.size(); j++ ) 
-                if( !step(i,j) )
-                    return;
-                    
+            if( !step(i) )
+                return;                    
     }
+
+    public int complexity() {
+        int ret = 0;
+        for( Eq e : assertions ) 
+            ret += e.complexity();
+        return ret;
+    }
+
+    public int size() {
+        return assertions.size();
+    }
+    
 
 }
