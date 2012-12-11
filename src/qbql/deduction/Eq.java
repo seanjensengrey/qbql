@@ -40,7 +40,7 @@ public class Eq {
         return ret;
     }
 
-    private boolean contains( Expr src ) {
+    public boolean contains( Expr src ) {
         for( Expr e : expressions )
             if( e.equals(src) )
                 return true;
