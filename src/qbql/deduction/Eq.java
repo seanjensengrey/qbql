@@ -29,11 +29,11 @@ public class Eq {
         return ret;
     }
     
-    public Eq leverage( Eq src ) {
+    public Eq leverage( Eq src, boolean grow ) {
         Eq ret = new Eq(new LinkedList<Expr>());
         //ret.expressions.addAll(expressions);
         for( Expr node : expressions ) {
-            for( Expr tmp : node.substitute(src.expressions) )
+            for( Expr tmp : node.substitute(src.expressions, grow) )
                 if( !ret.contains(tmp) )
                     ret.expressions.add(tmp);
         }
@@ -96,4 +96,12 @@ public class Eq {
     public int size() {
         return expressions.size();
     }
+    
+    public int complexity() {
+        int ret = 0;
+        for( Expr node : expressions ) 
+            ret += node.complexity();
+        return ret;
+    }
+
 }

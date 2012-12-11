@@ -29,12 +29,22 @@ public class TreeNode implements Expr {
     public TreeNode( TreeNode lft, TreeNode rgt ) {
         this.lft = lft;
         this.rgt = rgt;
+        if( lft != null )
+            complexity += lft.complexity();
+        if( rgt != null )
+            complexity += rgt.complexity();
     }   
     public TreeNode( TreeNode lft, String label, TreeNode rgt ) {
         this.lft = lft;
         this.rgt = rgt;
         this.label = label;
+        if( lft != null )
+            complexity += lft.complexity();
+        if( rgt != null )
+            complexity += rgt.complexity();
     }
+    private int complexity = 1;
+    
     
 	void print() {
         System.out.println(toString()); 
@@ -305,16 +315,23 @@ public class TreeNode implements Expr {
     }
     
     @Override
-    public List<Expr> substitute( List<Expr> src ) {
+    public List<Expr> substitute( List<Expr> src, boolean grow ) {
         List<Expr> ret = new LinkedList<Expr>();
         for( Expr e1 : src ) for( Expr e2 : src ) {
             if( e1 == e2 )
+                continue;
+            if( !grow && e1.complexity() < e2.complexity() )
                 continue;
             Expr tmp = substitute((TreeNode)e1,(TreeNode)e2);
             if( tmp != null && tmp != this )
                 ret.add(tmp);
         }
         return ret;
+    }
+    
+    @Override
+    public int complexity() {
+        return complexity;
     }
     
 
