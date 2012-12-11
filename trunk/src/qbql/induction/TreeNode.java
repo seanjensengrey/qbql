@@ -285,8 +285,10 @@ public class TreeNode implements Expr {
         if( this == obj )
             return true;
         TreeNode cmp = (TreeNode) obj;
+        if( !label.equals(cmp.label) )
+            return false;
         if( lft == null && rgt == null && cmp.lft == null && cmp.rgt == null )
-            return label.equals(cmp.label);
+            return true;
         if( lft == null && cmp.lft != null || lft != null && cmp.lft == null )
             return false;
         if( rgt == null && cmp.rgt != null || rgt != null && cmp.rgt == null )

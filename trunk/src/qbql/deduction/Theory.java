@@ -46,6 +46,22 @@ public class Theory {
         assertions.add(add);
     }
     
+    public void reduce() {
+        int[] indexes = new int[0];
+        int i = -1;
+        for( Eq e : assertions ) {
+            i++;
+            for( Eq eq : assertions ) 
+                if( e != eq && e.equals(eq) ) {
+                    indexes = Array.insert(indexes, i);
+                    break;
+                }
+        }
+        for( int j = indexes.length-1; 0 <= j; j-- ) 
+            assertions.remove(indexes[j]);        
+    }
+
+    
     Theory substitute( String variable, Expr expr ) {
         Theory ret = new Theory();
         for( Eq eq : assertions )
@@ -110,6 +126,25 @@ public class Theory {
         }
         return true;
     }
+    
+    public void grow( Expr src, Expr with ) {
+        Eq e1 = null;
+        for( Eq eq : assertions )
+            if( eq.contains(src) ) {
+                e1 = eq;
+                break;
+            }
+        Eq e2 = null;
+        for( Eq eq : assertions )
+            if( eq.contains(with) ) {
+                e2 = eq;
+                break;
+            }
+        Eq o = e1.leverage(e2, true);
+        add(Eq.merge(o, e1));
+    }
+
+
     
     void step() {
         for( int i = 0; i < assertions.size(); i++ ) 

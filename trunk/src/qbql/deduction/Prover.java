@@ -52,6 +52,7 @@ public class Prover {
           
    public static void main( String[] args ) throws Exception {
         String file = "boolean algebra.axm";
+        file = "lattice.axm";
         String text = Util.readFile(Prover.class,file);
 
         List<LexerToken> src =  new Lex().parse(text);
@@ -163,21 +164,35 @@ public class Prover {
    //////////////////////////////////////////////////////////////////////////
    
    private static void prove( Theory axioms, Eq goal ) {
+       Expr X = compose("x");
+       Expr notX = compose(X,"'",null);
+       Expr notnotX = compose(notX,"'",null);
+       Expr XvX = compose(X,"v",X);
+       Expr XX = compose(X,"^",X);
+       Expr XvXvX = compose(XvX,"v",X);
+       Expr notXvnotX = compose(notX,"v",notX);
+       Expr XvnotX = compose(X,"v",notX);
+       Expr XvnotnotX = compose(X,"v",notnotX);
        
-       
+       //axioms.add(axioms.substitute("x",XvX));
+       axioms.add(axioms.substitute("y",XX));
+       //axioms.add(axioms.substitute("y",XvX));
+       //axioms.add(axioms.substitute("x",compose(compose("x"),"'",null)));
+       //axioms.add(axioms.substitute("y",compose(compose("x"),"'",null)));
+       //axioms.add(axioms.substitute("z",compose(compose("x"),"'",null)));
+      
        final Set<String> allVars = new HashSet<String>();
        for( Eq eq : axioms.assertions ) {
            for( Expr ge : eq.expressions )
                allVars.addAll(ge.variables());
        }
 
-       /*Set<String> usedVars = new HashSet<String>();
+       Set<String> usedVars = new HashSet<String>();
        for( Expr ge : goal.expressions )
            usedVars.addAll(ge.variables());
-       */
        
-       //axioms = axioms.assign(usedVars);
-       axioms = axioms.assign(allVars);
+       axioms = axioms.assign(usedVars);
+       //axioms = axioms.assign(allVars);
        for( Expr ge : goal.expressions ) {
            List<Expr> tmp = new LinkedList<Expr>();
            tmp.add(ge);
@@ -187,31 +202,41 @@ public class Prover {
        System.out.println(axioms.toString());
        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
        
-       axioms.add(axioms.substitute("x",compose(compose("x"),"'",null)));
-       axioms.add(axioms.substitute("x",compose(compose("x"),"'",null)));
-       axioms.add(axioms.substitute("y",compose(compose("x"),"'",null)));
-       /*
-       grow(axioms, 0, 2);
-       grow(axioms, 8, 5);
-       grow(axioms, 2, 5);
-       */
-       
-       for( int i = 0; i < 20; i++) {
+       //axioms.grow(X,notX);
+       //axioms.grow(notnotX,notX);
+       //axioms.grow(XvX,X);
+       //axioms.grow(XvXvX,X);
+       //axioms.grow(notXvnotX,notX);
+      
+       for( int i = 0; i < 200; i++) {
            int before = axioms.complexity();
            int axiomsSize = axioms.size();
            axioms.step();
            if( axiomsSize == axioms.size() && before == axioms.complexity() )
-               return;
+               break;
            System.out.println(axioms.toString());
            System.out.println("========================================" +i+ "====================================");
        }
-   }
+       
+       
+       axioms = axioms.assign(usedVars);
+       axioms.reduce();
+       
+       //axioms.grow(notX,X);
 
-   private static void grow(Theory axioms, int src, int with) {
-       Eq e1 = axioms.assertions.get(src);
-       Eq e2 = axioms.assertions.get(with);
-       Eq o = e1.leverage(e2, true);
-       axioms.add(Eq.merge(o, e1));
+       for( int i = 0; i < 200; i++) {
+           int before = axioms.complexity();
+           int axiomsSize = axioms.size();
+           axioms.step();
+           if( axiomsSize == axioms.size() && before == axioms.complexity() )
+               break;
+           System.out.println(axioms.toString());
+           System.out.println("========================================" +i+ "====================================");
+       }
+       
+       System.out.println(axioms.toString());
+       
+
    }
 
 
