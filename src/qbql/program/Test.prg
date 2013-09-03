@@ -1,7 +1,6 @@
 include Figure1.db;
 include udf.def;
 
-
 "lft < rgt"^R00=[lft  rgt].
 
 ["^^^^^ Predicate Header Evaluation ^^^^^"];
@@ -39,9 +38,15 @@ x /> y  = <NOT>(<NOT>x /^ y).
 
 ["^^^^^ Relational Division/ set Joins ^^^^^"];
 
-(y > x) ->  /*FD(r,x,y)*/ (x^y > x^<NOT>y).
-x^y > x^<NOT>y & /*FD(r,y,z)*/y^z > y^<NOT>z -> /*FD(r,x,z)*/x^z > x^<NOT>z.   
-x^y > x^<NOT>y -> /*FD(r,x^z,y^z)*/x^y^z > x^z^<NOT>(y^z).
+(y > x) ->  --FD(r,x,y) 
+            (x^y > x^<NOT>y).
+            
+x^y > x^<NOT>y & --FD(r,y,z)
+y^z > y^<NOT>z -> --FD(r,x,z)
+x^z > x^<NOT>z. 
+  
+x^y > x^<NOT>y -> --FD(r,x^z,y^z)
+            x^y^z > x^z^<NOT>(y^z).
 
 ["^^^^^ Fictional dependency ^^^^^"];
 

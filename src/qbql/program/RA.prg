@@ -36,4 +36,4 @@ Ian	18	male
 ;
 
 project pizza 
-select "20 <= age"^ [gender] female (Eats join Person);
+select "20 <= age"^ "gender=female" (Eats join Person);
