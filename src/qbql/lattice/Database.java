@@ -52,6 +52,39 @@ public class Database {
             } else
                 return new EqualityPredicate(first.content, second.content);
     	}
+        if( src.size() == 5 ) {  // select "20 <= age"^ "gender='female'" (Eats join Person);
+                                 //                      ^^^^^^^^^^^^^^^
+            int eqPos = -1;
+            String attr = null;
+            String value = null;
+            boolean expectValue = false;
+            for( int i = 0; i < src.size(); i++ ) {
+                LexerToken t = src.get(i);
+                if( "=".equals(t.content) ) {
+                    eqPos = i;
+                    continue;
+                }
+                if( "'".equals(t.content) ) {
+                    if( value == null )
+                        expectValue = true;
+                    else
+                        expectValue = false;
+                    continue;
+                }
+                if( t.type == Token.IDENTIFIER ) {
+                    if( expectValue )
+                        value = t.content;
+                    else
+                        attr = t.content;
+                    continue;
+                }                    
+            }
+            if( 0 < eqPos && value != null ) {
+                Relation relation = new Relation(new String[]{attr});
+                relation.addTuple(new Object[]{value});
+                return relation;
+            }
+        }
         try {
             Set<String> ints = new HashSet<String>();
             for( LexerToken t : src ) {
