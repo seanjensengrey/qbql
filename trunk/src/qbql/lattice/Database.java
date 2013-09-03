@@ -58,6 +58,8 @@ public class Database {
                 if( t.type == Token.DIGITS ) 
                     ints.add(t.content);
             }
+            if( ints.size() == 0 )
+                return new IndexedPredicate(this,name);
             Relation rel = new Relation(ints.toArray(new String[]{}));
             Map<String, Object> body = new HashMap<String, Object>(); 
             for( String s : ints ) {
