@@ -10,9 +10,6 @@ assignment:  identifier '=' expr ';'
           |  identifier '=' partition ';'
 ;
 
-attribute:   identifier
-;
-
 big:         expr '/' '!' expr
 ;
 
@@ -53,6 +50,10 @@ database:    assignment
           |  database assignment
 ;
 
+difference:  expr '-' expr
+          |  expr 'minus' expr
+;
+
 disjoint:    expr '/' '0' expr
 ;
 
@@ -68,6 +69,7 @@ expr:        almostDisj
           |  contains
           |  count
           |  CPclosure
+          |  difference
           |  disjoint
           |  EQclosure
           |  identifier
@@ -76,7 +78,10 @@ expr:        almostDisj
           |  inverse
           |  join
           |  parExpr
+          |  project
           |  relation
+          |  rename
+          |  restrict
           |  setEQ
           |  setIX
           |  table
@@ -89,13 +94,17 @@ expr:        almostDisj
 filename:
            identifier
          | identifier '.' identifier
-         | string_literal
+         --| string_literal
 ;
 
-header:      identifier
-          |  string_literal
-          |  header identifier
-          |  header ',' identifier
+header_cs: identifier
+         | header ',' identifier
+;
+header_ss: identifier
+         | header  identifier
+;
+header:      header_cs
+          |  header_ss
 ;
 
 implication: 
@@ -111,6 +120,7 @@ inductionFormula: identifier '(' parameters ')'    -- e.g. find minimal formula 
 ;
 
 innerUnion:  expr 'v' expr
+          |  expr 'union' expr
 ;
 
 inverse:     identifier '`'
@@ -121,6 +131,7 @@ include: 'include' filename ';'
 ;
 
 join:        expr '^' expr
+          |  expr 'join' expr
 ;
 
 oper:       '^'
@@ -152,6 +163,9 @@ partition:
           |  partition '|' tuple      
 ;
 
+project:  'project' header_cs expr
+;
+
 proposition:     
              "not to confuse with userOper"
           |  implication
@@ -172,6 +186,16 @@ program:   stmt
 
 query:       expr ';'
           |  partition ';'
+;
+
+rename:   'rename' identifier '/' identifier expr
+;
+
+/*renaming_attr_list: identifier '/' identifier
+          | renaming_attr_list identifier '/' identifier
+;*/
+
+restrict:   'select' expr expr
 ;
 
 setEQ:       expr '/' '=' expr

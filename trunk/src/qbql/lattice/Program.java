@@ -36,6 +36,7 @@ public class Program {
     //// READ RULES
 
     public static Earley earley;
+    
     public static int naturalJoin;
     public static int innerUnion;
     public static int count;
@@ -56,6 +57,8 @@ public class Program {
     static int EQclosure;
     static int inverse;
     static int composition;
+    static int restrict;
+    static int project;
     static int join;
     static int meet;
     static int equivalence;
@@ -94,7 +97,7 @@ public class Program {
     static int header;
     static int content;
     static int value;
-    public static int attribute;
+    //public static int attribute;
     //static int values;
     //static int namedValue;
     static int comma;
@@ -121,6 +124,9 @@ public class Program {
             EQclosure = earley.symbolIndexes.get("EQclosure");
             inverse = earley.symbolIndexes.get("inverse");
             composition = earley.symbolIndexes.get("composition");
+            restrict = earley.symbolIndexes.get("restrict");
+            project = earley.symbolIndexes.get("project");
+            
             join = earley.symbolIndexes.get("'v'");
             meet = earley.symbolIndexes.get("'^'");
             equivalence = earley.symbolIndexes.get("'~'");
@@ -158,7 +164,7 @@ public class Program {
             header = earley.symbolIndexes.get("header");
             content = earley.symbolIndexes.get("content");
             value = earley.symbolIndexes.get("value");
-            attribute = earley.symbolIndexes.get("attribute");
+            //attribute = earley.symbolIndexes.get("attribute");
             //values = earley.symbolIndexes.get("values");
             //namedValue = earley.symbolIndexes.get("namedValue");
             //System.out.println(earley.allSymbols[20]);
@@ -679,6 +685,10 @@ public class Program {
             return ret;
         }*/ else if( root.contains(naturalJoin) ) 
             return binaryOper(root,src, naturalJoin);
+        else if( root.contains(restrict) ) 
+            return raOper(root,src, restrict);
+        else if( root.contains(project) ) 
+            return raOper(root,src, project);
         else if( root.contains(userDefined) || root.contains(unaryUserDefined) ) 
             return userDefined(root,src);
         else if( root.contains(innerUnion) ) 
@@ -802,6 +812,29 @@ public class Program {
         throw new AssertionError("Unknown case");
     }
 
+    private Predicate raOper( ParseNode root, List<LexerToken> src, int oper )   {
+        boolean sawOper = false;
+        Predicate first = null;
+        Predicate second = null;
+        for( ParseNode child : root.children() ) {
+            if( !sawOper ) {
+                sawOper = true;
+            } else if( first == null ) {
+                if( oper == project ) {
+                    List<String> attrs = strings(child,src);
+                    first = new Relation(attrs.toArray(new String[0]));
+                } else if( oper == restrict )
+                    first = expr(child,src);
+            } else                            
+                second = expr(child,src);
+        }
+        if( oper == restrict )
+            return Predicate.join(first,second);
+        else if( oper == project )
+            return Predicate.union(first,second);
+        throw new AssertionError("Unknown case");
+    }
+    
     private Predicate parExpr( ParseNode root, List<LexerToken> src )  {
         boolean parenthesis = false;
         for( ParseNode child : root.children() ) {
