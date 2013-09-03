@@ -1,20 +1,18 @@
 package qbql.lattice;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import qbql.index.IndexedPredicate;
-import qbql.parser.CYK;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
-import qbql.parser.Matrix;
-import qbql.parser.ParseNode;
+import qbql.parser.Token;
 import qbql.util.Util;
 
 public class Database {
@@ -38,10 +36,39 @@ public class Database {
 		name = name.startsWith("\"")&&name.endsWith("\"") ? name.substring(1, name.length()-1) : name;
 
     	List<LexerToken> src = new Lex().parse(name);
-    	if( src.size() == 3 && "=".equals(src.get(1).content) )
-    		return new EqualityPredicate(src.get(0).content, src.get(2).content);
+    	if( src.size() == 3 && "=".equals(src.get(1).content) ) {
+    		LexerToken first = src.get(0);
+            LexerToken second = src.get(2);
+            if( first.type == Token.DIGITS ) {
+                Relation relation = new Relation(new String[]{second.content});
+                Integer i = Integer.parseInt(first.content);
+                relation.addTuple(new Object[]{i});
+                return relation;
+            } else if( second.type == Token.DIGITS ) {
+                Relation relation = new Relation(new String[]{first.content});
+                Integer i = Integer.parseInt(second.content);
+                relation.addTuple(new Object[]{i});
+                return relation;
+            } else
+                return new EqualityPredicate(first.content, second.content);
+    	}
         try {
-            return new IndexedPredicate(this,name);
+            Set<String> ints = new HashSet<String>();
+            for( LexerToken t : src ) {
+                if( t.type == Token.DIGITS ) 
+                    ints.add(t.content);
+            }
+            Relation rel = new Relation(ints.toArray(new String[]{}));
+            Map<String, Object> body = new HashMap<String, Object>(); 
+            for( String s : ints ) {
+                Integer t = null;
+                try {
+                    t = Integer.parseInt(s);
+                } catch( NumberFormatException e ) {}
+                body.put(s,t==null?s:t);
+            }
+            rel.addTuple(body);
+            return Predicate.setIX(new IndexedPredicate(this,name), rel);
         } catch ( Exception e ) {
             for( String qName : predicateNames() ) {
             	if( !qName.startsWith("\"") )

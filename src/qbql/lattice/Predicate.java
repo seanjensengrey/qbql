@@ -167,6 +167,21 @@ public class Predicate implements Comparable {
             return InversePredicate.union((Relation)x,(InversePredicate)y);
         if( x instanceof Relation && y instanceof IndexedPredicate ) 
             return IndexedPredicate.union((Relation)x,(IndexedPredicate)y);
+        
+        /* recursive
+        try {
+            Predicate tmp = x.reEvaluateByUnnesting();
+            if( tmp instanceof Relation && y instanceof IndexedPredicate )
+                return IndexedPredicate.union((Relation)tmp,(IndexedPredicate)y); 
+        } catch( Exception e ) {            
+        }
+        try {
+            Predicate tmp = y.reEvaluateByUnnesting();
+            if( tmp instanceof Relation && x instanceof IndexedPredicate )
+                return IndexedPredicate.union((Relation)tmp,(IndexedPredicate)x); 
+        } catch( Exception e ) {            
+        }
+        */
 
         return new Predicate(x,y,Program.innerUnion);
     }

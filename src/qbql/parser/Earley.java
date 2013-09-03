@@ -25,7 +25,8 @@ public class Earley extends Parser {
     protected int[] allXs = null;
 
     public static void main( String[] args ) throws Exception {
-        String input = "(x v (y ^ z)) ^ (x v <INV>z).";//Util.readFile(Run.class,"current.prg");
+        //String input = "(x v (y ^ z)) ^ (x v <INV>z).";
+        String input = Util.readFile(Run.class,"RA.prg");
         List<LexerToken> src =  (new Lex()).parse(input);
 
         Set<RuleTuple> wiki = new TreeSet<RuleTuple>();

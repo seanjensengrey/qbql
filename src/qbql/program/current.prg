@@ -1,5 +1,5 @@
 -- 2 different styles of include
---include "c:/qbql_trunk/src/qbql/program/Figure1.db"; 
+include "c:/qbql_trunk/src/qbql/program/Figure1.db"; 
 include udf.def;  
 --include volume.db;
 
@@ -269,18 +269,3 @@ x < (x v p) /< (x v q)
 ((x v <INV>t) v (p ^ q)) ^ ((x v <INV>t) v (p ^ <INV>q)) < x v <INV>t.
 */
 
-
-
-    R = [p q]
-         1 2
-         3 4
-;
-
-S = [q r]
-         4 5
-         6 7
-;
-
-R <OR> S;
-
-R11;

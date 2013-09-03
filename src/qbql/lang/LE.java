@@ -1,8 +1,5 @@
 package qbql.lang;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import qbql.lattice.Database;
 import qbql.lattice.Relation;
 
