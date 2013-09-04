@@ -59,6 +59,7 @@ public class Program {
     static int composition;
     static int restrict;
     static int project;
+    static int difference;
     static int join;
     static int meet;
     static int equivalence;
@@ -127,6 +128,7 @@ public class Program {
             composition = earley.symbolIndexes.get("composition");
             restrict = earley.symbolIndexes.get("restrict");
             project = earley.symbolIndexes.get("project");
+            difference = earley.symbolIndexes.get("difference");
             
             join = earley.symbolIndexes.get("'v'");
             meet = earley.symbolIndexes.get("'^'");
@@ -691,6 +693,8 @@ public class Program {
             return raOper(root,src, restrict);
         else if( root.contains(project) ) 
             return raOper(root,src, project);
+        else if( root.contains(difference) ) 
+            return binaryOper(root,src, difference);
         else if( root.contains(userDefined) || root.contains(unaryUserDefined) ) 
             return userDefined(root,src);
         else if( root.contains(innerUnion) ) 
@@ -775,6 +779,8 @@ public class Program {
             return Predicate.join(left,right);
         else if( oper == innerUnion )
             return Predicate.union(left,right);
+        else if( oper == difference )
+            return Predicate.join(left,new ComplementPredicate(right));
         else if( oper == count )
             return Relation.count(left,right);
         else if( oper == unnamedMeet )

@@ -56,14 +56,52 @@ Dominos	mushroom	11
 "Straw Hat"	sausage	9.75
 ;
 
+Frequents =[name, pizzeria]
+Amy	"Pizza Hut"
+Ben	"Chicago Pizza"
+Ben	"Pizza Hut"
+Cal	"New York Pizza"
+Cal	"Straw Hat"
+Dan	"New York Pizza"
+Dan	"Straw Hat"
+Eli	"Chicago Pizza"
+Eli	"Straw Hat"
+Fay	Dominos
+Fay	"Little Caesars"
+Gus	"Chicago Pizza"
+Gus	"Pizza Hut"
+Hil	Dominos
+Hil	"Pizza Hut"
+Hil	"Straw Hat"
+Ian	Dominos
+Ian	"New York Pizza"
+Ian	"Straw Hat"
+;
+
 /*
 project pizza 
   select "20 <= age"^ "gender='female'" 
     (Eats join Person);
     
 Eats /^ Person /^ "20 <= age" /^ "gender='female'"; 
-*/
+
 
 project pizzeria 
   select ([name] Amy Fay) ^"price<=10" 
     (Serves join Eats);
+    
+project pizzeria 
+  select ([name] Amy) ^"price<=10" 
+    (Serves join Eats)
+join
+project pizzeria 
+  select ([name] Fay) ^"price<=10" 
+    (Serves join Eats);
+*/
+project name
+select "pizzeria='Dominos'"
+(Person join Eats join Serves)
+minus
+project name
+select "pizzeria='Dominos'"
+Frequents;
