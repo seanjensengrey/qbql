@@ -237,6 +237,7 @@ userOper:  '<' identifier '>'
 ;
 value:       digits
           |  '-' digits
+          |  digits '.' digits
           |  identifier
           |  string_literal
           |  /* nested relation */ parExpr          

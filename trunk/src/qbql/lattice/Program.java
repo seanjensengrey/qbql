@@ -66,6 +66,7 @@ public class Program {
     public static int expr;
     static int num;
     static int minus;
+    static int dot;
     static int partition;
     static int parExpr;
     public static int openParen;
@@ -132,6 +133,7 @@ public class Program {
             equivalence = earley.symbolIndexes.get("'~'");
             equality = earley.symbolIndexes.get("'='");
             minus = earley.symbolIndexes.get("'-'");
+            dot = earley.symbolIndexes.get("'.'");
             lt = earley.symbolIndexes.get("'<'");
             gt = earley.symbolIndexes.get("'>'");
             amp = earley.symbolIndexes.get("'&'");
@@ -985,8 +987,14 @@ public class Program {
         else if( root.from + 1 == root.to && src.get(root.from).type == Token.IDENTIFIER ) 
             ret.add(root.content(src));
         else if( root.from + 1 == root.to && src.get(root.from).type == Token.DIGITS  
-                ||   root.from + 2 == root.to && "-".equals(src.get(root.from).content) && src.get(root.from+1).type == Token.DIGITS )
+            ||   root.from + 2 == root.to && "-".equals(src.get(root.from).content) && src.get(root.from+1).type == Token.DIGITS )
             ret.add(Integer.parseInt(root.content(src)));
+        else if( root.from + 3 == root.to  
+                && src.get(root.from).type == Token.DIGITS  
+                && ".".equals(src.get(root.from+1).content) 
+                && src.get(root.from+2).type == Token.DIGITS
+        )
+            ret.add(Double.parseDouble(root.content(src)));
         else if( root.from + 1 == root.to && src.get(root.from).type == Token.DQUOTED_STRING ) {
             String strValue = root.content(src).substring(1,root.content(src).length()-1);
             Object value = strValue;
