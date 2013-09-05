@@ -59,6 +59,7 @@ public class Program {
     static int composition;
     static int restrict;
     static int project;
+    static int rename;
     static int difference;
     static int join;
     static int meet;
@@ -128,6 +129,7 @@ public class Program {
             composition = earley.symbolIndexes.get("composition");
             restrict = earley.symbolIndexes.get("restrict");
             project = earley.symbolIndexes.get("project");
+            rename = earley.symbolIndexes.get("rename");
             difference = earley.symbolIndexes.get("difference");
             
             join = earley.symbolIndexes.get("'v'");
@@ -693,6 +695,8 @@ public class Program {
             return raOper(root,src, restrict);
         else if( root.contains(project) ) 
             return raOper(root,src, project);
+        else if( root.contains(rename) ) 
+            return raOper(root,src, rename);
         else if( root.contains(difference) ) 
             return binaryOper(root,src, difference);
         else if( root.contains(userDefined) || root.contains(unaryUserDefined) ) 
@@ -833,6 +837,10 @@ public class Program {
                     first = new Relation(attrs.toArray(new String[0]));
                 } else if( oper == restrict )
                     first = expr(child,src);
+                else if( oper == rename ) {
+                    List<String> attrs = strings(child,src);
+                    first = new EqualityPredicate(attrs.get(0),attrs.get(1));
+                }
             } else                            
                 second = expr(child,src);
         }
@@ -840,6 +848,11 @@ public class Program {
             return Predicate.join(first,second);
         else if( oper == project )
             return Predicate.union(first,second);
+        else if( oper == rename) {
+            Predicate ret = second.clone();
+            ret.renameInPlace(first.colNames[0], first.colNames[1]);
+            return ret;
+        }
         throw new AssertionError("Unknown case");
     }
     

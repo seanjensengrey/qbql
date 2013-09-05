@@ -188,7 +188,9 @@ query:       expr ';'
           |  partition ';'
 ;
 
-rename:   'rename' identifier '/' identifier expr
+rename_attr_pair: identifier '/' identifier
+;
+rename:   'rename' rename_attr_pair expr
 ;
 
 /*renaming_attr_list: identifier '/' identifier
