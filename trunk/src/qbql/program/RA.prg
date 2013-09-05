@@ -97,7 +97,7 @@ join
 project pizzeria 
   select ([name] Fay) ^"price<=10" 
     (Serves join Eats);
-*/
+
 project name
 select "pizzeria='Dominos'"
 (Person join Eats join Serves)
@@ -105,3 +105,35 @@ minus
 project name
 select "pizzeria='Dominos'"
 Frequents;
+
+-- Find all pizzas that are eaten only by people younger than 24, or that cost less than $10 everywhere they're served
+(project pizza
+Eats
+minus
+project pizza
+select "24<=age"
+(Eats join Person)) --< without outer brackets brackets no cheese!
+union
+(project pizza
+Serves
+minus
+project pizza
+select "10<price"
+Serves);
+*/
+
+-- Find the age of the oldest person (or people) who eat mushroom pizza.
+Ages = project age
+select "pizza='mushroom'"
+(Eats join Person);
+
+Older = select "age<oage" 
+(Ages join (rename age/oage Ages));
+
+rename oage/age
+project oage 
+Older
+minus
+project age 
+Older
+;
