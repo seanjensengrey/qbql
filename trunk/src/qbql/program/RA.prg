@@ -130,6 +130,8 @@ select "pizza='mushroom'"
 Older = select "age<oage" 
 (Ages join (rename age/oage Ages));
 
+Older;
+
 rename oage/age
 project oage 
 Older
@@ -137,3 +139,21 @@ minus
 project age 
 Older
 ;
+
+(rename age/items Ages) /= Max;
+
+--Ages /= "age v= result";
+
+-- Find all pizzerias that serve only pizzas eaten by people over 30
+
+pizzasOver30 = project pizza
+select "30<age"
+(Person join Eats); 
+
+(Serves v [pizzeria, pizza]) /<
+pizzasOver30;
+
+--Find all pizzerias that serve every pizza eaten by people over 30
+
+(Serves v [pizzeria, pizza]) />
+pizzasOver30;
