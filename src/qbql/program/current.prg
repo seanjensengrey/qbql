@@ -269,3 +269,5 @@ x < (x v p) /< (x v q)
 ((x v <INV>t) v (p ^ q)) ^ ((x v <INV>t) v (p ^ <INV>q)) < x v <INV>t.
 */
 
+R00 ^ (x v z) = R00 -> x /^ (y /^ z) = (x /^ y) /^ z.
+

@@ -1,6 +1,6 @@
 /*
         //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
-        //String goal = "[] < x v y v z -> x /^ (y /^ z) = expr.";
+        //String goal = "0 ^ (x v z) = 0 -> x /^ (y /^ z) = (x /^ y) /^ z.";
         
         y <and> z = y <-> F(y,z). 
         ***Found: 
@@ -91,4 +91,4 @@ x <mult> (y v z) = (x <mult> y) v (x <mult> z).
 
 --((x v (u ^ R00)`) ^ (y v (z ^ R00)`)) /^ (z ^ u) = expr.
 
-(x v <INV>y) /< (y /< z) = expr.
+R00 ^ (x v z) = R00 -> x /^ (y /^ z) = expr.
