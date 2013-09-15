@@ -14,10 +14,9 @@ public class Run {
             prg = Util.readFile(args[0]);
         } else {
             //prg = Util.readFile(Run.class,"strings.prg");
-            //prg = Util.readFile(Run.class,"current.prg");     
+            prg = Util.readFile(Run.class,"current.prg");     
             //prg = Util.readFile(Run.class,"Partition.prg");     
-            //prg = Util.readFile(Run.class,"RA.prg");     
-            prg = Util.readFile(Run.class,"Sims.db");     
+            //prg = Util.readFile(Run.class,"Sims.db");     
         }
         Database db = new Database("qbql.lang");
         final Program prog = new Program(db);

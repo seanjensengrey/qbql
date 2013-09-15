@@ -199,6 +199,19 @@ public abstract class Util {
         return ret;
     }
 
+    public static Number max( Number x, Number y ) {
+        if( x instanceof Long && y instanceof Long )
+            return x.longValue() > y.longValue() ? x.longValue() : y.longValue();
+        if( x instanceof Integer && y instanceof Integer )
+            return x.intValue() > y.intValue() ? x.intValue() : y.intValue();
+        if( x instanceof Double || y instanceof Double )
+            return x.doubleValue() > y.doubleValue() ? x.doubleValue() : y.doubleValue();
+        if( x instanceof Float || y instanceof Float )
+            return x.floatValue() > y.floatValue() ? x.floatValue() : y.floatValue();
+        //if( x instanceof BigDecimal && y instanceof BigDecimal )
+            //return ((BigDecimal)y).gradd((BigDecimal)x);
+        throw new AssertionError("? + ?");
+    }
     public static Number plus( Number x, Number y ) {
         if( x instanceof Long && y instanceof Long )
         	return x.longValue()+y.longValue();
