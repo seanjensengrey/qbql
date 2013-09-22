@@ -94,8 +94,6 @@ Max = [name] max
 ;
 
 At = [name location time]
-  --max    home       100
-  --claire home       100
   peter    library    200
   max      home       200
   claire   library    200
@@ -107,6 +105,13 @@ At = [name location time]
   claire   library    500
 ;
 
+Fed = [person pet     time]
+       max    folly   200
+       claire folly   200
+       max    folly   300
+       max    scruffy 200
+;
+
 Home = [location] home
 ;
 
@@ -116,5 +121,5 @@ Library = [location] library
 
 Max /^ At /^ Home < Claire /^ At /^ Library.
 
-Claire /^ At /^ Library;
-Max /^ At /^ Home;
+(At ^ [name] max ^ [time] 200) v [location];
+
