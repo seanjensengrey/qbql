@@ -3,12 +3,16 @@
 -- Attributes are renamed: x -> p, y -> q, z -> r, because 
 -- elsewhere x, y, and z are relation variables!
 
+"[p]"=[p]
+;
 "[p]1"=[p]
     1
 ;
 "[p]12"=[p] 
    1
    2
+;
+"[q]"=[q]
 ;
 "[q]a"=[q]
    a
@@ -23,10 +27,6 @@ JAC = "[p]1" ^ "[q]a";
 JAD = "[p]1" ^ "[q]a b";
 
 JBC = "[p]12" ^ "[q]a";
-
-P1_ = "[p]1" ^ R00;
-
-Qa_ = "[q]a" ^ R00;
 
 ADvBC = ("[p]1" ^ "[q]a b") v ("[p]12" ^ "[q]a");
 
@@ -58,6 +58,8 @@ PR0010=[p  r]
 ;
 */
 
+"[p r]" = [p r]
+;
 "[p=r]" = [p r]     
            0 0
            1 1
@@ -73,8 +75,9 @@ PR0010=[p  r]
            1 2
            2 2
 ;
-"[p r]" = [p r];
 
+"[q r]" = [q r]
+;
 "[q r]a0" = [q r]
       a 0
 ;
@@ -96,7 +99,10 @@ PR0010=[p  r]
       a 1
       b 1
 ;
-"[q r]" = [q r];
+
+
+"[p q]" = [p q]
+;
 
 
 "p->q"=[p  q  r]
@@ -106,6 +112,14 @@ PR0010=[p  r]
    1  c  1
    2  a  0
 ;
+
+AliceP129=[p  q  r]
+   0  c  1
+   1  c  2
+   1  c  0
+;
+
+
 /*"p->q t"=[p  q  r  t]
    0  a  0  "<0,a,0>"
    0  a  1  "<0,a,1>"
@@ -120,7 +134,7 @@ TT = [t];
 --S1jT1 = S1 ^ T1;
 
 
-/* Alice p.171 remapped: */
+/* Alice p.171 remapped: 
 SDT = [q  s   p   r]
        c  s   0   0
        c  s   0   1
@@ -138,6 +152,7 @@ SDPjST = SDP ^ ST;
 DTjST = DT ^ ST; 
 
 PQS = SDT v [p r s];
+*/
 
 /*MaierP137=[p  q  r] 
            0  a  0 

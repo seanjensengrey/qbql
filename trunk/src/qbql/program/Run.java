@@ -16,7 +16,8 @@ public class Run {
             //prg = Util.readFile(Run.class,"strings.prg");
             prg = Util.readFile(Run.class,"current.prg");     
             //prg = Util.readFile(Run.class,"Partition.prg");     
-            //prg = Util.readFile(Run.class,"Sims.db");     
+            //prg = Util.readFile(Run.class,"Sims.db"); 
+            //prg = "include class2go.db; Eats /^ Person /^ \"pizza ='mushroom'\";";
         }
         Database db = new Database("qbql.lang");
         final Program prog = new Program(db);

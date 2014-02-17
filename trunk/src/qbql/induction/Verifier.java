@@ -90,13 +90,21 @@ class Verifier {
             quick.database.restoreOperations(databaseOperations);
             full.database.restoreOperations(databaseOperations);
         }
-		System.out.println("*** found *** ");
-   
-		System.out.println(print.toString());
-		System.out.println("Elapsed="+(System.currentTimeMillis()-ExprGen.startTime));
-		System.out.println("evalTime="+ExprGen.evalTime);
-		if( ExprGen.singleSolution )
+        String out = print.toString();
+		if( ExprGen.singleSolution ) {
+            System.out.println("*** found *** ");   
+            System.out.println(out);
+            System.out.println("Elapsed="+(System.currentTimeMillis()-ExprGen.startTime));
+            System.out.println("evalTime="+ExprGen.evalTime);
 			System.exit(0);
+		} else if( //out.contains("^") && out.contains("v") 
+		        //&& out.contains("x") && out.contains("y") 
+		        !out.contains("(x ^ x)") && !out.contains("(y ^ y)")
+                && !out.contains("(x v x)") && !out.contains("(y v y)")
+		        //&& 2*out.length()/5 < out.indexOf("=") && out.indexOf("=") < out.length()*3/5
+		        ) {
+		    System.out.println(out);
+		}
     }
 
 	private String substituteFormalFariables( String node, List<String> formalArguments ) {

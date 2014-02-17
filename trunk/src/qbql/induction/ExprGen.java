@@ -1,8 +1,6 @@
 package qbql.induction;
 
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +21,7 @@ import qbql.util.Array;
 import qbql.util.Util;
 
 public class ExprGen {
+    //final static boolean singleSolution = false;
     final static boolean singleSolution = true;
 
     static String[] zilliaryOps;
@@ -39,7 +38,7 @@ public class ExprGen {
         System.out.println("goal: "+Util.removeComments(goal));
 
         final String[] constants = new String[] {
-                "R00",
+                //"R00",
                 //"R11",             
                 //"Id", 
                 //"R",
@@ -50,7 +49,8 @@ public class ExprGen {
 
         final String[] binaryOps = new String[] {
                 "^",
-                "v", 
+                //"v", 
+                //"<Gn>",
                 //"<and>",
                 //"<\"and\">",
                 //"<OR>",
@@ -69,7 +69,8 @@ public class ExprGen {
                 //"&",
                 //"|"
         };
-        String skipTo = "((<NOT>(y) ^ <NOT>(y)) ^ (<NOT>(y) ^ <NOT>(y)))";
+        //String skipTo = "((<NOT>(y) ^ <NOT>(y)) ^ (<NOT>(y) ^ <NOT>(y)))";
+        String skipTo = "(((((r ^ r) ^ r) ^ r) ^ r) ^ r)";
         skipTo = null;
 
         //String quickFile = "FD.db";
@@ -177,8 +178,9 @@ variables.remove("A1A2");
                     continue;
                 //System.out.println("-----------------");
                 do {  
-                    if( n.toString().contains("((<NOT>(y) ^ <NOT>(x)) ^ (<INV>(y) ^ <INV>(x)))") )
-                        n.print();
+                    //if( n.toString().contains("((<NOT>(y) ^ <NOT>(x)) ^ (<INV>(y) ^ <INV>(x)))") ) {
+                        //System.out.println("---->((<NOT>(y) ^ <NOT>(x)) ^ (<INV>(y) ^ <INV>(x)))");
+                    //}
                     if( n.isRightSkewed() )
                         continue;
                     if( n.isAbsorpIdemp() )
