@@ -16,12 +16,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
-import qbql.parser.CYK;
+import qbql.lattice.Program;
+import qbql.parser.Earley;
 import qbql.parser.Grammar;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
+import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.parser.RuleTuple;
+import qbql.parser.SyntaxError;
 import qbql.util.Util;
 
 public class Gui {   
@@ -135,16 +138,18 @@ public class Gui {
     static Set<RuleTuple> guiRules() throws Exception {
         String input = Util.readFile(Gui.class, "gui.grammar");
         HashMap<String, String> specialSymbols = new HashMap<String, String>();
+        //specialSymbols.put("qtSymbol", "'");
         List<LexerToken> src = new Lex(
-                      true, true, false,
-                      specialSymbols                 
-        ).parse(input);
+                                       true, true, false,
+                                       specialSymbols                 
+                ).parse(input);
         //LexerToken.print(src);
         ParseNode root = Grammar.parseGrammarFile(src, input);
         return Grammar.grammar(root, src);
+
     }
     
-    static CYK cyk = null; 
+    static Earley parser = null; 
     static int grid;
     static int node;
     static int nodes;
@@ -158,48 +163,45 @@ public class Gui {
     static int padding;
     static {
         try {
-            cyk = new CYK(guiRules()) {
+            parser = new Earley(guiRules()) {
                 public int[] atomicSymbols() {
                     return new int[] {};
                 }
-            };            grid = cyk.symbolIndexes.get("grid");
-            node = cyk.symbolIndexes.get("node");
-            nodes = cyk.symbolIndexes.get("nodes");
-            digits = cyk.symbolIndexes.get("digits");
-            widget = cyk.symbolIndexes.get("widget");
-            button = cyk.symbolIndexes.get("button");
-            input = cyk.symbolIndexes.get("input");
-            codeArea = cyk.symbolIndexes.get("codeArea");
-            padding = cyk.symbolIndexes.get("padding");
-            identifier = cyk.symbolIndexes.get("identifier");
-            string_literal = cyk.symbolIndexes.get("string_literal");
+            };            grid = parser.symbolIndexes.get("grid");
+            node = parser.symbolIndexes.get("node");
+            nodes = parser.symbolIndexes.get("nodes");
+            digits = parser.symbolIndexes.get("digits");
+            widget = parser.symbolIndexes.get("widget");
+            button = parser.symbolIndexes.get("button");
+            input = parser.symbolIndexes.get("input");
+            codeArea = parser.symbolIndexes.get("codeArea");
+            padding = parser.symbolIndexes.get("padding");
+            identifier = parser.symbolIndexes.get("identifier");
+            string_literal = parser.symbolIndexes.get("string_literal");
         } catch( Exception e ) {
             e.printStackTrace();
         }
     }
         
     private static final String path = "/qbql/gui/";
-    /*public static void main( String[] args ) throws Exception {
+    public static void main( String[] args ) throws Exception {       
         Gui model = new Gui();
         String guiCode = Util.readFile(model.getClass(),path+"test.gui");
 
+        Matrix matrix = new Matrix(parser);
         List<LexerToken> src =  new Lex().parse(guiCode);
-        //LexerToken.print(src);
-        Matrix matrix = cyk.initMatrixSubdiagonal(src);
-        int size = matrix.size();
-        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = cyk.forest(size, matrix);
-
-        if( root.topLevel != null ) {
-            System.out.println("*** Parse Error in assertions file ***");
-            CYK.printErrors(guiCode, src, root);
+        parser.parse(src, matrix); 
+        SyntaxError err = SyntaxError.checkSyntax(guiCode, new String[]{"nodes"}, src, parser, matrix);      
+        if( err != null ) {
+            System.out.println(err.toString());
+            throw new AssertionError("*** Parse Error in assertions file ***");
         }
-        root.printTree();
+        ParseNode root = parser.forest(src, matrix);
+        //root.printTree();
 
         model.frame(root, src);
         
-    }*/
+    }
 
 }
 

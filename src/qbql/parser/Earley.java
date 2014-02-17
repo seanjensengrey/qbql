@@ -108,7 +108,9 @@ public class Earley extends Parser {
         }
         identifier = symbolIndexes.get("identifier");
         string_literal = symbolIndexes.get("string_literal");
-        digits = symbolIndexes.get("digits");
+        try {
+            digits = symbolIndexes.get("digits");
+        } catch( NullPointerException e ) {} // no such symbol
 
         precomputePredictions();
         filterSingleRhsRules();

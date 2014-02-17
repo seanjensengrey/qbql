@@ -14,7 +14,6 @@ import com.sun.org.apache.xpath.internal.FoundIndex;
 import qbql.index.IndexedPredicate;
 import qbql.parser.Earley;
 import qbql.parser.Grammar;
-import qbql.parser.CYK;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;

@@ -42,7 +42,6 @@ import javax.swing.text.html.HTMLEditorKit;
 import qbql.util.Util;
 
 public class Visual implements ActionListener {
-    public static int[][] skipped = null; // by CYK
     public static long[][] visited = null; // by Earley
     List<LexerToken> src;
     Parser par;
@@ -61,10 +60,7 @@ public class Visual implements ActionListener {
     public Visual( final List<LexerToken> s, Parser c ) {
         causes = new HashMap<Integer,Integer>();
         src = s;
-        if( c instanceof CYK )
-        	skipped = new int[src.size()+1][src.size()+1];
-        else if( c instanceof Earley )
-        	visited = new long[src.size()+1][src.size()+1];
+        visited = new long[src.size()+1][src.size()+1];
         par = c;
         zoom = 1+550/src.size();
         offset = zoom/2;
@@ -146,16 +142,11 @@ public class Visual implements ActionListener {
 					tooltip += "</font> = <font color=rgb(150,100,100)> "+completeTime;
 					tooltip += "</font> (completetion) + <font color=rgb(100,100,150)> "+otherTime;
 				}
-                if( skipped != null && 0 < skipped[x][y] )
-                	tooltip += "  <font color=rgb(100,100,150) size=+1>"+par.allSymbols[skipped[x][y]];
                 setToolTipText(tooltip);
             }
 			private void updatePane( final JEditorPane t ) {
 				StringBuffer sb = new StringBuffer("<html><font color=red>["+x0+","+y0+")</font><br>");  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				if( par instanceof CYK )
-					updatePane4CYK(sb);
-				else if( par instanceof Earley )
-					updatePane4Earley(sb);
+				updatePane4Earley(sb);
 				sb.append("<font color=green><br><br>"); //$NON-NLS-1$
 				for( int i = x0; i < y0; i++ ) {
 				    sb.append(" "+src.get(i).content); // (authorized) //$NON-NLS-1$
@@ -184,7 +175,7 @@ public class Visual implements ActionListener {
                             String ruleBody = "?";
                             outer: for( int I : prefixes.getContent() )  {  // Not indexed Nested Loops
                                 for( int J : suffixes.getContent() ) {
-                                    int[] A = ((CYK)par).doubleRhsRules.get(Util.pair(I, J));
+                                    int[] A = null; //FixIt, was: ((CYK)par).doubleRhsRules.get(Util.pair(I, J));
                                     if( A==null )
                                         continue;
                                     for( int a : A ) {
@@ -248,15 +239,10 @@ public class Visual implements ActionListener {
             public void paint( Graphics g ) {
                 super.paint(g);
                 if( x0 != -1 && (
-                		par instanceof CYK && x0+1 < y0 
-                	||	par instanceof Earley && x0 <= y0 && index < output.size() 
+                		x0 <= y0 && index < output.size() 
                     ) ) {
                     g.setColor(Color.red);
-                    int mid = -1;
-                    if( par instanceof CYK )
-                        mid = matrix.getCykBackptrs(x0, y0, output.getSymbol(index)).get(ambig); 
-                    else if( par instanceof Earley )
-                        mid = matrix.getEarleyBackptrs(x0, y0, output, index).get(ambig); 
+                    int mid = matrix.getEarleyBackptrs(x0, y0, output, index).get(ambig); 
                     if( y0 < mid ) {
                       	g.drawLine(x0*zoom+offset, (y0-1)*zoom+offset, x0*zoom+offset, y0*zoom+offset); // vertical
                       	return;
@@ -270,11 +256,7 @@ public class Visual implements ActionListener {
             public void mouseWheelMoved( MouseWheelEvent e ) {
                 if( output == null )
                     return;
-                int ambiguityFactor = -1;//matrix.getCykBackptrs(x0, y0, output.getSymbol(index)).size();
-                if( par instanceof CYK )
-                    ambiguityFactor = matrix.getCykBackptrs(x0, y0, output.getSymbol(index)).size(); 
-                else if( par instanceof Earley )
-                    ambiguityFactor = matrix.getEarleyBackptrs(x0, y0, output, index).size(); 
+                int ambiguityFactor = matrix.getEarleyBackptrs(x0, y0, output, index).size(); 
                 
                 if( 0 <= ambig + e.getWheelRotation() && ambig + e.getWheelRotation() < ambiguityFactor ) {
                     ambig += e.getWheelRotation();
@@ -330,7 +312,6 @@ public class Visual implements ActionListener {
     }
 	private BufferedImage drawMatrix( final Matrix matrix ) {
         this.matrix = matrix;
-        boolean isCYK = par instanceof CYK;
         byte[] pixels = new byte[X * Y+1]; 
         for( int j = 0; j < Y; ++j)
             for( int i = 0; i <= X; ++i) {
@@ -340,9 +321,7 @@ public class Visual implements ActionListener {
                     pixels[z] = 0;
                 } else {
 					if( 
-                         isCYK && j == i 
-                      || j < i
-                      || skipped != null && 0 < skipped[i/zoom][j/zoom] 
+                         j < i
                       || visited != null && visited[i/zoom][j/zoom] == 0
                     ) {
                         pixels[z] = 1;
@@ -417,18 +396,6 @@ public class Visual implements ActionListener {
             ((Earley)par).allXs = null;
             matrix = new Matrix(par);
             ((Earley)par).parse(src, matrix); 
-        }
-        if( skipped != null ) {
-            skipped = new int[src.size()+1][src.size()+1];
-        
-            matrix = ((CYK)par).initArray(src);
-            int size = matrix.size();
-            TreeMap<Integer,Integer> skipRanges = null; 
-            if( optim )
-                skipRanges = new TreeMap<Integer,Integer>();
-            else
-                skipRanges = null;
-            ((CYK)par).closure(matrix, 0, size+1, skipRanges, -1);
         }
         img = drawMatrix(matrix);
         matrixImage.repaint();

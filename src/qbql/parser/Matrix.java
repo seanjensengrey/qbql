@@ -23,19 +23,13 @@ public class Matrix extends TreeMap<Integer,Cell> {
         Cell cell = get(Util.pair(x, y));
         if( cell == null )
             return false;
-        boolean isCYK = parser instanceof CYK;
-        boolean isEarley = parser instanceof Earley;
         for( int i = 0; i < cell.size() ; i++ ) {
-            if( isCYK && cell.getSymbol(i) == symbol )
+            Earley e = (Earley) parser;
+            Tuple tuple = e.rules[cell.getRule(i)];
+            if( tuple.head != symbol )
+                continue;
+            if( tuple.rhs.length == cell.getPosition(i) )
                 return true;
-            if( isEarley ) {
-                Earley e = (Earley) parser;
-                Tuple tuple = e.rules[cell.getRule(i)];
-                if( tuple.head != symbol )
-                    continue;
-                if( tuple.rhs.length == cell.getPosition(i) )
-                    return true;
-            }
         }
         return false;
     }
@@ -56,14 +50,7 @@ public class Matrix extends TreeMap<Integer,Cell> {
             	if( i == cutover )
                     ret.append(" ...");
             	
-            	if( parser instanceof CYK	)
-            		ret.append("  "+parser.allSymbols[output.getSymbol(i)]); //$NON-NLS-1$
-            	else if( parser instanceof Earley	) {
-				    ((Earley)parser).toString(output.getRule(i), output.getPosition(i), ret);
-            	} else {
-            		ret.append("unknown content: "+parser.getClass().getName()); //$NON-NLS-1$
-            		break;
-            	}
+                ((Earley)parser).toString(output.getRule(i), output.getPosition(i), ret);
 				
 			}
 
@@ -89,7 +76,7 @@ public class Matrix extends TreeMap<Integer,Cell> {
 
             for( int I : prefixes.getContent() )    // Not indexed Nested Loops
                 for( int J : suffixes.getContent() ) {
-                    int[] A = ((CYK)parser).doubleRhsRules.get(Util.pair(I, J));
+                    int[] A = null; //Fix It, was: ((CYK)parser).doubleRhsRules.get(Util.pair(I, J));
 
                     if( A==null )
                         continue;

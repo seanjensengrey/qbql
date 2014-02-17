@@ -10,7 +10,6 @@ import qbql.lattice.Program;
 import qbql.lattice.Relation;
 import qbql.parser.Earley;
 import qbql.parser.Grammar;
-import qbql.parser.CYK;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
@@ -72,12 +71,6 @@ public class ParseDb extends Database {
             throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);
         }
         ParseNode root = Program.earley.forest(src, matrix);
-        
-        if( root.topLevel != null ) {
-            System.out.println("*** Parse Error in assertions file ***");
-            CYK.printErrors(prg, src, root);
-            return null;
-        }
         System.out.println("-------------------------------------");
 
         Program program = new Program(db); 
