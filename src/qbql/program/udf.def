@@ -56,8 +56,27 @@ x <Decomp> y = (x ^ <INV>y) v (x ^ <NOT>y).
 --x <mult> y = <NOT>((<NOT>(y) v <NOT>(x))).
 x <mult> y = x <"and"> y.
 
-
+-- generalized negation
 x <gn> y = (<NOT>x ^ <INV>y) v (<INV>x ^ <NOT>y).
+--x <gn> y = (<NOT>y v <NOT>x) ^ (<INV>y v <INV>x).
+--false:x <gn> x = x.
+--x <gn> y = y <gn> x.
+-- false: x <gn> (y <gn> z) = (x <gn> y) <gn> z.
+--x <gn> R00 = <INV>x.
+--x <gn> R11 = <NOT>x.
+
+-- Generalized negation
+x <Gn> y = <NOT>(<INV>(<NOT>x ^ x) v (<INV>y ^ y)).
+--x <Gn> (x <Gn> x) = <INV>x.
+--(x <Gn> x) <Gn> x = <NOT>x.
+--R00 = ((x <Gn> (x <Gn> x)) ^ x) <Gn> ((x <Gn> x) v x);
+--R11 = (((x <Gn> x) ^ x) <Gn> x) <Gn> ((x <Gn> x) ^ x).
+--x <OR> y = (((y <Gn> x) <Gn> y) ^ x) v (((y <Gn> x) v x) ^ y).
+--x /^ y = ((x <Gn> (y <Gn> y)) ^ (y <Gn> y)) v (y ^ x).
+
+
+x <"/^"> y = --(x v y) <"and"> (<NOT>(x ^ y)).
+             <NOT>(<NOT>(y v x) v (y ^ x)).
 -----------------------------------------------------------------------
 
 "f1 <*> f2 = p" = 
