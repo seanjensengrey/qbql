@@ -7,7 +7,6 @@ import javax.swing.JFrame;
 
 import qbql.lattice.Database;
 import qbql.lattice.Program;
-import qbql.parser.CYK;
 import qbql.parser.Earley;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
@@ -55,7 +54,7 @@ public class Graphics2D extends Database {
 
         if( root.topLevel != null ) {
             System.out.println("*** Parse Error in assertions file ***");
-            CYK.printErrors(prg, src, root);
+            //CYK.printErrors(prg, src, root);
             return null;
         }
         System.out.println("-------------------------------------");

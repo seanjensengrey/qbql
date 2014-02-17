@@ -7,8 +7,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class Grammar {
-    private static CYK cyk = bnfParser();
-    private static CYK bnfParser() {
+    private static Earley parser = bnfParser();
+    private static Earley bnfParser() {
         Set<RuleTuple> rules = new TreeSet<RuleTuple>();
         rules.add(new RuleTuple("variable", new String[] {"identifier"}));                            //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         rules.add(new RuleTuple("variable", new String[] {"string_literal"}));                             //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -25,19 +25,15 @@ public class Grammar {
         rules.add(new RuleTuple("grammar", new String[] {"grammar", "rule"}));                             //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         Set<RuleTuple> nonEmptyRules = rules; //RuleTransforms.eliminateEmptyProductions(rules); <--automatically transformed output is messy
         //RuleTuple.printRules(nonEmptyRules);
-		cyk = new CYK(nonEmptyRules) {
-            public int[] atomicSymbols() {
-                return new int[]{ rule }; //$NON-NLS-1$
-            }     
-        };
-        rule = cyk.symbolIndexes.get("rule");
-        grammar = cyk.symbolIndexes.get("grammar");
-        variable = cyk.symbolIndexes.get("variable");
-        disjunct = cyk.symbolIndexes.get("disjunct");
-        concat = cyk.symbolIndexes.get("concat");
-        or = cyk.symbolIndexes.get("'|'");
-        minus = cyk.symbolIndexes.get("'-'");
-        return cyk;
+		parser = new Earley(nonEmptyRules);
+        rule = parser.symbolIndexes.get("rule");
+        grammar = parser.symbolIndexes.get("grammar");
+        variable = parser.symbolIndexes.get("variable");
+        disjunct = parser.symbolIndexes.get("disjunct");
+        concat = parser.symbolIndexes.get("concat");
+        or = parser.symbolIndexes.get("'|'");
+        minus = parser.symbolIndexes.get("'-'");
+        return parser;
     }
     static int rule;
     static int grammar;
@@ -59,18 +55,16 @@ public class Grammar {
     public static ParseNode parseGrammarFile( List<LexerToken> src, String input ) throws Exception {
         Visual visual = null;
         //visual = new Visual(src, cyk);
-        Matrix matrix = cyk.initArray1(src);
-        int size = matrix.size();
-        cyk.closure(matrix, 0,size+1, new TreeMap<Integer,Integer>(), -1);
-        if( visual != null )
-            visual.draw(matrix);       
-        ParseNode root = cyk.forest(src, matrix);
-        //root.printTree();
-
-        if( !root.contains(grammar) ) { 
-            CYK.printErrors(input, src, root);
-            throw new Exception("Parse error in grammar file"); 
+        
+        Matrix matrix = new Matrix(parser);
+        parser.parse(src, matrix); 
+        SyntaxError err = SyntaxError.checkSyntax(input, new String[]{"grammar"}, src, parser, matrix);      
+        if( err != null ) {
+            System.out.println(err.toString());
+            throw new AssertionError("*** Parse Error in assertions file ***");
         }
+        ParseNode root = parser.forest(src, matrix);
+        //root.printTree();
         return root;
     }
     
