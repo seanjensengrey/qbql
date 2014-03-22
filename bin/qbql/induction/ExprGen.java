@@ -1,63 +1,141 @@
 package qbql.induction;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import qbql.lattice.Grammar;
+import qbql.lattice.Database;
+import qbql.lattice.Program;
+import qbql.parser.Earley;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
+import qbql.parser.SyntaxError;
 import qbql.program.Run;
+import qbql.util.Array;
 import qbql.util.Util;
 
 public class ExprGen {
-    
+    final static boolean singleSolution = true;
+
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
-            "'",
-            //"`",
+        "<NOT>",
+        "<INV>",
+        //"<EQ_CLOSE>",
+        //"<CP_CLOSE>",
     };
-    final static String[] binaryOps = new String[] {
-            "^",
-            "v",             
-            "*",
-            "+",
-            //"/>",
-            //"/<",
-            //"/=",
+    static String[] binaryRelsOps;
+    private static final String PARSE_ERROR_IN_ASSERTIONS_FILE = "*** Parse Error in assertions file ***";
+    public static void main( String[] args ) throws Exception {
+        final String goal = Util.readFile(ExprGen.class,"induction.prg");
+        System.out.println("goal: "+Util.removeComments(goal));
+
+        final String[] constants = new String[] {
+                "R00",
+                //"R11",             
+                //"Id", 
+                //"R",
+                //"A1A2",
+                //"A1",
+                //"A2",
+        };
+
+        final String[] binaryOps = new String[] {
+                "^",
+                "v", 
+                //"<and>",
+                //"<\"and\">",
+                //"<OR>",
+                //"/^",
+                //"/>",
+                //"/<",
+                //"/=",
             //"/0",
             //"/1",
             //"/!",
-    };
-    public static void main( String[] args ) throws Exception {
-        //String goal = "(x + (y * z)) ^ (x ^ (y v z))' = expr.";
-        //String goal = "(x ^ (y v z)) /< ((x ^ y) v (x ^ z)) = expr.";
-        //String goal = "(x + y) ^ (x + (y * z)) = expr.";
-        String goal = "y v ((x ^ y) v (x ^ z)) = expr.";
-        System.out.println("goal: "+goal);
-        final String subgoal = goal.substring(0,goal.indexOf("expr"));
-        
-        final String[] constants = new String[] {
-            "R00",
-            "R11",             
         };
-        
+        final String[] binaryRels = new String[] {
+                //"<",
+                //"=",
+                //"!=",
+                //"&",
+                //"|"
+        };
+        String skipTo = "((<NOT>(y) ^ <NOT>(y)) ^ (<NOT>(y) ^ <NOT>(y)))";
+        skipTo = null;
+
+        //String quickFile = "FD.db";
+        String quickFile = "Figure1.db";
+        String quickDbsrc = Util.readFile(ExprGen.class,quickFile);
+        quickDbsrc += "\n include udf.def;\n";
+        //String fullDb = quickDb;
+        String fullDbsrc = Util.readFile(Run.class,"Figure1.db");
+        fullDbsrc += "\n include udf.def;\n";
+
         final Lex lex = new Lex();
         List<LexerToken> src =  lex.parse(goal);
-        Matrix matrix = Grammar.cyk.initArray1(src);
-        int size = matrix.size();
-        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        Grammar.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = Grammar.cyk.forest(size, matrix);
-        if( root.topLevel != null )
-            throw new Exception("root.topLevel!=null" );     
+        Earley earley = Program.earley;
+        Matrix matrix = new Matrix(earley);
+        earley.parse(src, matrix); 
+        SyntaxError err = SyntaxError.checkSyntax(goal, new String[]{"program"}, src, earley, matrix);      
+        if( err != null ) {
+            System.out.println(err.toString());
+            throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);
+        }
+        ParseNode root = earley.forest(src, matrix);
         
-        Grammar g = new Grammar(lex.parse(goal),Util.readFile(Run.class,"Figure1.db"));
-        Set<String> variables = g.variables(root);
+        Map<String,long[]> assertions = new TreeMap<String,long[]>();
+        listAssertions(root,src,goal,assertions);
+
+        binaryRelsOps = new String[binaryOps.length];
+        for( ParseNode subgoal : subgoals(root, src) )
+        	if( subgoal.contains(Program.implication) )
+        		binaryRelsOps = new String[binaryOps.length+binaryRels.length];
+        for( int i = 0; i < binaryOps.length; i++ ) {
+            binaryRelsOps[i] = binaryOps[i];
+        }
+        if( binaryRelsOps.length == binaryOps.length+binaryRels.length )
+            for( int i = 0; i < binaryRels.length; i++ ) {
+                binaryRelsOps[i+binaryOps.length] = binaryRels[i];
+            }              
+
+        int threads = Runtime.getRuntime().availableProcessors();
+        if(  java.lang.management.ManagementFactory.getRuntimeMXBean(). getInputArguments().toString().contains("-agentlib:jdwp") )        	
+        	threads = 1;
+        System.out.println("Using " + threads + " threads");
+        Verifier[] verifiers= new Verifier[threads];
+        final Set<String> variables = extractVariables(root, src, new Program(new Database("qbql.lang")));
         variables.remove("expr");
+variables.remove("R");
+variables.remove("A1");
+variables.remove("A2");
+variables.remove("A1A2");
+        for( int i = 0; i < threads; i++ ) {
+            Database quickDb = new Database("qbql.lang");
+            final Program quick = new Program(quickDb);
+            quick.outputVariables = false;
+            quick.run(quickDbsrc);       
+            Database fullDb = new Database("qbql.lang");
+            final Program full = new Program(fullDb);
+            full.outputVariables = false;
+            full.run(fullDbsrc);       
+
+
+            final Set<String> databaseOperations = new HashSet<String>();
+            databaseOperations.addAll(full.database.operationNames());
+            for( String op : databaseOperations )
+                quick.database.addOperation(op, full.database.getOperation(op));
+            verifiers[i] = new Verifier(assertions, lex, quick, full, databaseOperations, variables.toArray(new String[0]));
+        }
+
         zilliaryOps = new String[variables.size()+constants.length];
         for( int i = 0; i < variables.size(); i++ ) {
             zilliaryOps[i] = variables.toArray(new String[0])[i];
@@ -65,94 +143,132 @@ public class ExprGen {
         for( int i = 0; i < constants.length; i++ ) {
             zilliaryOps[i+variables.size()] = constants[i];
         }
-        
+
         ArrayList<TreeNode> l = new ArrayList<TreeNode>();
         l.add(Polish.leaf());
         l.add(TreeNode.one);
-        
-        //int cnt = 0; 
-        final long startTime = System.currentTimeMillis();
-        long evalTime = 0;
+
         for( Polish num = new Polish(l); ; num.next() ) {
             if( !num.wellBuilt() )
                 continue;
-            TreeNode n = num.decode(); 
+            final TreeNode n = num.decode(); 
             if( n != null ) {
-                if( n.isRightSkewed() )
-                    continue;
+                //if( n.isRightSkewed() ) // !!!conflicts with other variable assignments!!!
+                //continue;
+
                 //System.out.println();
-                ExprGen.init(n);
-                n.print();
-                do {
+                try {
+                    init(n);
+                } catch( ArrayIndexOutOfBoundsException e ) { // no unary operations
+                    continue;
+                }
+                if( singleSolution )
+                    n.print();
+                /*if( "((<NOT>(z) ^ z) ^ (z ^ z))".equals(n.toString()) ) {
+            		System.out.println("*** reached (<NOT>((<NOT>(r) ^ r)) ^ (<NOT>(r) ^ r)) *** ");
+            		System.out.println("Elapsed="+(System.currentTimeMillis()-ExprGen.startTime));
+            		System.out.println("evalTime="+ExprGen.evalTime);
+            		System.exit(0);                	
+                }*/
+                //if( skip && "(<NOT>((<NOT>((r ^ r)) ^ r)) ^ (<NOT>(r) ^ r))".equals(n.toString()) )
+				if( n.toString().equals(skipTo) )
+					skipTo = null;
+                if( skipTo != null )
+                    continue;
+                //System.out.println("-----------------");
+                do {  
+                    if( n.toString().contains("((<NOT>(y) ^ <NOT>(x)) ^ (<INV>(y) ^ <INV>(x)))") )
+                        n.print();
                     if( n.isRightSkewed() )
                         continue;
                     if( n.isAbsorpIdemp() )
                         continue;
                     if( n.isDoubleComplement() )
                         continue;
-                    //if( n.toString().contains("(y * x) v y") )
-                        //n.print();
-                                        
-                    String input = subgoal + n.toString() +".";
-                    src =  lex.parse(input);
-                    matrix = Grammar.cyk.initArray1(src);
-                    size = matrix.size();
-                    skipRanges = new TreeMap<Integer,Integer>();
-                    Grammar.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-                    root = Grammar.cyk.forest(size, matrix);
-                    if( root.topLevel != null )
-                        throw new Exception("root.topLevel!=null" );     
-                    
-                    final long t2 = System.currentTimeMillis();
-                    
-                    g.src = src;
-                    ParseNode eval = g.assertion(root, false);
-                    evalTime += System.currentTimeMillis()-t2;
-                    if( eval != null )
-                        continue;
-                    System.out.println("*** found *** ");
-                    System.out.println(input);
-                    //System.out.println("Elapsed="+(System.currentTimeMillis()-startTime));
-                    //System.out.println("evalTime="+evalTime);
-                    return;
+                    //if( !n.variables().containsAll(variables) )
+                    	//continue;
+                    boolean launched = false;
+                    do {
+                        if( verifiers.length == 1 ) {
+                            verifiers[0].exec(n);
+                            break;
+                        }
+                        for( Verifier verifier : verifiers ) {
+                            if( verifier.thread!=null && verifier.thread.isAlive() ) {
+                                Thread.yield();
+                                continue;
+                            }
+                            verifier.execThread(n);
+                            launched = true;
+                            break;
+                        }
+                    } while( !launched );
                 } while( ExprGen.next(n) );
-                //cnt++;
             } else {
                 //System.out.print('.');
             }
         }
-        //System.out.println(cnt);
-        
     }
-    
+
+	static long startTime = System.currentTimeMillis();
+    static long evalTime = 0;
+
+
+
+
+    private static Set<String> extractVariables( ParseNode root, List<LexerToken> src, Program p/*, int subgoal*/ ) {
+        if( root.contains(Program.assertion) ) {
+            for( ParseNode d : root.descendants() )
+                 return p.variables(root,src);
+        } 
+        for( ParseNode child : root.children() ) {
+            Set<String> ret = extractVariables(child, src, p);       
+            if( ret != null )
+                return ret;
+        }
+        return null;
+    }
+
+    private static List<ParseNode> subgoals( ParseNode root, List<LexerToken> src ) {
+    	List<ParseNode> ret = new LinkedList<ParseNode>();
+    	for( ParseNode p : root.descendants() )
+    		if( p.from+1==p.to && p.contains(Program.expr) && p.content(src).equals(Program.earley.allSymbols[Program.expr]) )
+                ret.add(p);
+    		else if( p.contains(Program.inductionFormula) )
+                ret.add(p);
+    	//if( ret.size() == 0 )
+    		//return null; //e.g. x <op> y = expr. ...  //throw new AssertionError("no subgoal?");
+        return ret;
+    }
+
     static void init( TreeNode node ) {
-        if( node.lft == null ) 
+        if( node.left() == null ) 
             node.label = zilliaryOps[0];
         else {
-            init(node.lft);
-            if( node.rgt == null )
+            init(node.left());
+            if( node.right() == null ) 
                 node.label = unaryOps[0];
             else {
-                init(node.rgt);
-                node.label = binaryOps[0];
+                init(node.right());
+                node.label = binaryRelsOps[0];
             }
         }
     }
     static boolean next( TreeNode node ) {
         Boolean ok = false;
-        if( node.lft != null ) {
-            ok = next(node.lft);
+        if( node.left() != null ) {
+            ok = next(node.left());
             if( ok )
                 return true;
         }
-        if( node.rgt != null ) {
-            init(node.lft);
-            ok = next(node.rgt);
+        if( node.right() != null ) {
+            init(node.left());
+            ok = next(node.right());
             if( ok )
                 return true;
         }
-            
-        if( node.lft == null ) {
+
+        if( node.left() == null ) {
             int index = index(node.label,zilliaryOps)+1;
             if( index == zilliaryOps.length )
                 return false;
@@ -162,7 +278,7 @@ public class ExprGen {
                 return true;
             }
         } else {
-            if( node.rgt == null ) {
+            if( node.right() == null ) {
                 int index = index(node.label,unaryOps)+1;
                 if( index == unaryOps.length )
                     return false;
@@ -172,12 +288,52 @@ public class ExprGen {
                     return true;
                 }
             } else {
-                int index = index(node.label,binaryOps)+1;
-                if( index == binaryOps.length )
+                int index = index(node.label,binaryRelsOps)+1;
+                if( index == binaryRelsOps.length )
                     return false;
                 else {
                     init(node);
-                    node.label = binaryOps[index];
+                    node.label = binaryRelsOps[index];
+                    return true;
+                }
+            }
+        }
+    }
+    // for syntactically invalid nodes jump to next operation
+    static boolean nextOp( TreeNode node ) {
+        Boolean ok = false;
+        if( node.left() != null ) {
+            ok = nextOp(node.left());
+            if( ok )
+                return true;
+        }
+        if( node.right() != null ) {
+            init(node.left());
+            ok = nextOp(node.right());
+            if( ok )
+                return true;
+        }
+
+        if( node.left() == null ) {
+        	node.label = zilliaryOps[zilliaryOps.length-1];
+            return true;
+        } else {
+            if( node.right() == null ) {
+                int index = index(node.label,unaryOps)+1;
+                if( index == unaryOps.length )
+                    return false;
+                else {
+                    init(node);
+                    node.label = unaryOps[index];
+                    return true;
+                }
+            } else {
+                int index = index(node.label,binaryRelsOps)+1;
+                if( index == binaryRelsOps.length )
+                    return false;
+                else {
+                    init(node);
+                    node.label = binaryRelsOps[index];
                     return true;
                 }
             }
@@ -191,5 +347,26 @@ public class ExprGen {
         }
         return ret;
     }
+
+    private static void listAssertions( ParseNode root, List<LexerToken> src, String input, Map<String,long[]> ret ) {
+		if( root.contains(Program.assertion) ) {
+		    String prefix = "/*"; 
+		    for( String assertion : ret.keySet() ) {
+		        prefix = assertion.substring(0,assertion.indexOf("*/"));
+		        break;
+		    }
+			prefix += "_*/";
+			int offset = src.get(root.from).begin;
+			String assertion = input.substring(offset,src.get(root.to-1).end);
+			long[] entries = new long[0];
+			for( ParseNode goal : subgoals(root, src) ) {
+				entries = Array.insert(entries, Util.lPair(src.get(goal.from).begin-offset+prefix.length(), src.get(goal.to-1).end-offset+prefix.length()));
+			}
+			ret.put(prefix+assertion,entries);
+			return;
+		}
+		for( ParseNode p : root.children() )
+			listAssertions(p, src, input, ret);
+	}
 
 }

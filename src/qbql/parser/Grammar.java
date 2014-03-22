@@ -3,14 +3,14 @@ package qbql.parser;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class Grammar {
     private static Earley parser = bnfParser();
-    private static Earley bnfParser() {
+    public static Earley bnfParser() {
         Set<RuleTuple> rules = new TreeSet<RuleTuple>();
         rules.add(new RuleTuple("variable", new String[] {"identifier"}));                            //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        //rules.add(new RuleTuple("variable", new String[] {"identifier","'['","identifier","']'"}));                            //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         rules.add(new RuleTuple("variable", new String[] {"string_literal"}));                             //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         rules.add(new RuleTuple("concat", new String[] {"variable"}));                             //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         rules.add(new RuleTuple("concat", new String[] {"concat","variable"}));                             //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -52,15 +52,17 @@ public class Grammar {
         RuleTuple.printRules(rules);
 	}
     
-    public static ParseNode parseGrammarFile( List<LexerToken> src, String input ) throws Exception {
+    public static ParseNode parseGrammarFile( List<LexerToken> src, String input ) {
         Visual visual = null;
-        //visual = new Visual(src, cyk);
+        //visual = new Visual(src, parser);
         
         Matrix matrix = new Matrix(parser);
         parser.parse(src, matrix); 
         SyntaxError err = SyntaxError.checkSyntax(input, new String[]{"grammar"}, src, parser, matrix);      
         if( err != null ) {
             System.out.println(err.toString());
+            if( visual != null )
+                visual.draw(matrix);
             throw new AssertionError("*** Parse Error in assertions file ***");
         }
         ParseNode root = parser.forest(src, matrix);

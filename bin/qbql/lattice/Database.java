@@ -1,6 +1,7 @@
 package qbql.lattice;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -8,19 +9,121 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import qbql.parser.CYK;
+import qbql.index.IndexedPredicate;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
-import qbql.parser.Matrix;
-import qbql.parser.ParseNode;
+import qbql.parser.Token;
 import qbql.util.Util;
 
 public class Database {
 
     private Map<String,Predicate> lattice = new TreeMap<String,Predicate>();
-    public Predicate predicate( String name ) {
-        return lattice.get(name);
+    public Predicate getPredicate( String name ) {
+    	Predicate ret = lattice.get(name);
+    	if( ret == null ) { 
+    		if( "R11".equals(name) ) {
+    			buildR10();
+    			return buildR11();
+    		} else if( "R10".equals(name) )
+    			return buildR10();
+    	}
+    	return ret;
     }
+    public Predicate lookup( String name ) {
+        Predicate ret = getPredicate(name);
+        if( ret != null ) 
+            return ret;
+		name = name.startsWith("\"")&&name.endsWith("\"") ? name.substring(1, name.length()-1) : name;
+
+    	List<LexerToken> src = new Lex().parse(name);
+    	if( src.size() == 3 && "=".equals(src.get(1).content) ) {
+    		LexerToken first = src.get(0);
+            LexerToken second = src.get(2);
+            if( first.type == Token.DIGITS ) {
+                Relation relation = new Relation(new String[]{second.content});
+                Integer i = Integer.parseInt(first.content);
+                relation.addTuple(new Object[]{i});
+                return relation;
+            } else if( second.type == Token.DIGITS ) {
+                Relation relation = new Relation(new String[]{first.content});
+                Integer i = Integer.parseInt(second.content);
+                relation.addTuple(new Object[]{i});
+                return relation;
+            } else
+                return new EqualityPredicate(first.content, second.content);
+    	}
+        if( src.size() == 5 ) {  // select "20 <= age"^ "gender='female'" (Eats join Person);
+                                 //                      ^^^^^^^^^^^^^^^
+            int eqPos = -1;
+            String attr = null;
+            String value = null;
+            boolean expectValue = false;
+            for( int i = 0; i < src.size(); i++ ) {
+                LexerToken t = src.get(i);
+                if( "=".equals(t.content) ) {
+                    eqPos = i;
+                    continue;
+                }
+                if( "'".equals(t.content) ) {
+                    if( value == null )
+                        expectValue = true;
+                    else
+                        expectValue = false;
+                    continue;
+                }
+                if( t.type == Token.IDENTIFIER ) {
+                    if( expectValue )
+                        value = t.content;
+                    else
+                        attr = t.content;
+                    continue;
+                }                    
+            }
+            if( 0 < eqPos && value != null ) {
+                Relation relation = new Relation(new String[]{attr});
+                relation.addTuple(new Object[]{value});
+                return relation;
+            }
+        }
+        try {
+            Set<String> ints = new HashSet<String>();
+            for( LexerToken t : src ) {
+                if( t.type == Token.DIGITS ) 
+                    ints.add(t.content);
+            }
+            if( ints.size() == 0 )
+                return new IndexedPredicate(this,name);
+            Relation rel = new Relation(ints.toArray(new String[]{}));
+            Map<String, Object> body = new HashMap<String, Object>(); 
+            for( String s : ints ) {
+                Integer t = null;
+                try {
+                    t = Integer.parseInt(s);
+                } catch( NumberFormatException e ) {}
+                body.put(s,t==null?s:t);
+            }
+            rel.addTuple(body);
+            return Predicate.setIX(new IndexedPredicate(this,name), rel);
+        } catch ( Exception e ) {
+            for( String qName : predicateNames() ) {
+            	if( !qName.startsWith("\"") )
+            		continue;
+            	String candidate = qName.substring(1,qName.length()-1);
+            	Map<String,String> matched = Predicate.matchNames(candidate, name);
+            	if( matched == null )
+            		continue;
+            	ret = getPredicate(qName).clone();
+            	for( String key : matched.keySet() ) {
+            		String val = matched.get(key);
+            		if( !val.equals(key) )
+            			ret.renameInPlace(key, val);
+            	}
+            	return ret;
+            }
+            return null;
+        }
+    }
+
     public void addPredicate( String name, Predicate relvar ) {
         lattice.put(name, relvar);
     }       
@@ -33,25 +136,48 @@ public class Database {
             if( lattice.get(pred) instanceof Relation )
                 ret.add(pred);
         return ret.toArray(new String[0]);
-    }       
+    }  
+    public Set<String> predicateNames() {
+        return lattice.keySet();
+    }  
     
-    static Relation R00 = new Relation(new String[]{});
-    Relation R11;
-    static Relation R01 = new Relation(new String[]{});
-    Predicate R10;
+    private Map<String,Expr> newOperations = new TreeMap<String,Expr>();
+    public Expr getOperation( String name ) {
+    	Expr ret = newOperations.get(name);
+    	if( ret == null )
+    		throw new AssertionError("Operation '"+name+"' definition missing");
+    	return ret;
+    }
+    public void addOperation( String name, Expr expr ) {
+    	newOperations.put(name, expr);
+    }       
+    public Set<String> operationNames() {
+    	return newOperations.keySet();
+    }   
+	public void restoreOperations( Set<String> target ) {
+		if( newOperations.keySet().size() == target.size() )
+			return;
+		String extra = null;
+		for( String key : newOperations.keySet() )
+			if( !target.contains(key) ) {
+				extra = key;
+				break;
+			}
+		newOperations.remove(extra);		
+		if( newOperations.keySet().size() != target.size() )
+			throw new AssertionError("Only one extra operation is allowed");
+	}
+   
+    public static Relation R00 = new Relation(new String[]{});
+    private Relation R11;
+    public static Relation R01 = new Relation(new String[]{});
+    private Predicate R10;
 
     static {
         R01.addTuple(new TreeMap<String,Object>());
     }
 
     public String pkg = null;    
-    /*public Database() {                         
-        addPredicate("R00",Database.R00); 
-        addPredicate("R01",Database.R01);
-        StackTraceElement[] stack = new Throwable().getStackTrace();
-        String createdInClass = stack[1].getClassName();
-        pkg = createdInClass.substring(0,createdInClass.lastIndexOf('.'));
-    }*/
     public Database( String pkg ) {                         
         addPredicate("R00",Database.R00); 
         addPredicate("R01",Database.R01);
@@ -59,16 +185,18 @@ public class Database {
     }
     
 
-    Relation outerUnion( Relation x, Relation y ) {
-        return Relation.innerUnion( Relation.join(x, Relation.innerUnion(y, R11))
-                                    , Relation.join(y, Relation.innerUnion(x, R11)) 
-        );
-    }
-
     /**
      * Generalized set intersection and set union
      */
-    Relation quantifier( Relation x, Relation y, int type ) throws Exception {
+    Relation quantifier( Relation x, Relation y, int type )  {
+    	if( type == Program.setIX )
+    		throw new AssertionError("Wrong method for calcualting set intersection join");
+    	
+    	if( R11 == null ) {
+    		buildR10();
+    		buildR11();
+    	}
+    	
         Set<String> headerXmY = new TreeSet<String>();
         headerXmY.addAll(x.header.keySet());
         headerXmY.removeAll(y.header.keySet());            
@@ -83,31 +211,36 @@ public class Database {
         
         Relation ret = new Relation(headerSymDiff.toArray(new String[0]));
                 
-        Relation X = Relation.innerUnion(R11,hdrXmY);
-        Relation Y = Relation.innerUnion(R11,hdrYmX);
+        boolean isCoveredByR11 = R10.header.keySet().containsAll(x.header.keySet())
+                              && Relation.le(x, Relation.union(R11,x));
+        Relation X = isCoveredByR11 ? Relation.union(R11,hdrXmY) : Relation.union(x,hdrXmY);
+        isCoveredByR11 = R10.header.keySet().containsAll(y.header.keySet())
+                      && Relation.le(y, Relation.union(R11,y));
+        Relation Y = isCoveredByR11 ? Relation.union(R11,hdrYmX) : Relation.union(y,hdrYmX);
+        // (if R11 is wrong then calculate domain independent part of set join)  
         
-        Relation hdrYX = Relation.innerUnion(Relation.join(R00,x),Relation.join(R00,y));
-        for( Tuple xi : X.content ) {
+        Relation hdrYX = Relation.union(Relation.join(R00,x),Relation.join(R00,y));
+        for( Tuple xi : X.getContent() ) {
             Relation singleX = new Relation(X.colNames);
-            singleX.content.add(xi);
-            Relation lft = Relation.innerUnion(Relation.join(singleX,x),hdrYX); 
-            for( Tuple yi : Y.content ) {
+            singleX.addTuple(xi.data);
+            Relation lft = Relation.union(Relation.join(singleX,x),hdrYX); 
+            for( Tuple yi : Y.getContent() ) {
                 Relation singleY = new Relation(Y.colNames);
-                singleY.content.add(yi);
-                Relation rgt = Relation.innerUnion(Relation.join(singleY,y),hdrYX);
-                if( type == Grammar.contains && Relation.le(lft, rgt) 
-                 || type == Grammar.transpCont && Relation.ge(lft, rgt)   
-                 || type == Grammar.disjoint && Relation.le(lft, (Relation)complement(rgt)) 
-                 || type == Grammar.almostDisj && Relation.join(lft, rgt).content.size()==1 
-                 || type == Grammar.big && Relation.ge(lft, (Relation)complement(rgt))   
-                 || type == Grammar.setEQ && lft.equals(rgt)
+                singleY.addTuple(yi.data);
+                Relation rgt = Relation.union(Relation.join(singleY,y),hdrYX);
+                if( type == Program.contains && Relation.le(lft, rgt) 
+                 || type == Program.transpCont && Relation.ge(lft, rgt)   
+                 || type == Program.disjoint && Predicate.le(lft, Predicate.join(Predicate.union(R11,rgt),complement(rgt))) 
+                 || type == Program.almostDisj && Relation.join(lft, rgt).getContent().size()==1 
+                 || type == Program.big && Predicate.ge(lft, Predicate.join(Predicate.union(R11,rgt),complement(rgt)))   
+                 || type == Program.setEQ && lft.equals(rgt)
                 )
-                    ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
+                    ret = Relation.union(ret, Relation.join(singleX, singleY));
                 /*if( type == Grammar.unison && lft.equals(rgt) ) {
                     if( x.colNames.length != y.colNames.length )
                         return ret;
 
-                    ret = Relation.innerUnion(ret, Relation.join(singleX, singleY));
+                    ret = Relation.union(ret, Relation.join(singleX, singleY));
                 }*/
             }
         }        
@@ -122,31 +255,8 @@ public class Database {
         x' ^ x = x ^ R00.
         x' v x = x v R11.
      */
-    Predicate complement( Relation x ) {
-        for( String arg : x.colNames ) {
-            Boolean isFinite = finiteDomains.get(arg);
-            if( isFinite == null ) {
-                Relation a = Relation.innerUnion(R11,new Relation(new String[]{arg}));
-                isFinite = 0 < a.content.size() & R11.header.keySet().contains(arg);
-                finiteDomains.put(arg, isFinite);
-                if( !isFinite )
-                    return new ComplementPredicate(x);
-            }
-        }
-        
-        Relation xvR11 = Relation.innerUnion(x, R11);
-        Relation ret = new Relation(x.colNames);
-        for( Tuple t : xvR11.content ) {
-            boolean matched = false;
-            for( Tuple tx : x.content )
-                if( t.equals(tx, x, ret) ) {
-                    matched = true;
-                    break;
-                }
-            if( !matched )
-                ret.content.add(t);
-        }
-        return ret;
+    Predicate complement( Predicate x ) {
+        return new ComplementPredicate(x);
     }
 
     /**
@@ -155,40 +265,30 @@ public class Database {
         x` ^ x = x ^ R11.
         x` v x = x v R00. 
     */ 
-    Relation inverse( Relation x ) {
-        String[] header = new String[R10.colNames.length-x.colNames.length];
-        int i = -1;
-        for( String attr : R10.colNames ) {
-            if( x.header.get(attr) == null ) {
-                i++;
-                header[i] = attr;
-            }
-        }
-        if( x.content.size() == 0 )
-            return new Relation(header);
-        else
-            return Relation.innerUnion(new Relation(header),R11);
+    Predicate inverse( Predicate x ) {
+        return new InversePredicate(x);
     }
     
-    void buildR10() throws Exception {
+    private Predicate buildR10() {
         Predicate ret = new Relation(new String[]{});
-        for( Predicate r : lattice.values() )
-            ret = Predicate.join(ret, r);
+        for( Predicate rel : lattice.values() )
+            if( rel instanceof Relation )
+            	ret = Predicate.join(ret, rel);
         R10 = ret;
         lattice.put("R10",ret);
+        return ret;
     }
 
-    void buildR11() {
+    private Predicate buildR11() {
         Map<String, Relation> domains = new HashMap<String, Relation>();
         for( String col : R10.colNames )
             domains.put(col, new Relation(new String[]{col}));
 
         for( Predicate rel : lattice.values() )
             if( rel instanceof Relation )
-                for( Tuple t : ((Relation)rel).content )
+                for( Tuple t : ((Relation)rel).getContent() )
                     for( int i = 0; i < t.data.length; i++ ) {
-                        Tuple newTuple = new Tuple(new Object[]{t.data[i]});
-                        domains.get(rel.colNames[i]).content.add(newTuple);
+                        domains.get(rel.colNames[i]).addTuple(new Object[]{t.data[i]});
                     }
 
         /* Bad performance for large db
@@ -200,7 +300,7 @@ public class Database {
         
         Map<String, Object[]> doms = new TreeMap<String, Object[]>();
         for( String r : domains.keySet() ) {
-            Set<Tuple> tuples = domains.get(r).content;
+            Set<Tuple> tuples = domains.get(r).getContent();
             Object[] content = new Object[tuples.size()];
             int i = 0;
             for( Tuple t : tuples )
@@ -219,15 +319,17 @@ public class Database {
                 for (String key: doms.keySet())
                     t[ ret.header.get(key) ] = doms.get(key)[ indexes.get(key) ];
 
-                ret.content.add(new Tuple(t));
+                ret.addTuple(t);
 
             } while (next(indexes, doms));
         } catch( Exception e ) { // for empty domains
         }        
         R11 = ret;
         lattice.put("R11",ret);
+        
+        return ret;
     }    
-    private boolean next( Map<String, Integer> state, Map<String, Object[]> doms ) {
+    static boolean next( Map<String, Integer> state, Map<String, Object[]> doms ) {
         for( String pos: state.keySet() ) {
             int rownum = state.get(pos);
             if( rownum < doms.get(pos).length-1 ) {
@@ -242,7 +344,7 @@ public class Database {
     public boolean equivalent( Relation x, Relation y ) {
         if( x == y )
             return true;
-        if( x.content.size() != y.content.size() )
+        if( x.getContent().size() != y.getContent().size() )
             return false;
         
         if( !submissive(x,y) )
@@ -253,10 +355,10 @@ public class Database {
     public boolean submissive( Relation x, Relation y ) {
         
         if( y.colNames.length == 0 ) { // indexing is broken this case
-            if( y.content.size() == 0  )
-                return x.content.size() == 0;
+            if( y.getContent().size() == 0  )
+                return x.getContent().size() == 0;
             else
-                return Relation.innerUnion(x,R11).equals(x);
+                return Relation.union(x,getPredicate("R11")).equals(x);
         }
             
         int[] indexes = new int[x.colNames.length];
@@ -264,9 +366,9 @@ public class Database {
             indexes[i] = 0;
         do {
             boolean matchedAllRows = true;
-            for ( Tuple tx: x.content ) { 
+            for ( Tuple tx: x.getContent() ) { 
                 boolean matchedX = false;
-                for ( Tuple ty: y.content ) {
+                for ( Tuple ty: y.getContent() ) {
                     boolean mismatchedField = false;
                     for( int i = 0; i < indexes.length; i++ ) {
                         if( !tx.data[i].equals(ty.data[indexes[i]]) ) {
@@ -370,30 +472,47 @@ public class Database {
         throw new RuntimeException("Not impl");
     }
     
-    public static void run(String prg, String databaseSrc) throws Exception {
-        List<LexerToken> src =  new Lex().parse(prg);
-        Matrix matrix = Grammar.cyk.initArray1(src);
-        int size = matrix.size();
-        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        Grammar.cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        ParseNode root = Grammar.cyk.forest(size, matrix);
-
-        if( root.topLevel != null ) {
-            System.out.println("*** Parse Error in assertions file ***");
-            CYK.printErrors(prg, src, root);
-            return;
+    private Map<String, Integer> columnEqClasses = null;
+    public Predicate EQclosure( Predicate rel ) {
+        if( !(rel instanceof Relation) )
+            throw new AssertionError("!(rel instanceof Relation)");
+        if( columnEqClasses == null ) {
+            columnEqClasses = new HashMap<String, Integer>();
+            int cnt = 0;
+            for( String col : getPredicate("R11").colNames ) {
+                Relation colRel = Relation.union(R11, new Relation(new String[]{col}));
+                String match = null;
+                for( String candidate : columnEqClasses.keySet() ) {
+                    Relation candidatelRel = Relation.union(R11, new Relation(new String[]{candidate}));
+                    if( colRel.content.size() != candidatelRel.content.size() )
+                        continue;
+                    candidatelRel.renameInPlace(candidate, col);
+                    Predicate cmp = quantifier(candidatelRel, colRel,Program.setEQ);
+                    if( cmp.equals(R01) ) {
+                        match = candidate;
+                        break;
+                    }
+                }
+                if( match != null )
+                    columnEqClasses.put(col, columnEqClasses.get(match));
+                else
+                    columnEqClasses.put(col, cnt++);                    
+            }
         }
-
-        Grammar program = new Grammar(src,databaseSrc); 
-        long t1 = System.currentTimeMillis();
-        ParseNode exception = program.program(root);
-        long t2 = System.currentTimeMillis();
-        System.out.println("Time = "+(t2-t1)); 
-        if( exception != null ) {
-            System.out.println("*** False Assertion ***");
-            System.out.println(prg.substring(src.get(exception.from).begin, src.get(exception.to-1).end));
-            return;
+        
+        Predicate ret = rel;
+        for( String col : rel.colNames ) {
+            Integer i = columnEqClasses.get(col);
+            for( String eqCol: columnEqClasses.keySet() ) {
+                if( eqCol.equals(col) )
+                    continue;
+                if( i == columnEqClasses.get(eqCol) )
+                    ret = Relation.join(ret, new EqualityPredicate(col,eqCol));
+            }
+            
         }
+        
+        return ret;
     }
-
+    
 }

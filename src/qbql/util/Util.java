@@ -2,6 +2,7 @@ package qbql.util;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.math.BigDecimal;
@@ -19,12 +20,12 @@ public abstract class Util {
         return readFile(new FileInputStream(file));
     }
 
-    public static String readFile( Class c, String file ) throws Exception {
+    public static String readFile( Class c, String file ) throws IOException {
         URL u = c.getResource( file );
         return readFile(u.openStream());
     }
 
-    public static String readFile(InputStream is) throws Exception {
+    public static String readFile(InputStream is) throws IOException {
         byte[] bytes = new byte[4096];
         int bytesRead = 0;
         BufferedInputStream bin = null;
@@ -48,10 +49,17 @@ public abstract class Util {
     }
 
     public static String identln( int level, String txt ) {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         for(int i = 0; i< level;i++)
             b.append(" "); 
         b.append(txt); 
+        return b.toString();
+    }
+    public static String padln( String txt, int newsize ) {
+        StringBuilder b = new StringBuilder(txt);
+        for(int i = txt.length(); i < newsize; i++) {
+            b.append(" "); 
+        }
         return b.toString();
     }
     

@@ -33,7 +33,7 @@ public class Tokens {
         for( LexerToken t : db.src ) {
             pos++;
             if( txt.equals(t.content) )        
-                ret.content.add(new Tuple(new Object[]{"["+pos+","+(pos+1)+")"}));
+                ret.addTuple(new Object[]{"["+pos+","+(pos+1)+")"});
         }
         return ret;      
     }

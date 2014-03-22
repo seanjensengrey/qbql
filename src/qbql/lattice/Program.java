@@ -69,7 +69,7 @@ public class Program {
     static int minus;
     static int dot;
     static int partition;
-    static int parExpr;
+    public static int parExpr;
     public static int openParen;
     public static int closeParen;
     public static int implication;

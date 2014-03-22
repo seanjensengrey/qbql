@@ -1,6 +1,7 @@
 package qbql.parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +10,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import qbql.lattice.Grammar;
+import qbql.lattice.Program;
+import qbql.program.Run;
+import qbql.util.Array;
 import qbql.util.Util;
 
 
@@ -47,94 +50,40 @@ import qbql.util.Util;
 	         Being sparse, they were subsequently reduced to sets. 
 
  */
-public class CYK {
+public class CYK extends Parser {
 
-    public ChomskiTuple[] rules;
-    //static Set<RuleTuple> originalRules;
 
-    // indexes
-    public Set<Integer>[] singleRhsRules;
-
-    public Proj[] doubleRhsRules;
-
-    public String[] allSymbols;  
-    public Map<String,Integer> symbolIndexes;
+    //public Proj[] doubleRhsRules;
+    public HashMap<Integer,int[]> doubleRhsRules;
 
     Set<Integer> keywords = new TreeSet<Integer>(); // pure Keywords
 
-    public static void main( String[] dummy ) throws Exception {
-        CYK cyk = Grammar.cyk;
-        cyk.printSelectedChomskiRules("union");          
-        final String input =
-            //"x ^ (e v (y ^ R00)) -> y ^ (e v (x ^ R00)).";
-            //"Tokens /^ [txt] item /^ [pos=down] /^ Links /^ [pos=up] ^ Vars;"
-            //"( ( x v y ) ^ ( ( x ^ y ) v ( ( x v y ) ) ' ) )"
-            //"cat ^ [source] Hello World ^ [from] 3;"
-            Util.readFile("c:/qbql_trunk/qbql/lang/parse/test.prg")
-        ;
-        long t1 = System.currentTimeMillis();
-        List<LexerToken> src =  new Lex().parse(input);
-        long t2 = System.currentTimeMillis();
-        System.out.println("Lexer time = "+(t2-t1)); 
-        LexerToken.print(src);
-        Visual visual = new Visual(src, cyk);
-
-        long h = Runtime.getRuntime().totalMemory();
-        long hf = Runtime.getRuntime().freeMemory();
-        System.out.println("mem="+(h-hf)); // 
-        t1 = System.currentTimeMillis();
-        Matrix matrix = cyk.initArray1(src);
-        t2 = System.currentTimeMillis();
-        System.out.println("Init array time = "+(t2-t1)); 
-
-        int size = matrix.size();
-        System.out.println("size = "+size); 
-        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
-        t1 = System.currentTimeMillis();
-        cyk.closure(matrix, 0, size+1, skipRanges, -1);
-        t2 = System.currentTimeMillis();
-        System.out.println("Parse time = "+(t2-t1));
-        System.out.println(skipRanges);
-        cyk.print(matrix, 0, size);
-        System.out.println("^^^^^^^^^^^^^"); 
-        //cyk.print(matrix, 0, 1);
-
-        t1 = System.currentTimeMillis();
-        ParseNode root = cyk.forest(size, matrix);
-        t2 = System.currentTimeMillis();
-        System.out.println("Reduction time = "+(t2-t1)); 
-        h = Runtime.getRuntime().totalMemory();
-        hf = Runtime.getRuntime().freeMemory();
-        System.out.println("mem="+(h-hf)); 
-
-        root.printTree();
-        visual.draw(matrix);
-    }
-
     public CYK( Set<RuleTuple> originalRules ) {
+        super(extractBinaryRules(originalRules));
         rules = getChomskyRules(originalRules);
         singleRhsRules = filterSingleRhsRules();
         doubleRhsRules = filterDoubleRhsRules();
     }
 
+    public ChomskiTuple[] rules;
 
     public void printSelectedChomskiRules( String name ) {
-        System.out.println("-------------Chomsky Rules---------------"); // (authorized)                
+        System.out.println("-------------Chomsky Rules---------------"); // (authorized)                 //$NON-NLS-1$
         for( ChomskiTuple rule : rules )
             if( allSymbols[rule.head].contains(name) //>=0
                     ||  allSymbols[rule.rhs0].contains(name)
                     ||  rule.rhs1>0 && allSymbols[rule.rhs1].contains(name)
             )
                 System.out.println(rule.toString()); // (authorized)
-        System.out.println("-------------------------------------"); // (authorized)
+        System.out.println("-------------------------------------"); // (authorized) //$NON-NLS-1$
     }
     public  void printIds() {
-        System.out.println("-------------Id Rules---------------"); // (authorized)            
+        System.out.println("-------------Id Rules---------------"); // (authorized)             //$NON-NLS-1$
         for( ChomskiTuple rule : rules )
-            for( int i : singleRhsRules[symbolIndexes.get("digits")] )
+            for( int i : singleRhsRules[symbolIndexes.get("digits")] ) //$NON-NLS-1$
                 if( rule.head == i )
                     System.out.println(rule.toString()); // (authorized)
-        System.out.println("-------------------------------------"); // (authorized)
+        System.out.println("-------------------------------------"); // (authorized) //$NON-NLS-1$
     }
 
     public Matrix initArray( List<LexerToken> input ) {
@@ -151,54 +100,47 @@ public class CYK {
     public Matrix initArray1( List<LexerToken> input ) {
         Matrix ret = new Matrix(this);  
 
+        initArray(input, ret);
+
+        return ret;
+    }
+    public void initArray( List<LexerToken> input, Matrix ret ) {
         int i = 0;
         for( LexerToken token : input ) {
             initArrayElement(ret, i, token, true);
             i++;
         }
-
-        return ret;
     }
 
-    public void initArrayElement(Matrix ret, int pos, LexerToken token, boolean identifiersOnly) {
-        /*if( token.type == RegexprBasedLexer.WS ) // this is done as part of parsing
-                                continue;
-                        if( token.type == RegexprBasedLexer.COMMENT )
-                                continue;
-                        if( token.type == RegexprBasedLexer.LINE_COMMENT )
-                                continue;
-         */
-        Integer suspect = symbolIndexes.get("'" + token.content + "'");
+    public void initArrayElement( Matrix ret, int pos, LexerToken token, boolean identifiersOnly ) {
+        Integer suspect = symbolIndexes.get("'" + token.content + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         Set<Integer> dependents = new TreeSet<Integer>();
         if( suspect != null ) {
             dependents.addAll(singleRhsRules[suspect]);
         }
         if( token.type == Token.IDENTIFIER ) {
             if( !identifiersOnly || suspect == null || !keywords.contains(suspect) ) {
-                int symbol = symbolIndexes.get("identifier");
+                int symbol = symbolIndexes.get("identifier"); //$NON-NLS-1$
                 dependents.addAll(singleRhsRules[symbol]);
             }
-        } else if( token.type == Token.CDATA ) {
-            int symbol = symbolIndexes.get("cdata");
-            dependents.addAll(singleRhsRules[symbol]);
         } else if( token.type == Token.DQUOTED_STRING || token.type == Token.QUOTED_STRING ) {
-            int symbol = symbolIndexes.get("string_literal");
+            int symbol = symbolIndexes.get("string_literal"); //$NON-NLS-1$
             dependents.addAll(singleRhsRules[symbol]);
         } else if( token.type == Token.DIGITS ) {
-            int symbol = symbolIndexes.get("digits");
+            int symbol = symbolIndexes.get("digits"); //$NON-NLS-1$
             dependents.addAll(singleRhsRules[symbol]);
         }
         int[] tmp = new int[dependents.size()];
         int i = 0;
         for( int e : dependents )
-            tmp[i++] = encode(pos, e);
-        ret.put(Util.pair(pos,pos+1), tmp);
+            tmp[i++] = e;
+        ret.put(Util.pair(pos,pos+1), new CykCell(tmp));
     }
-    public void initArrayElement(SortedMap<Integer, Set<Integer>> ret, int pos, int symbol) {
+    /*public void initArrayElement(SortedMap<Integer, Set<Integer>> ret, int pos, int symbol) {
         Set<Integer> dependents = new TreeSet<Integer>();
         dependents.addAll(singleRhsRules[symbol]);
         ret.put(Util.pair(pos,pos+1), dependents);
-    }
+    }*/
 
 
     /**
@@ -208,6 +150,13 @@ public class CYK {
     public int[] atomicSymbols() {
         return new int[0];
     }
+    /**
+     * Little more conservative optimization [x1,y1),[x2,y2),[x3,y3) -> don't look inside [x2,y2)
+     */
+    public Map<Integer,Integer> delimitedSymbols() {
+        return new HashMap<Integer,Integer>();
+    }
+    
     /**
      * The main evaluation loop of the CYK method (see doc)
      * P - main matrix which diagonal is filled in by the initArray() method
@@ -222,6 +171,8 @@ public class CYK {
             int middle                         // == -1 for parsing in ordinary context
             // != -1 if have auxiliary symbols in the middle
     ) {
+        final int[] atomicSymbols = atomicSymbols();
+        final Map<Integer, Integer> delimitedSymbols = delimitedSymbols();
 
         for( int y = 1; y < to; y++ ) {
             for( int x = y-2; x >= from; x-- ) {
@@ -230,63 +181,81 @@ public class CYK {
                     Integer nextX = skipRanges.get(x);
                     if( nextX != null ) {
 
-                        if( Visual.skipped!=null )
-                            for(int i = x; i>nextX; i--)
-                                Visual.skipped[i][y] = true;
-                        
-                        x = nextX;
+                        if( Visual.skipped!=null )  // skipped semi-open intervals oriented the other way!
+                            for( int i = x; i > nextX ; i-- )
+                            	Visual.skipped[i][y] = Visual.causes.get(Util.pair(x, nextX));
+
+                        x = nextX+1;   // it would be decremented at the end of the loop
                         continue;
                     }
                 }
                 int start = Util.pair(x,y);
                 int end = Util.pair(0,y+1);
-                Set<Integer> tmp = new TreeSet<Integer>();
-                SortedMap<Integer,int[]> range = matrix.subMap(start, end);
+                int[] tmp = null;
+                SortedMap<Integer,Cell> range = matrix.subMap(start, end);
+//System.out.println("["+x+","+y+")  "+range.keySet());
                 for( int key : range.keySet() ) {
                     int mid = Util.X(key);
-                    int[] prefixes = matrix.get(Util.pair(x,mid));
+                    Cell prefixes = matrix.get(Util.pair(x,mid));
                     if( prefixes==null )
                         continue;
-                    int[] suffixes = matrix.get(Util.pair(mid,y));
+                    Cell suffixes = matrix.get(Util.pair(mid,y));
                     if( suffixes==null )
                         continue;
 
-                    for( int II : prefixes )    // Not indexed Nested Loops
-                        for( int JJ : suffixes ) {
-                            int I = Util.Y(II);
-                            int J = Util.Y(JJ);
-                            Proj p = doubleRhsRules[I];
-                            if( p==null )
-                                continue;
-                            Set<Integer> A = p.values[J];
+                    for( int I : prefixes.getContent() )    // Not indexed Nested Loops
+                        for( int J : suffixes.getContent() ) {
+                            int[] A = doubleRhsRules.get(Util.pair(I, J));
+
                             if( A==null )
                                 continue;
-                            List<Integer> B = new LinkedList<Integer>();
-                            for( int a : A )
-                                B.add(encode(mid, a));
-                            tmp.addAll(B);
+                            
+                            tmp = Array.merge(tmp, A);
                         }                                                                              
 
                 }
-                if( tmp.size()>0 ) {
-                    int[] tmp1 = new int[tmp.size()];
-                    int i = 0;
-                    for( int e : tmp )
-                        tmp1[i++] = e;
-                    matrix.put(Util.pair(x,y),tmp1);
-                    int[] atomicSymbols = atomicSymbols();
-                    if( skipRanges != null && atomicSymbols().length > 0
+                if( tmp != null ) {
+                    matrix.put(Util.pair(x,y),new CykCell(tmp));
+                    if( skipRanges != null && (atomicSymbols.length > 0 || delimitedSymbols.size() > 0 )
                             && y-1 != x+1 // actually even though y-1 == x+1 there would still be x skipped
                             && !(x <= middle && middle < y)
                     )
                         checkIfAtomic:
-                            for( int ss : tmp1 ) {
-                                int s = Util.Y(ss);
+                            for( int s : tmp ) {
                                 for( int skipRangeSymbol : atomicSymbols )
                                     if( s==skipRangeSymbol ) {
-                                        skipRanges.put(y-1,x+1);
+                                    	int X = x;
+                                    	int Y = y-1;
+                                        skipRanges.put(Y,X);
+                                        if( Visual.skipped!=null ) {
+                                        	if( Visual.causes.get(Util.pair(Y,X))!=null )
+                                        		throw new AssertionError("Visual.causes.get(Util.pair(Y,X))!=null");
+                                        	Visual.causes.put(Util.pair(Y,X), s);
+                                        }
                                         break checkIfAtomic;
                                     }
+                                
+                               for( int delimitedSymbol : delimitedSymbols.keySet() )
+                                    if( s==delimitedSymbol) {
+                                        int X = splitInterval(matrix, x, y, delimitedSymbol, delimitedSymbols.get(s), true);
+                                        if( X == -1 )
+                                            continue;
+                                        int Y = splitInterval(matrix, X, y, delimitedSymbol, delimitedSymbols.get(s), false);
+                                        if( Y == -1 )
+                                            continue;
+                                        int iY = Y-1;
+                                        int iX = X;
+                                        if( iY <= iX ) 
+                                            continue;
+                                        skipRanges.put(iY,iX);
+                                        if( Visual.skipped!=null ) {
+                                        	//if( Visual.causes.get(Util.pair(Y,X))!=null )
+                                        		//throw new AssertionError("Visual.causes.get(Util.pair(Y,X))!=null");
+                                        	Visual.causes.put(Util.pair(iY,iX), s);
+                                        }
+                                        break;
+                                    }
+
                             }
 
                 }
@@ -295,7 +264,74 @@ public class CYK {
 
     }
 
+	protected int next( int i, Map<Integer, Integer> skipRanges ) {
+		Integer ret = skipRanges.get(i-1);
+		if( ret == null )
+			return i;
+		return next(ret, skipRanges);
+	}
 
+
+	/**
+     * Recalculates matrix when removing a segment of tokens [posX,posY)
+     * @param matrix
+     * @param len -- length of the text
+     */
+    public void recalculateRectangle(
+            Matrix matrix,
+            Map<Integer,Integer> skipRanges   // optimization
+            , int len, int posX, int posY   // if a single point, then posY = posX+1
+    ) {
+        if( skipRanges != null ) {
+            Set<Integer> keys = skipRanges.keySet();
+            Integer[] dummy = new Integer[keys.size()];
+            for( Integer key : keys.toArray(dummy) )
+                if( posY < key ) {
+                    Integer value = skipRanges.get(key); 
+                    skipRanges.remove(key);
+                    skipRanges.put(key-posY+posX, value-posY+posX);
+                }
+        }
+        for( int y = posY; y < len; y++ )
+            for( int x = posX; x >= 0; x-- ) {
+
+
+                if( y == x+1 )
+                    continue;
+                matrix.remove(Util.pair(x,y));
+                if( skipRanges != null ) {
+                    Integer nextX = skipRanges.get(x);
+                    if( nextX != null ) {
+                        x = nextX+1;   // it would be decremented as the end of the loop
+                        continue;
+                    }
+                }
+                int start = Util.pair(x,y);
+                int end = Util.pair(0,y+1);
+                int[] tmp = null;
+                SortedMap<Integer,Cell> range = matrix.subMap(start, end);
+                for( int key : range.keySet() ) {
+                    int mid = Util.X(key);
+                    Cell prefixes = matrix.get(Util.pair(x,mid));
+                    if( prefixes==null )
+                        continue;
+                    Cell suffixes = matrix.get(Util.pair(mid,y));
+                    if( suffixes==null )
+                        continue;
+
+                    for( int I : prefixes.getContent() )    // Not indexed Nested Loops
+                        for( int J : suffixes.getContent() ) {
+                            int[] A = doubleRhsRules.get(Util.pair(I, J));
+                            if( A==null )
+                                continue;
+                            tmp = Array.merge(tmp, A);
+                        }                                                                                       
+
+                }
+                if( tmp != null )
+                    matrix.put(Util.pair(x,y),new CykCell(tmp));
+            }
+    }
 
     public void print( Matrix P ) {
         for( int xy : P.keySet() ) {
@@ -305,18 +341,17 @@ public class CYK {
         }
     }
     public void print( Matrix P, int i, int j ) {
-        System.out.print("["+i+","+j+")"); // (authorized)
-        int[] output = P.get(Util.pair(i, j));
+        System.out.print("["+i+","+j+")"); // (authorized) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        Cell output = P.get(Util.pair(i, j));
         if( output ==  null ) {
-            System.out.println("- syntactically invalid code fragment"); // (authorized)
+            System.out.println("- syntactically invalid code fragment"); // (authorized) //$NON-NLS-1$
             return;
         }
-        for( int kk : output ) {
-            int k = decodeSymbol(kk);
+        for( int k : output.getContent() ) {
             if( k == -1 )
-                System.out.print("''"); // (authorized)
+                System.out.print("-1"); // (authorized) //$NON-NLS-1$
             else        
-                System.out.print("  "+allSymbols[k]); // (authorized)
+                System.out.print("  "+allSymbols[k]); // (authorized) //$NON-NLS-1$
         }
         System.out.println(); // (authorized)
     }
@@ -325,7 +360,7 @@ public class CYK {
         Map<Integer,Set<Integer>> tmp = new TreeMap<Integer,Set<Integer>>();
         // identity
         for( int i = 0; i < allSymbols.length; i++ ) {
-            Set ii = new TreeSet<Integer>();
+            Set<Integer> ii = new TreeSet<Integer>();
             ii.add(i);
             tmp.put(i, ii);
         }
@@ -365,100 +400,153 @@ public class CYK {
     }
 
 
-    Proj[] filterDoubleRhsRules() {
-        Proj[] ret = new Proj[allSymbols.length];
+    HashMap<Integer,int[]> filterDoubleRhsRules() {
+        HashMap<Integer,int[]> ret = new HashMap<Integer,int[]>();
         for( ChomskiTuple rule : rules ) {
             if( rule.rhs1!=-1 ) {
-                if( ret[rule.rhs0] == null )
-                    ret[rule.rhs0] = new Proj();
-                Set<Integer> headers = ret[rule.rhs0].values[rule.rhs1];
-                if( headers == null )
-                    headers = new TreeSet<Integer>();
-                headers.addAll(singleRhsRules[rule.head]);
-                ret[rule.rhs0].values[rule.rhs1]= headers;
-
+            	int[] headers = ret.get(Util.pair(rule.rhs0, rule.rhs1));
+                for( int r : singleRhsRules[rule.head] )
+                	headers = Array.insert(headers,r);
+                ret.put(Util.pair(rule.rhs0, rule.rhs1), headers);
             }
         }
 
         return ret;
     }
 
+
+    // This class is artifact of large memory footprint (12.9M) of the
+    // [allSymbols.length][allSymbols.length] array which is sparse
+    // Just converting uniform array into ragged array saves 40% of the space
+    //
+    // Can optimize it further (because values) is sparse array too
+    // But have to be careful to keep the access to the elements fast
+    // CYK performace is critical of it!
+    /*public class Proj {
+        public Set<Integer>[] values = new Set[allSymbols.length];
+    }*/
+
+
+
+    public static int[] toArray( Set<Integer> s ) {
+        int[] ret = new int[s.size()];
+        int i = 0;
+        for( int ii : s )
+            ret[i++] = ii;
+        return ret;
+    }
+
+    /**
+     * @param matrix
+     * @param skipRanges
+     * @param [x,y) is the current interval
+     */
+    protected static int splitInterval( Matrix matrix, int x, int y, int symbol, boolean leftDirection ) {
+        for( int i = leftDirection?x+1:y-1; x<i && i<y; i=leftDirection?i+1:i-1 ) {
+            Cell tmpIXsymbols = matrix.get(Util.pair(x,i));
+            if( tmpIXsymbols == null )
+                continue;
+            Cell tmpIYsymbols = matrix.get(Util.pair(i,y));
+            if( tmpIYsymbols == null )
+                continue;
+            for( int tmp : tmpIXsymbols.getContent() ) {
+                if( tmp == symbol ) {
+                    for( int tmp2 : tmpIYsymbols.getContent() ) {
+                        if( tmp2 == symbol ) {
+                            return i;
+                        }                                                                                       
+                    }                                                                   
+                }                                                                                       
+            }                                                                   
+        }
+        return -1;      
+    }
+    /**
+     * @param matrix
+     * @param skipRanges
+     * @param [x,y) is the current interval
+     */
+    protected static int splitInterval( Matrix matrix, int x, int y, int symbol,int delimiter, boolean leftDirection ) {
+        for( int i = leftDirection?x+1:y-1; x<i && i<y; i=leftDirection?i+1:i-1 ) {
+            Cell tmp1 = matrix.get(Util.pair(x,i));
+            if( tmp1 != null)
+                for( int s1 : tmp1.getContent() ) 
+                    if( s1 == symbol ) {
+                        for( int delta = 1; delta <= y-i; delta++ ) {
+                            Cell tmp2 = matrix.get(Util.pair(i+delta,y));
+                            if( tmp2 == null)
+                                continue;
+                            boolean cont = true;
+                            for( int s2 : tmp2.getContent() ) 
+                                if( s2 == symbol ) 
+                                    cont = false;
+                            if( cont )
+                                continue;
+                             
+                            Cell tmp = matrix.get(Util.pair(i,i+delta));
+                            if( tmp != null )
+                                for( int s : tmp.getContent() ) 
+                                    if( s == delimiter ) 
+                                        return leftDirection ? i+delta : i;
+                        }
+                    }            
+            
+        }
+        return -1;      
+    }
+
+    protected static boolean containsSymbol( Cell cellContent, int symbol ) {
+        if( cellContent == null )
+            return false;
+        for( int sb : cellContent.getContent() )
+            if( symbol==sb )
+                return true;
+
+        return false;
+    }
+    protected static boolean containsEither( Cell cellContent, int[] symbols ) {
+    	for( int s : symbols )
+    		if( containsSymbol(cellContent, s) )
+    			return true;
+
+        return false;
+    }
+    
+    public static void printErrors( String text, List<LexerToken> src, ParseNode root ) {
+        int begin = 0;
+        int end = text.length();
+        for( ParseNode node : root.children() ) {
+            if( begin < src.get(node.from).begin )
+                begin = src.get(node.from).begin;
+            if( src.get(node.to).end < end )
+                end = src.get(node.to-1).end;
+        }
+        String fragment = text.substring(begin, end);
+        if( fragment.length() > 200 )
+            fragment = fragment.substring(0,40)+ " ... "+fragment.substring(fragment.length()-40);
+        System.out.println(text.substring(0, begin)+"<<<*****\n"+fragment+"\n*****>>>"+text.substring(end));
+    }
+    
+    
+    @Override
+	public
+    ParseNode treeForACell( List<LexerToken> src, Matrix m, Cell cell, int x, int y ) {
+        for( int i = 0; i < cell.size(); i++ ) {
+            int symbol = cell.getSymbol(i);
+            if( symbol == -1 )
+                continue;
+            return tree(m, x, y, symbol);
+        }
+        return null;
+    }
+
+    
+    ////////////////////////////////////////////////////////
+    
 
     protected ChomskiTuple[] getChomskyRules( Set<RuleTuple> input ) {
-        Set<RuleTuple> nonEmptyRules = null;
-        Set<RuleTuple> tmp = input;
-        do {
-            nonEmptyRules = tmp;
-            tmp = eliminateEmptyProduction(nonEmptyRules);
-        } while( tmp!=null );
-
-        return convertToChomskyRules(nonEmptyRules);
-    }
-
-
-    /*
-     * This procedure eliminates an empty symbol, but produces some others!
-     */
-    Set<RuleTuple> eliminateEmptyProduction( Set<RuleTuple> rules ) {
-        Set<RuleTuple> ret = new TreeSet<RuleTuple>();
-        String emptyHeader = null;
-        for( RuleTuple rule : rules ) {
-            if( rule.rhs.length==0 ) {
-                emptyHeader = rule.head;
-                break;
-            }
-        }
-        if( emptyHeader==null )
-            return null;
-        for( RuleTuple rule : rules ) {
-            if( rule.head.equals(emptyHeader) && rule.rhs.length==0 )
-                continue;
-            ret.add(rule);
-            int countEmptySymbols = 0;
-            for( int i = 0; i < rule.rhs.length; i++  ) {
-                if( emptyHeader.equals(rule.rhs[i]) ) {
-                    countEmptySymbols++;
-                }
-            }
-            if( countEmptySymbols ==1 ) {
-                for( int i = 0; i < rule.rhs.length; i++  ) {
-                    if( emptyHeader.equals(rule.rhs[i]) ) {
-                        String[] rhs = new String[rule.rhs.length-1];
-                        for( int j = 0; j < rule.rhs.length-1; j++ )
-                            if( j < i )
-                                rhs[j]=rule.rhs[j];
-                            else if( j >= i )
-                                rhs[j]=rule.rhs[j+1];
-                        ret.add( new RuleTuple(rule.head,rhs) );
-                    }
-                }
-            } else if( countEmptySymbols == 2 ) {
-                if( rule.rhs.length==2 )  // otherwise, infinite loop on rules like this: "var: var var;"
-                    continue;
-                String[] rhs01 = new String[rule.rhs.length-1];
-                String[] rhs10 = new String[rule.rhs.length-1];
-                String[] rhs11 = new String[rule.rhs.length-2];
-                int bit = 0;
-                for( int i = 0; i < rule.rhs.length; i++  ) {
-                    if( emptyHeader.equals(rule.rhs[i]) ) {
-                        if( bit==0 )
-                            rhs10[i] = rule.rhs[i];
-                        else if( bit==1 )
-                            rhs01[i-1] = rule.rhs[i];
-                        bit++;
-                        continue;
-                    }
-                    rhs01[i-(bit>0?1:0)] = rule.rhs[i];
-                    rhs10[i-(bit>1?1:0)] = rule.rhs[i];
-                    rhs11[i-bit] = rule.rhs[i];
-                }
-                ret.add( new RuleTuple(rule.head,rhs01) );
-                ret.add( new RuleTuple(rule.head,rhs10) );
-                ret.add( new RuleTuple(rule.head,rhs11) );
-            } else if( countEmptySymbols > 2 )
-                throw new RuntimeException("countEmptySymbols > 2 "+rule.toString());
-        }
-        return ret;
+        //RuleTransforms.eliminateEmptyProductions(input);
+        return convertToChomskyRules(input);
     }
 
 
@@ -467,67 +555,7 @@ public class CYK {
 
         ChomskiTuple[] ret = new ChomskiTuple[tmp.size()];
 
-        Set<String> tmpSymbols = new TreeSet<String>();
         int i = 0;
-        for( RuleTuple ct : tmp ) {
-            if( ct.head==null || ct.rhs[0]==null || ct.rhs.length>1 && ct.rhs[1]==null )
-                throw new RuntimeException("ct has null symbols");
-            tmpSymbols.add(ct.head);
-            tmpSymbols.add(ct.rhs[0]);
-            if( ct.rhs.length > 1 )
-                tmpSymbols.add(ct.rhs[1]);
-            if( ct.rhs.length > 2 )
-                throw new RuntimeException("ct.rhs.length > 2");
-        }
-
-        // add grammar symbols according to some heuristic order
-        // generally want to see "more complete" parse trees
-        allSymbols = new String[tmpSymbols.size()+1];
-        symbolIndexes = new TreeMap<String,Integer>();
-        int k = 0;
-        if( tmpSymbols.contains("exec") ) {
-            symbolIndexes.put("exec", k);
-            allSymbols[k]="exec";
-            tmpSymbols.remove("exec");
-            k++;
-        }
-
-        Set<String> added = new TreeSet<String>();
-        for( String s : tmpSymbols ) {
-            if( s.contains("+") || s.charAt(0)=='.' )
-                continue;
-            symbolIndexes.put(s, k);
-            allSymbols[k]=s;
-            added.add(s);
-            k++;
-        }
-        tmpSymbols.removeAll(added);
-
-        added = new TreeSet<String>();
-        for( String s : tmpSymbols ) {
-            if( s.contains("+") )
-                continue;
-            symbolIndexes.put(s, k);
-            allSymbols[k]=s;
-            added.add(s);
-            k++;
-        }
-        tmpSymbols.removeAll(added);
-
-        added = new TreeSet<String>();
-        for( String s : tmpSymbols ) {
-            symbolIndexes.put(s, k);
-            allSymbols[k]=s;
-            added.add(s);
-            k++;
-        }
-
-        tmpSymbols.removeAll(added);
-        symbolIndexes.put("identifier", k);
-        allSymbols[k]="identifier";
-        k++;
-
-        i = 0;
         for( RuleTuple ct : tmp ) {
             ret[i++] = new ChomskiTuple(
                                         symbolIndexes.get(ct.head),
@@ -536,15 +564,14 @@ public class CYK {
             );
         }
 
-
         return ret;
     }
 
 
-    Set<RuleTuple> split( RuleTuple rule ) {
+    static Set<RuleTuple> split( RuleTuple rule ) {
         Set<RuleTuple> tmp = new TreeSet<RuleTuple>();
         if( rule.rhs.length == 0 )
-            throw new RuntimeException("Empty Rule!");
+            throw new RuntimeException("Empty Rule!"); //$NON-NLS-1$
         else if( rule.rhs.length == 1 || rule.rhs.length == 2 ) {
             tmp.add(rule);
         } else {
@@ -576,50 +603,16 @@ public class CYK {
     }
 
 
-    private Set<RuleTuple> extractBinaryRules( Set<RuleTuple> rules ) {
+    private static Set<RuleTuple> extractBinaryRules( Set<RuleTuple> rules ) {
         Set<RuleTuple> tmp = new TreeSet<RuleTuple>();
         for( RuleTuple rule : rules ) {                
             tmp.addAll( split(rule) );                  
         }
         return tmp;
     }
-
-    void unitTest() {
-        Set<RuleTuple> tmp = new TreeSet<RuleTuple>();
-        /*tmp.add(new RuleTuple("e",new String[] {"e","'/'","e"}));
-                        tmp.add(new RuleTuple("e",new String[] {"e","'*'","e"}));
-                        tmp.add(new RuleTuple("e",new String[] {"identifier"}));
-         */
-        tmp.add(new RuleTuple(".else.",new String[] {"'ELSE'"}));
-        tmp.add(new RuleTuple(".else.",new String[] {}));
-        tmp.add(new RuleTuple("e",new String[] {"'IF'","'THEN'",".else.","'END'"}));
-
-        for( RuleTuple rule : tmp )
-            System.out.println(rule.toString()); // (authorized)
-        System.out.println("-------------------------------------"); // (authorized)            
-
-        tmp = eliminateEmptyProduction(tmp);
-
-        for( RuleTuple rule : tmp )
-            System.out.println(rule.toString()); // (authorized)
-        System.out.println("======================================"); // (authorized)
-
-        rules = getChomskyRules(tmp);          
-        singleRhsRules = filterSingleRhsRules();
-        doubleRhsRules = filterDoubleRhsRules();
-
-        for( String s : allSymbols )
-            System.out.println(s); // (authorized)
-
-        System.out.println("+++++++++++++++++++++++++++++++++++++"); // (authorized)
-
-        for( ChomskiTuple rule : rules )
-            System.out.println(rule.toString()); // (authorized)
-        System.out.println("-------------------------------------"); // (authorized)            
-
-    }
-
-    public class ChomskiTuple implements Comparable {
+    
+    
+    public class ChomskiTuple implements Comparable<ChomskiTuple> {
         public int head;
         public int rhs0;  
         public int rhs1;  
@@ -628,16 +621,27 @@ public class CYK {
             rhs0 = r0;
             rhs1 = r1;
         }
+        int size() {
+            return rhs1 == -1 ? 1 : 2; 
+        }
+        int content( int i ) {
+            if( i == 0 )
+                return rhs0;
+            else if( i == 1 )
+                return rhs1;
+            else
+                throw new IndexOutOfBoundsException("ChomskiTuple.content("+i+")");
+        }
+        
         public boolean equals(Object obj) {
-            return compareTo(obj)==0;
+            return (this == obj ) || ( obj instanceof ChomskiTuple &&  compareTo((ChomskiTuple)obj)==0);
         }
         public int hashCode() {
-            throw new RuntimeException("hashCode inconssitent with equals");
+            throw new RuntimeException("hashCode inconssitent with equals"); //$NON-NLS-1$
         }              
-        public int compareTo(Object obj) {
-            ChomskiTuple src = (ChomskiTuple)obj;
+        public int compareTo(ChomskiTuple src) {
             if( head==0 || src.head==0 )
-                throw new RuntimeException("head==0 || src.head==0");
+                throw new RuntimeException("head==0 || src.head==0"); //$NON-NLS-1$
             int cmp = head-src.head;
             if( cmp!=0 )
                 return cmp;
@@ -648,182 +652,109 @@ public class CYK {
         }
         public String toString() {
             if( rhs1==-1 )
-                return allSymbols[head]+": "+allSymbols[rhs0]+";";
-            return allSymbols[head]+": "+allSymbols[rhs0]+"  "+allSymbols[rhs1]+";";
+                return allSymbols[head]+": "+allSymbols[rhs0]+";"; //$NON-NLS-1$ //$NON-NLS-2$
+            return allSymbols[head]+": "+allSymbols[rhs0]+"  "+allSymbols[rhs1]+";"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
     }
 
-    // This class is artefact of large memory footprint (12.9M) of the
-    // [allSymbols.length][allSymbols.length] array which is sparse
-    // Just converting uniform array into ragged array saves 40% of the space
-    //
-    // Can optimize it further (because values) is sparse array too
-    // But have to be careful to keep the access to the elements fast
-    // CYK performace is critical of it!
-    public class Proj {
-        public Set<Integer>[] values = new Set[allSymbols.length];
-    }
 
-    //////////////////////// Parse Tree ///////////////////////////
-    private int encode( int pos, int symbol ) {
-        // reorder split symbols so that 
-        // "expr op expr op expr" is left associative
-        return Util.pair(0xffff-pos, symbol);   
-    }
-    private int decodeSymbol( int symbolSplit ) {
-        return Util.Y(symbolSplit);
-    }
-    private int decodeSplit( int symbolSplit ) {
-        return Util.X(0xffff-symbolSplit);
-    }
-    /**
-     * @param begin
-     * @param end
-     * @param symbolSplit -- Util.pair(symbol, middle)
-     * @param backPtr
-     * @return
-     */
-    public ParseNode parseInterval( int begin, int end, int symbolSplit,
-            Matrix backPtr
-    ) {
-        int symbol = decodeSymbol(symbolSplit);
-        if( begin+1 == end ) {
-            return new ParseNode(begin, end, symbol, symbol, this);
+    private ParseNode tree( Matrix m, int x, int y, int out ) {
+//if( x==1 && y==3 )
+    //System.out.println("[1,3) out="+allSymbols[out]);
+        
+        //Cell cell = m.get(Util.pair(x,y));
+        if( x+1 == y ) {
+        	int in = out;
+        	for( int i = 0; i < singleRhsRules.length; i++ ) {
+        		Set<Integer> dependents = singleRhsRules[i];
+        		if( dependents.contains(out) ) {
+        			in = i;
+        			break;
+        		}
+			}
+            return new ParseNode(x,y, in,out, this);            
         }
-        int mid = decodeSplit(symbolSplit);
-        int[] pres = backPtr.get(Util.pair(begin,mid));
-        if( pres == null )
-            return null;
-        int[] posts = backPtr.get(Util.pair(mid,end));
-        if( posts == null )
-            return null;
-        //for( int pre : pres ) {
-        for( int pre: pres ) {
-            for( int post : posts ) {
-                int s1 = decodeSymbol(pre);
-                int s2 = decodeSymbol(post);
-                Proj p = doubleRhsRules[s1];
-                if( p==null )
-                    continue;
-                Set<Integer> A = p.values[s2];
-                if( A==null )
-                    continue;                          
-                if( A.contains(symbol) ) {
-                    ParseNode ret = null;
-                    for( ChomskiTuple t : rules )
-                        if( t.rhs0 == s1 && t.rhs1 == s2 && singleRhsRules[t.head].contains(symbol) ) {
-                            ret = new ParseNode(begin,end,t.head, -1, this);
-                            ret.lft = parseInterval(begin,mid, pre, backPtr);
-                            if( ret.lft == null )
-                                continue;
-                            ret.lft.payloadOut = t.rhs0;
-                            ret.rgt = parseInterval(mid,end, post, backPtr);
-                            if( ret.rgt == null )
-                                continue;
-                            ret.rgt.payloadOut = t.rhs1;
-                            return ret;
-                        }
-                }
-            }
-        }
-        return null;
-    }
-
-
-    /**
-     * How to process Parsing Errors:
-     * If the parser fails to derive the correct tree, let's
-     * return a forest  
-     */
-    public ParseNode forest( int len, 
-            Matrix backPtr
-    ) {
-        if( backPtr.get(Util.pair(0, len)) != null ) { // special case
-            ParseNode ret = null;
-            int[] sms = backPtr.get(Util.pair(0, len));
-            Set<Integer> orderedSms = new TreeSet<Integer>();
-            for( int i : sms )
-                orderedSms.add(i);
-            for( int sm : sms ) {
-                ret = parseInterval(0,len, sm,backPtr);
-                if( ret != null )
-                    return ret;                                 
-            }
-        }       
-
-        List<Integer> cover = new ArrayList<Integer>();
-        for( int key :backPtr.keySet() ) {
-            List<Integer> nodes = new ArrayList<Integer>();
-            boolean alreadyCovered = false;
-            for( int n : cover ) {
-                if( Util.X(key)<=Util.X(n) && Util.Y(key)>Util.Y(n)  
-                        || Util.X(key)<Util.X(n) && Util.Y(key)>=Util.Y(n)) {
-                    nodes.add(n);
-                }
-                if( Util.X(key)>=Util.X(n) && Util.Y(key)<Util.Y(n)  
-                        || Util.X(key)>Util.X(n) && Util.Y(key)<=Util.Y(n)) {
-                    alreadyCovered = true;
-                    break;
-                }
-            }
-            for( Integer x : nodes )
-                cover.remove(x);
-            if( !alreadyCovered )
-                cover.add(key);
-
-        }
-        ParseNode pseudoRoot = new ParseNode(0,len, -1,-1, this);
-        for( Integer n : cover ) {
-            ParseNode ret = null;
-            int[] sms = backPtr.get(n);
-            if( sms != null ) {
-                Set<Integer> orderedSms = new TreeSet<Integer>();
-                for( int i : sms )
-                    orderedSms.add(i);
-                for( int sm : orderedSms ) {
-                    ret = parseInterval(Util.X(n),Util.Y(n), sm,backPtr);
-                    if( ret != null ) {
-                        pseudoRoot.addTopLevel(ret);
-                        break;
-                    }
-                }
-            }
-        }
-        return pseudoRoot;
-
-    }
-
-    public static void printErrors( String axioms, List<LexerToken> src, ParseNode root ) {
-        int begin = 0;
-        int end = axioms.length();
-        int iteration = 0;
-        for( ParseNode node : root.children() ) {
-            if( iteration == 0 ) {
-                iteration++;
+        //for( int mid = x+1; mid < y; mid++ ) {
+        for( int mid = y-1; x < mid; mid-- ) {
+            Cell pre = m.get(Util.pair(x,mid));
+            if( pre == null )
                 continue;
-            }
-            if( begin < src.get(node.from).begin )
-                begin = src.get(node.from).begin;
-            if( src.size() <= node.to )
-                end = src.get(src.size()-1).end;
-            else if( src.get(node.to).end < end )
-                end = src.get(node.to).end;
-            if( 1 <= iteration++ )
-                break;
+            Cell post = m.get(Util.pair(mid,y));
+            if( post == null )
+                continue;
+            for( int I : pre.getContent() )    // Not indexed Nested Loops
+                for( int J : post.getContent() ) {
+                    int[] A = doubleRhsRules.get(Util.pair(I, J));
+                    if( A==null )
+                        continue;
+                    
+                    int in = head(I, J, out);
+                    if( in == -1 )
+                        continue;
+                    
+                    ParseNode ret = new ParseNode(x,y,in,out, this);
+                    ret.lft = tree(m, x,mid,I);
+                    ret.rgt = tree(m, mid,y,J);
+                    return ret;
+                }                                                                              
         }
-        System.out.println(axioms.substring(begin, end));
+        throw new AssertionError("failed to extract the tree at ["+x+","+y+")");
     }
+    
+ 
+    private int head( int pre, int post, int closure ) {
+        for( ChomskiTuple t : rules )
+            if( t.rhs0 == pre && t.rhs1 == post && singleRhsRules[t.head].contains(closure) )
+                return t.head;
+        return -1;
+    }
+    
+    public static void main( String[] args ) throws Exception {
+        long h = Runtime.getRuntime().totalMemory();
+        long hf = Runtime.getRuntime().freeMemory();
+        System.out.println("mem="+(h-hf)); // (authorized) //$NON-NLS-1$
+        
+        Set<RuleTuple> rules = Program.latticeRules();
+        CYK cyk = new CYK(rules);
 
-    public static int[] toArray( Set<Integer> s ) {
-        int[] ret = new int[s.size()];
-        int i = 0;
-        for( int ii : s )
-            ret[i++] = ii;
-        return ret;
+        String input = Util.readFile(Run.class,"Test.prg");
+        List<LexerToken> src =  (new Lex()).parse(input);
+        
+        Visual visual = null;
+        if( src.size() < 1000 )
+        	visual = new Visual(src, cyk);
+
+        long t1 = System.currentTimeMillis();
+        Matrix matrix = cyk.initArray(src);
+        long t2 = System.currentTimeMillis();
+        System.out.println("Init array time = "+(t2-t1)); // (authorized) //$NON-NLS-1$
+
+        int size = matrix.size();
+        TreeMap<Integer,Integer> skipRanges = new TreeMap<Integer,Integer>();
+        t1 = System.currentTimeMillis();
+        cyk.closure(matrix, 0, size+1, skipRanges, -1);
+        t2 = System.currentTimeMillis();
+        System.out.println("Parse time = "+(t2-t1)); // (authorized) //$NON-NLS-1$
+        System.out.println(skipRanges);// (authorized)
+        //instance.print(matrix);
+        cyk.print(matrix, 0, size);
+        //instance.print(ret, 0, 3);
+        //instance.print(ret, 3, 6);
+        if( visual != null )
+            visual.draw(matrix);
+        
+        t1 = System.currentTimeMillis();
+        ParseNode out = cyk.forest(src, matrix);
+        t2 = System.currentTimeMillis();
+        System.out.println("Reduction time = "+(t2-t1)); // (authorized) //$NON-NLS-1$
+        
+        h = Runtime.getRuntime().totalMemory();
+        hf = Runtime.getRuntime().freeMemory();
+        System.out.println("mem="+(h-hf)); // (authorized) //$NON-NLS-1$
+        
+        if( src.size() < 1000 )
+        	out.printTree();
+
     }
 
 }
-
-
-
-

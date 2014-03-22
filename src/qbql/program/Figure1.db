@@ -134,7 +134,7 @@ TT = [t];
 --S1jT1 = S1 ^ T1;
 
 
-/* Alice p.171 remapped: 
+/* Alice p.171 remapped: */
 SDT = [q  s   p   r]
        c  s   0   0
        c  s   0   1
@@ -152,9 +152,9 @@ SDPjST = SDP ^ ST;
 DTjST = DT ^ ST; 
 
 PQS = SDT v [p r s];
-*/
+/**/
 
-/*MaierP137=[p  q  r] 
+MaierP137=[p  q  r] 
            0  a  0 
            0  b  1 
            1  c  2 
@@ -168,8 +168,8 @@ M_PQjM_PR = M_PQ ^ M_PR;
 M_RQ=[r  q] v MaierP137;
 M_PQjM_RQ = M_PQ ^ M_RQ;
 M_PRjM_RQ = M_PR ^ M_RQ;
-*/
-/*
+
+
 CE=[s]
    a
 ;
@@ -182,5 +182,5 @@ DDE=[s]
    b
    c
 ;
-*/
+
        

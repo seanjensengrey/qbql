@@ -9,8 +9,14 @@ import qbql.lattice.Relation;
 import qbql.util.Util;
 
 public class Cat {
-    public Cat( Database d ) {
+    public static String[] getSymbolicNames() {
+    	return new String[] {
+        		"prefix +(from)+ postfix = source",
+    	};
     }
+    
+    /*public Cat( Database d ) {
+    }*/
     
     public static NamedTuple source_from_prefix_postfix( 
             String source, int from 
@@ -22,10 +28,10 @@ public class Cat {
         return new NamedTuple(columns,data);
     }
     public static NamedTuple prefix_postfix_source_from( 
-            String prefix, String postfix 
+            Object prefix, Object postfix 
     ) {
         String[] columns = new String[]{"source","from"};
-        Object[] data = new Object[]{prefix+postfix,prefix.length()};
+        Object[] data = new Object[]{prefix.toString()+postfix.toString(),prefix.toString().length()};
         return new NamedTuple(columns,data);
     }
     public static Relation source_from_prefix_postfix( String source ) {

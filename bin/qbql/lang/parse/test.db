@@ -2,13 +2,13 @@
  <item type="editor" node="FunctionNode"  vertical="true">                      
    <title><![CDATA[Test]]></title>                                              
      <query>                                                                    
-        <sql><![CDATA[select * from dual]]></sql>                               
+        <sql><![CDATA[select 1 dname, 2 deptno from dual]]></sql>                               
      </query>                                                                   
  </item>                                                                         
- <item type="editor" node="AnotherNode"  vertical="false">                      
+ <item type="editor" node="FunctionNode"  vertical="false">                      
    <title><![CDATA[Title2]]></title>                                              
      <query>                                                                    
-        <sql><![CDATA[select 1 from dept]]></sql>                               
+        <sql><![CDATA[select dname, deptno from dept]]></sql>                               
      </query>                                                                   
  </item>                                                                         
 </items>   

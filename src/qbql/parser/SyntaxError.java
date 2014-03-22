@@ -11,7 +11,7 @@ import java.util.TreeSet;
 import qbql.parser.Earley.Tuple;
 import qbql.util.Util;
 
-public class SyntaxError {
+public class SyntaxError extends AssertionError {
 	public int line;
 	public int offset;
 	public int end;
