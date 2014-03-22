@@ -38,7 +38,7 @@ public class ExprGen {
         System.out.println("goal: "+Util.removeComments(goal));
 
         final String[] constants = new String[] {
-                //"R00",
+                "R00",
                 //"R11",             
                 //"Id", 
                 //"R",
@@ -49,7 +49,7 @@ public class ExprGen {
 
         final String[] binaryOps = new String[] {
                 "^",
-                //"v", 
+                "v", 
                 //"<Gn>",
                 //"<and>",
                 //"<\"and\">",
@@ -70,7 +70,7 @@ public class ExprGen {
                 //"|"
         };
         //String skipTo = "((<NOT>(y) ^ <NOT>(y)) ^ (<NOT>(y) ^ <NOT>(y)))";
-        String skipTo = "(((((r ^ r) ^ r) ^ r) ^ r) ^ r)";
+        String skipTo = "(((((ac ^ ac) ^ (ac ^ ac)) ^ ((ac ^ ac) ^ (ac ^ ac))) ^ ac)";
         skipTo = null;
 
         //String quickFile = "FD.db";

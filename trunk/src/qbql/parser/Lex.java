@@ -159,8 +159,8 @@ public class Lex {
             //"'/* */'\"/*--*/\"   abc\n" +
             //"((x /< \"[p<r]\") /^ [p=r]) ^ x; " +
             //"'Cannot find the key_id for key: \"'||p_key_name||'\" for table \"'||"+
-            //""
-        	Util.readFile("C:/Documents and Settings/Dim/Desktop/movies.list")
+            "aaa '['"
+        	//Util.readFile("C:/Documents and Settings/Dim/Desktop/movies.list")
         	;
 
         List<LexerToken> out = new Lex().parse(input,true);

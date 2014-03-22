@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import qbql.parser.LexerToken;
@@ -18,12 +19,13 @@ import qbql.util.Util;
 
 public class Relation extends Predicate {
 
-    public Set<Tuple> content = new HashSet<Tuple>(); // TreeSet<Tuple>
+    Set<Tuple> content = new HashSet<Tuple>(); 
+    //private Set<Tuple> content = new TreeSet<Tuple>(); switch to for big relations
 
     public Relation( String[] columns ) {
         super(columns);		
     }
-    
+
     public void renameInPlace( String from, String to ) {
         if( from.equals(to) )
             return;
@@ -45,7 +47,7 @@ public class Relation extends Predicate {
                     newColNames[i-1] = colNames[i];
                     newHeader.put(colNames[i], i-1);
                 }
-            
+
             for( Tuple t : content ) {
                 if( !t.data[colFrom].equals(t.data[colTo]) )
                     continue;
@@ -58,7 +60,7 @@ public class Relation extends Predicate {
                     }
                 newContent.add(new Tuple(newT));
             }
-            
+
             header = newHeader;
             colNames = newColNames;
             content = newContent;
@@ -70,10 +72,26 @@ public class Relation extends Predicate {
         Set<String> columns = content.keySet();
         for( String colName : columns )
             newTuple[header.get(colName)] = content.get(colName);
+        addTuple(newTuple);
+    }
+    public void addTuple( Object[] newTuple ) {
         this.content.add(new Tuple(newTuple));
+
+        if( this.content.size() > 100 && this.content instanceof HashSet ) {
+            Set<Tuple> newContent = new TreeSet<Tuple>();
+            for( Tuple t : this.content )
+                newContent.add(t);
+            this.content = newContent;
+        }
     }
 
-    TreeSet<Tuple> orderedContent() {
+    public Set<Tuple> getContent() {
+        return content;		
+    }
+
+    private TreeSet<Tuple> getOrderedContent() {
+        if( content instanceof TreeSet )
+            return (TreeSet<Tuple>)content;
         TreeSet<Tuple> ret = new TreeSet<Tuple>();
         for( Tuple tuple : content ) 
             ret.add(tuple);
@@ -81,7 +99,7 @@ public class Relation extends Predicate {
     }
 
 
-    public String toString( int ident, boolean isSetNotation ) {
+    public String toString( int ident ) {
         if( colNames.length == 0 ) {
             if( content.size() == 0 )
                 return "R00";
@@ -89,35 +107,22 @@ public class Relation extends Predicate {
                 return "R01";
         }
         StringBuffer ret = new StringBuffer("");
-        if( !isSetNotation ) {
-            //ret.append(header.keySet()+"\n");
-            // no commas
-            ret.append("[");
-            for( int i = 0; i < colNames.length; i++ )
-                ret.append((i>0?"  ":"")+colNames[i]);
-            ret.append("]\n");
-            for( Tuple tuple : orderedContent() ) {
-                boolean firstTuple = true;
-                for( int i = 0; i < tuple.data.length; i++ ) {
-                    ret.append((firstTuple?Util.identln(ident," "):"  ")+tuple.data[i]);
-                    firstTuple = false;
-                }
-                ret.append("\n");
-            }
-        } else {
-            ret.append("{");
+        //ret.append(header.keySet()+"\n");
+        // no commas
+        ret.append("[");
+        for( int i = 0; i < colNames.length; i++ )
+            ret.append((i>0?"  ":"")+colNames[i]);
+        ret.append("]\n");
+        for( Tuple tuple : getOrderedContent() ) {
             boolean firstTuple = true;
-            String tupleSeparator = ",";
-            if( ident > 0 )
-                tupleSeparator = "\n"+Util.identln(ident,",");
-            for( Tuple tuple : orderedContent() ) {
-                ret.append((firstTuple?"":tupleSeparator)+"<");
+            for( int i = 0; i < tuple.data.length; i++ ) {
+                String value = tuple.data[i].toString();
+                if( tuple.data[i] instanceof Relation ) // nested relation
+                    value = "("+value.replace('\n', ' ')+")";
+                ret.append((firstTuple?Util.identln(ident," "):"  ")+value);
                 firstTuple = false;
-                for( int i = 0; i < tuple.data.length; i++ )
-                    ret.append((i==0?"":",")+colNames[i]+"="+tuple.data[i]);
-                ret.append(">");
             }
-            ret.append("}");
+            ret.append("\n");
         }
         return ret.toString();
     }
@@ -151,7 +156,7 @@ public class Relation extends Predicate {
         return ret;
     }
 
-    public static Relation innerUnion( Relation x, Relation y ) {
+    public static Relation union( Relation x, Relation y ) {
         Set<String> header = new TreeSet<String>();
         header.addAll(x.header.keySet());
         header.retainAll(y.header.keySet());		
@@ -173,57 +178,13 @@ public class Relation extends Predicate {
         return ret;
     }
 
-    public static Relation innerJoin( Relation x, Relation y ) {
-        Set<String> header = new TreeSet<String>();
-        header.addAll(x.header.keySet());
-        header.retainAll(y.header.keySet());		
-        Relation ret = new Relation(header.toArray(new String[0]));
-        for( Tuple tupleX: x.content ){
-            Object[] retTuple = new Object[header.size()];
-            for( String attr : ret.colNames ) {
-                retTuple[ret.header.get(attr)] = tupleX.data[x.header.get(attr)];
-            }
-            ret.content.add(new Tuple(retTuple));
-        }
-        Set<Tuple> content = new HashSet<Tuple>(); // TreeSet<Tuple>
-        for( Tuple tupleY: y.content ){
-            Object[] retTuple = new Object[header.size()];
-            for( String attr : ret.colNames ) {
-                retTuple[ret.header.get(attr)] = tupleY.data[y.header.get(attr)];
-            }
-            content.add(new Tuple(retTuple));
-        }
-        ret.content.retainAll(content);
-        return ret;
-    }
 
-    
-    /**
-     * @param x
-     * @param y
-     * @return x < y (i.e. x ^ y = x)
-     */
-    public static boolean le( Relation x, Relation y ) {
-        return x.equals(join(x,y));
-    }
-    public static boolean ge( Relation x, Relation y ) {
-        return y.equals(join(x,y));
-    }
     public boolean equals( Object o ) {
-        if( this == o )
-            return true;
-        Relation src = (Relation) o;
-        if( colNames.length != src.colNames.length )
+        if( !super.equals(o) )
             return false;
+        Relation src = (Relation) o;
         if( content.size() != src.content.size() )
             return false;
-        
-        for( String colName : header.keySet() ) {
-            Integer j = src.header.get(colName);
-            if( j == null )
-                return false;
-        }
-
         LinkedList<Tuple> list = new LinkedList<Tuple>();
         for( Tuple t : content )
             list.add(t);
@@ -241,7 +202,7 @@ public class Relation extends Predicate {
         }
         return false;
     }
-    
+
     // rename is in-place operation.
     // therefore auxiliary methods to restore relation header after each rename
     /*private static String[] cloneColumnNames( Relation src ) {
@@ -294,7 +255,7 @@ public class Relation extends Predicate {
     }
 
     static Relation renameCols( Relation x, Relation y, int[] indexes ) {
-        Relation ret = join(y,Database.R01); // clone
+        Relation ret = y.clone(); 
         for( int i = 0; i < ret.colNames.length; i++) 
             if( indexes[i] < 0 ) 
                 ret.renameInPlace(y.colNames[i], y.colNames[i]+"1");
@@ -304,6 +265,86 @@ public class Relation extends Predicate {
                 rename.put(y.colNames[i], x.colNames[indexes[i]]);     
         for( String from : rename.keySet() ) 
             ret.renameInPlace(from, rename.get(from));
+        return ret;
+    }
+
+    protected Relation clone() {
+        return join(this,Database.R01);
+    }
+
+    public static Predicate count( Predicate lft, Predicate rgt ) {
+        if( !(lft instanceof Relation) || !(rgt instanceof Relation) )
+            throw new AssertionError("!(lft instanceof Relation) || !(rgt instanceof Relation)");
+        Relation x = (Relation)lft;
+        Relation y = (Relation)rgt;
+        Relation xvy = union(x, y);		
+        Set<String> header = new TreeSet<String>();
+        header.addAll(y.header.keySet());
+        Relation ret = new Relation(header.toArray(new String[0]));
+        for( Tuple tupleXvY: xvy.content ){
+            Object[] retTuple = new Object[header.size()];
+            int cnt = 0;
+            for( Tuple tupleX : x.content ) {
+                boolean matched = true;
+                for( String attr : xvy.colNames )
+                    if( !tupleX.data[x.header.get(attr)].equals(tupleXvY.data[xvy.header.get(attr)]) )
+                        matched = false;
+                if( matched )
+                    cnt++;
+            }
+
+            for( String attr : ret.colNames ) {
+                Object cell = x.header.get(attr);
+                if( cell != null )
+                    retTuple[ret.header.get(attr)] = tupleXvY.data[xvy.header.get(attr)];
+                else
+                    retTuple[ret.header.get(attr)] = cnt;
+            }
+            ret.content.add(new Tuple(retTuple));
+        }
+        return ret;
+    }
+
+    public Predicate CPclosure() {
+        if( this.equals(Database.R00) )
+            return Database.R00;
+        
+        Map<String, Relation> domains = new HashMap<String, Relation>();
+        for( String col : colNames )
+            domains.put(col, new Relation(new String[]{col}));
+
+        for( Tuple t : getContent() )
+            for( int i = 0; i < t.data.length; i++ ) {
+                domains.get(colNames[i]).addTuple(new Object[]{t.data[i]});
+            }
+
+        Map<String, Object[]> doms = new TreeMap<String, Object[]>();
+        for( String r : domains.keySet() ) {
+            Set<Tuple> tuples = domains.get(r).getContent();
+            Object[] content = new Object[tuples.size()];
+            int i = 0;
+            for( Tuple t : tuples )
+                content[i++] = t.data[0];
+            doms.put(r, content);
+        }
+        
+        Relation ret = new Relation(doms.keySet().toArray(new String[0]));
+        
+        try {
+            Map<String, Integer> indexes = new HashMap<String, Integer>();
+            for (String key: doms.keySet())
+                indexes.put(key, 0);
+            do {
+                Object[] t = new Object[ ret.colNames.length ];
+                for (String key: doms.keySet())
+                    t[ ret.header.get(key) ] = doms.get(key)[ indexes.get(key) ];
+
+                ret.addTuple(t);
+
+            } while (Database.next(indexes, doms));
+        } catch( Exception e ) { // for empty domains
+        }        
+        
         return ret;
     }
 

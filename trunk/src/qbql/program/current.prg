@@ -330,6 +330,53 @@ x <and> y;
 (x <and> y) <and> z;
 */
 
-(x <OR> <NOT>y) ^ y  = x ^ y.
+/*
+Dept = [dept secr]
+         10    1
+         20    3
+         30    5
+;
+*/
+--Emps v [dept] < Dept v [dept]. 
+Emps = [empno mgr dept]
+          2    2   20
+          1    3   30
+          3    4   10
+          4    4   10
+          5    4   10
+;
+--(Emps v[empno dept])/^"empno=mgr" > Emps v[mgr dept].
+-- connected components
+--(Emps v[empno dept])^"empno=mgr" > (Emps v[mgr dept])^"empno=mgr".
 
-<NOT>(<NOT>x ^ y) ^ y = x ^ y.
+--((Emps ^ "mgr=mgr1") v [dept mgr1]) ^ (Emps v [dept mgr]);
+--Emps#[mgr] < Emps#[dept].
+
+--(Emps v [mgr]) ^"empno=mgr" < (Emps v [empno])^"empno=mgr".
+
+Emps1 = Emps ^"mgr=mgr1";
+
+--(Emps1 v [dept mgr]) ^ (Emps1 v [dept mgr1]) < Emps1.
+(Emps1 v [dept mgr]) ^ (Emps1 v [dept mgr1]) < (Emps1 v [mgr mgr1]).
+
+--(Emps1 v [dept mgr]) ^ (Emps1 v [dept mgr1]) = (Emps1 v [dept mgr]) ^ (Emps1 v [mgr mgr1]).
+
+
+/*R = [x1 x2] 
+     0   0
+     0   1
+     1   0
+     1   1
+;
+
+R1 = R ^ "x1=y1";
+
+
+(R1 v [x1 x2]) ^ (R1 v [x1 x2 y1]) > R1. */
+
+/*???? x^[]=x & y^[]=y & z^[]=z &
+(R v x) ^ (R v y) = R v (x^y)
+->
+(R v (x^z)) ^ (R v (y^z)) = R v (x^(y^z)).????*/
+
+R11 /^ x = x`.

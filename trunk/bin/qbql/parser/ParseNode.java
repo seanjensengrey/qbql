@@ -1,6 +1,7 @@
 package qbql.parser;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,6 +55,32 @@ public class ParseNode implements Comparable {
         return ret;
     }
 
+    /**
+     * The closest ancestor with the "content"
+     */     
+    public ParseNode ancestor( int head, int tail, int content ) {
+        ParseNode parent = parent(head, tail);
+        if( parent == this ) // that is root
+            return null;
+        else if( parent.contains(content) )
+            return parent;
+        else
+            return ancestor(parent.from, parent.to, content);
+    }
+    
+    /**
+     * The closest descendant of this (root) with the "content" covering [head,tail)
+     */     
+    public ParseNode descendant( int head, int tail, int content ) {
+        for( ParseNode child : children() )
+            if( child.from <= head && tail <= child.to )
+                if( child.contains(content) )
+                    return child;
+                else
+                    return child.descendant(head, tail, content);
+        return null;
+    }
+
     public ParseNode locate( int head, int tail ) {
         if( from == head && tail == to ) 
             return this;
@@ -62,7 +89,7 @@ public class ParseNode implements Comparable {
                 return n.locate(head, tail);
         return null;
     }
-
+    
     /**
      * Parent of the ParseNode[head,tail), not "this" (which assumed to be the root)
      * @param head
@@ -105,8 +132,9 @@ public class ParseNode implements Comparable {
 
         int i = 0;
         for( ParseNode n : descendants() ) {
-            if(i++>500)
-                return;
+            //if( i++>500 ) {
+        	    //System.out.println("...");
+                //return;}
             int depth = depthMap.get(Util.pair(n.from, n.to));
             n.print(depth);
         }
@@ -127,7 +155,7 @@ public class ParseNode implements Comparable {
      * @return -- scanner content corresponding to the parse node
      */
     public String content( List<LexerToken> src ) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for( int i = from; i < to; i++ )
             sb.append(src.get(i).content);
         return sb.toString();
@@ -137,26 +165,12 @@ public class ParseNode implements Comparable {
     ParseNode lft = null;
     ParseNode rgt = null;
 
-    private int payloadIn;   // ----> ParseNode
-    int payloadOut;          // ParseNode ---->
+    private Set<Integer> content = new HashSet<Integer>();
     public Set<Integer> content() {
-        if( payloadIn == -1 && payloadOut == -1 )
-            return new TreeSet<Integer>();
-        if( payloadIn == -1 && payloadOut != -1 ) {
-            TreeSet<Integer> ret = new TreeSet<Integer>();
-            ret.add(payloadOut);
-            return ret;
-        }
-        if( payloadIn != -1 && payloadOut == -1 ) {
-            TreeSet<Integer> ret = new TreeSet<Integer>();
-            ret.addAll(cyk.singleRhsRules[payloadIn]);
-            return ret;
-        }
-        TreeSet<Integer> ret = new TreeSet<Integer>();
-        for( int candidate : cyk.singleRhsRules[payloadIn] )
-            if( cyk.singleRhsRules[candidate].contains(payloadOut) )
-                ret.add(candidate);
-        return ret;
+    	return content;
+    }
+    public void addContent( int symbol ) {
+    	content.add(symbol);
     }
     /**
      * Check if the node contains "symbol"
@@ -169,44 +183,74 @@ public class ParseNode implements Comparable {
     // If fail to parse complete text, then accumulate all children here
     // if topLevel != null then lft and rgt == null, and content is empty. 
     public Set<ParseNode> topLevel = null;
+    
     public void addTopLevel( ParseNode child ) {
         if( topLevel == null )
             topLevel = new TreeSet<ParseNode>();
         topLevel.add(child);
     }
 
-    private CYK cyk;
-    public ParseNode( int begin, int end, int sIn, int sOut, CYK c ) {
+    private Parser cyk;
+    public ParseNode( int begin, int end, int sIn, int sOut, Parser c ) {
         from = begin;
         to = end;
-        payloadIn = sIn;
-        payloadOut = sOut;
+        content.add(sIn);
+        content.add(sOut);
         cyk = c;
     }
 
-    String toString( int depth ) {	
+    protected String toString( int depth ) {      
         StringBuffer sb = new StringBuffer();
         for(int i = 0; i < depth ;i++)
-            sb.append("  "); 
-        sb.append("["+from+","+to+") "); 
-        for( Integer i : content() )
-            if( !cyk.allSymbols[i].endsWith(")") )
-                sb.append("  "+ cyk.allSymbols[i]);
+            sb.append("  ");  //$NON-NLS-1$
+        sb.append(interval()+" ");  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        for( Integer i : content() ) {
+            if( i==-1 )
+                continue;
+        	String symbol = cyk.allSymbols[i];
+        	//symbol = symbol.endsWith(")")?("\""+symbol+"\""):symbol;
+        	//symbol = symbol.endsWith(")")?"":symbol;
+        	sb.append("  "+ symbol); //$NON-NLS-1$
+        }
         return sb.toString();
     }
+    
+	public String interval() {
+		return "["+from+","+to+")";
+	}
 
     // careful changing this method: parse tree traversal depends on it
     public boolean isAuxiliary() {
+    	if( contains(-1) )
+    		return true;
+    	
+    	if( from+1 == to )
+    		return false;
+    	
         boolean noneAux = true;
+        boolean containsConcat = false;
+        boolean containsRawBnf = false;
+        boolean containsBlock = false;
         for( Integer symbol : content() ) {
-            if( cyk.allSymbols[symbol].indexOf("+") < 0 
-                    || content().size()==1 && "'+'".equals(cyk.allSymbols[symbol]) ) {
+            String symb = cyk.allSymbols[symbol];
+			if( symb.indexOf("+") < 0  //$NON-NLS-1$
+             || "'+'".equals(symb)  //$NON-NLS-1$
+            ) {
                 noneAux = false;
-                break;
+                //break;
             }
+			if(  "concat".equals(symb) ) //$NON-NLS-1$ 
+				containsConcat = true;
+			if(  "rawbnf".equals(symb) ) //$NON-NLS-1$ 
+				containsRawBnf = true;		               		            
+			if(  "block".equals(symb) ) //$NON-NLS-1$ 
+				containsBlock = true;		               		            
         }
+        //if( containsConcat && !containsRawBnf && !containsBlock )
+        	//return true;
         return noneAux;   
     }
+
 
     // navigates through children skipping all the auxiliary nodes
     public Set<ParseNode> children() {
@@ -249,53 +293,10 @@ public class ParseNode implements Comparable {
         }
     }
 
-    
-    public ParseNode clone() {
-        ParseNode ret = new ParseNode(from,to,payloadIn,payloadOut,cyk);
-        if( rgt != null ) {
-            ret.rgt = rgt.clone();
-        }
-        if( lft != null ) {
-            ret.lft = lft.clone();
-        }
-        // TODO: for syntactically invalid
-        return ret;    
-    }
-    
 
-    private long hash = 0;
-    public long hash( List<LexerToken> src ) {
-        if( hash != 0 )
-            return hash;
-        if( from+1 == to )
-            hash += src.get(from).content.charAt(0);
-        /*for( int i : content() ) {
-            hash += i;
-        }*/
-        for( ParseNode child : children() )
-            hash += child.hash(src);
-        hash *= 2;
-        return hash;
+    public static void main(String[] args) throws Exception {
+        //System.out.println(CYK.allSymbols[1660]);
+        //System.out.println(CYK.symbolIndexes.get("'SELECT'+select_list+table_expression"));
     }
-    private String signature = null;
-    public String signature( List<LexerToken> src ) {
-        if( signature != null )
-            return signature;
-        if( from+1 == to ) {
-            String s = src.get(from).content;
-            if( "(".equals(s) || ")".equals(s) )
-                s = "";
-            return s;
-        }
-        Map<Long,String> ordered = new TreeMap<Long,String>();
-        for( ParseNode child : children() )
-            ordered.put(child.hash(src), child.signature(src));
-        StringBuilder sb = new StringBuilder();
-        for( long key: ordered.keySet() )
-            sb.append(ordered.get(key));
-        signature = sb.toString();
-        return signature;
-    }
-    
 }
 

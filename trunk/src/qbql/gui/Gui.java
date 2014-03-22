@@ -186,7 +186,8 @@ public class Gui {
     private static final String path = "/qbql/gui/";
     public static void main( String[] args ) throws Exception {       
         Gui model = new Gui();
-        String guiCode = Util.readFile(model.getClass(),path+"test.gui");
+        //String guiCode = Util.readFile(model.getClass(),path+"test.gui");
+        String guiCode = Util.readFile(model.getClass(),path+"qbql.gui");
 
         Matrix matrix = new Matrix(parser);
         List<LexerToken> src =  new Lex().parse(guiCode);

@@ -23,7 +23,7 @@ public class Paths {
         ParseNode atPos = db.root.locate(Util.X(pos),Util.Y(pos));
         Relation ret = new Relation(new String[]{"up"});
         for( ParseNode ancestor : db.root.intermediates(atPos.from,atPos.to) ) {
-           ret.content.add(new Tuple(new Object[]{"["+ancestor.from+","+ancestor.to+")"}));
+           ret.addTuple(new Object[]{"["+ancestor.from+","+ancestor.to+")"});
         }
         return ret;      
     }
@@ -32,7 +32,7 @@ public class Paths {
         Relation ret = new Relation(new String[]{"down"});
         if( atPos != null )
             for( ParseNode child : atPos.descendants() ) 
-                ret.content.add(new Tuple(new Object[]{"["+child.from+","+child.to+")"}));
+                ret.addTuple(new Object[]{"["+child.from+","+child.to+")"});
         return ret;      
     }
 }

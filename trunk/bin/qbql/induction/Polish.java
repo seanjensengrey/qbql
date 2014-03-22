@@ -47,7 +47,7 @@ public class Polish {
         if( insert != null ) {
             code.remove(pos);
             code.remove(pos);
-            if( insert.rgt != null ) 
+            if( insert.right() != null ) 
                 code.remove(pos);
             code.add(pos, insert);    
             return true;
@@ -93,7 +93,7 @@ public class Polish {
                 break;
         }*/
         
-        
+        /*
         ArrayList<TreeNode> l = new ArrayList<TreeNode>();
         l.add(leaf());
         l.add(TreeNode.one);
@@ -112,6 +112,7 @@ public class Polish {
             num.next();
         }
         System.out.println(cnt);
+        */
         
     }
     

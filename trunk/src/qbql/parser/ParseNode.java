@@ -198,6 +198,16 @@ public class ParseNode implements Comparable {
         content.add(sOut);
         cyk = c;
     }
+    
+    ParseNode parent;
+    public ParseNode parent() {
+        if( parent == null )
+            return null;
+        if( !parent.isAuxiliary() )
+            return parent;
+        return parent.parent();
+    }
+
 
     protected String toString( int depth ) {      
         StringBuffer sb = new StringBuffer();

@@ -97,12 +97,12 @@ class Verifier {
             System.out.println("Elapsed="+(System.currentTimeMillis()-ExprGen.startTime));
             System.out.println("evalTime="+ExprGen.evalTime);
 			System.exit(0);
-		} else if( //out.contains("^") && out.contains("v") 
+		} else /*if( //out.contains("^") && out.contains("v") 
 		        //&& out.contains("x") && out.contains("y") 
 		        !out.contains("(x ^ x)") && !out.contains("(y ^ y)")
                 && !out.contains("(x v x)") && !out.contains("(y v y)")
 		        //&& 2*out.length()/5 < out.indexOf("=") && out.indexOf("=") < out.length()*3/5
-		        ) {
+		        )*/ {
 		    System.out.println(out);
 		}
     }

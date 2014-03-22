@@ -25,8 +25,8 @@ public class Earley extends Parser {
     protected int[] allXs = null;
 
     public static void main( String[] args ) throws Exception {
-        //String input = "(x v (y ^ z)) ^ (x v <INV>z).";
-        String input = Util.readFile(Run.class,"RA.prg");
+        String input = "(Emps v [dept mgr]) /^ ((Emps /^\"mgr=mgr1\") v [dept mgr1]) < \"mgr=mgr1\".";
+        //String input = Util.readFile(Run.class,"RA.prg");
         List<LexerToken> src =  (new Lex()).parse(input);
 
         Set<RuleTuple> wiki = new TreeSet<RuleTuple>();
@@ -657,7 +657,9 @@ public class Earley extends Parser {
             }
             ParseNode ret = new ParseNode(x,y,head,head, this);
             ret.lft = tree(src,m, x,y-1,rI,pI);
+            ret.lft.parent = ret;
             ret.rgt = branch;
+            ret.rgt.parent = ret;
             return ret;
         }
         return null;
@@ -710,7 +712,9 @@ public class Earley extends Parser {
                     try {
                         if( x != mid ) {
                             ret.lft = tree(src,m, x,mid,rI,pI);
+                            ret.lft.parent = ret;
                             ret.rgt = tree(src,m, mid,y,rJ,pJ);
+                            ret.rgt.parent = ret;
                         } else {
                             ret = tree(src,m, mid,y,rJ,pJ);
                             if( head != -1 )

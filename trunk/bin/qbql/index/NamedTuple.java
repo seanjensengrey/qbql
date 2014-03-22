@@ -12,17 +12,17 @@ public class NamedTuple extends Tuple {
         this.columns = columns;
     }
     
-    public Object get( String col ) throws Exception {
+    public Object get( String col ) {
         for( int i = 0; i < columns.length; i++ ) {
             if( col.equals(columns[i]) )
                 return data[i];
         }
-        throw new Exception("Mismatching column?");
+        return null;
     }
 
     public Relation toRelation() {
         Relation ret = new Relation(columns);
-        ret.content.add(this); 
+        ret.addTuple(data); 
         return ret;
     }
 }

@@ -22,17 +22,17 @@ public class Vars {
         ParseNode atPos = db.root.locate(Util.X(pos),Util.Y(pos));
         if( atPos != null )
             for( int name : atPos.content() )
-                ret.content.add(new Tuple(new Object[]{db.cyk.allSymbols[name]}));
+                ret.addTuple(new Object[]{null/*TODO: db.cyk.allSymbols[name]*/});
         return ret;      
     }
     public Relation name_pos( String name ) {
         Relation ret = new Relation(new String[]{"pos"});
-        descend(db.root,db.cyk.symbolIndexes.get(name),ret);
+        descend(db.root,-1/*TODO: db.cyk.symbolIndexes.get(name)*/,ret);
         return ret;      
     }
     private void descend( ParseNode root, int name, Relation ret ) {
         if( root.contains(name) )
-            ret.content.add(new Tuple(new Object[]{"["+root.from+","+root.to+")"}));
+            ret.addTuple(new Object[]{"["+root.from+","+root.to+")"});
         for( ParseNode child : root.children() )
             descend(child,name,ret);
     }

@@ -6,6 +6,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
@@ -22,69 +24,68 @@ import java.awt.image.WritableRaster;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.Scrollable;
 import javax.swing.text.html.HTMLEditorKit;
 
 import qbql.util.Util;
 
-public class Visual {
-    public static boolean[][] skipped = null;
+public class Visual implements ActionListener {
+    public static int[][] skipped = null; // by CYK
+    public static long[][] visited = null; // by Earley
     List<LexerToken> src;
-    CYK cyk;
+    Parser par;
     private int zoom = 1;
     private int offset = 0;
-    public Visual( final List<LexerToken> s, CYK c ) {
+    
+    public static Map<Integer,Integer> causes;   // pair(skipRanges.key,value) -> symbol
+    
+    int X;
+    int Y;
+    BufferedImage img;
+    Matrix matrix;
+    
+    JLabel matrixImage = null;
+    
+    public Visual( final List<LexerToken> s, Parser c ) {
+        causes = new HashMap<Integer,Integer>();
         src = s;
-        cyk = c;
-        skipped = new boolean[src.size()+1][src.size()+1];
-        zoom = 1+400/src.size();
+        if( c instanceof CYK )
+        	skipped = new int[src.size()+1][src.size()+1];
+        else if( c instanceof Earley )
+        	visited = new long[src.size()+1][src.size()+1];
+        par = c;
+        zoom = 1+550/src.size();
         offset = zoom/2;
         if( zoom == 1 )
             offset = 0;
-    }
-    public void draw( final Matrix matrix ) {		
         final int size = src.size();
-        final int X = (size+1)*zoom, Y = (size+1)*zoom;
-        byte[] pixels = new byte[X * Y]; 
-        for( int j = 0; j < Y; ++j)
-            for( int i = 0; i < X; ++i) {
-                int z = (j * X + i);
-                int[] tmp = matrix.get(Util.pair(i/zoom, j/zoom));
-                if( tmp!=null ) {
-                    pixels[z] = 0;
-                } else {
-                    if( skipped[i/zoom][j/zoom] || j <= i ) {
-                        pixels[z] = 1;
-                    } else {
-                        pixels[z] = 4;
-                    }
-                }
-            }
-//      Create a data buffer using the byte buffer of pixel data.
-        // The pixel data is not copied; the data buffer uses the byte buffer array.
-        DataBuffer dbuf = new DataBufferByte(pixels, X*Y, 0);
-        int numBanks = dbuf.getNumBanks(); // 1
-        int bitMasks[] = new int[]{(byte)0xf};
-        SampleModel sampleModel = new SinglePixelPackedSampleModel(
-                                                                   DataBuffer.TYPE_BYTE, X, Y, bitMasks);
-        WritableRaster raster = Raster.createWritableRaster(sampleModel, dbuf, null);
-        ColorModel colorModel = generateColorModel();
-        final BufferedImage img = new BufferedImage(colorModel, raster, false, null);//new java.util.Hashtable());		
+        X = (size+1)*zoom; 
+        Y = (size+1)*zoom;
+    }
+    public void draw( Matrix m ) {		
+            
+        img = drawMatrix(m);
 
-        final JFrame frame = new JFrame("CYK Matrix"); 
+        final JFrame frame = new JFrame(par.getClass().getSimpleName()+" Matrix"); //$NON-NLS-1$
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
         final JEditorPane t = new JEditorPane();
         t.setEditorKit(new HTMLEditorKit());
         JScrollPane editorScrollPane = new JScrollPane(t);
         editorScrollPane.setVerticalScrollBarPolicy(
                                                     JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        editorScrollPane.setPreferredSize(new Dimension(10, 300));
+        editorScrollPane.setPreferredSize(new Dimension(10, 400));
         editorScrollPane.setMinimumSize(new Dimension(10, 50));
 
         class ScrollablePicture extends JLabel // Canvas
@@ -113,39 +114,22 @@ public class Visual {
                 scrollRectToVisible(r);
             }
             public void mouseMoved( MouseEvent e ) {
+                e.consume();
                 int x = e.getX()/zoom;
                 int y = e.getY()/zoom;
-                e.consume();
+                if( x > src.size() )
+                    return;
+                if( y > src.size() )
+                    return;
+                if( x != x0 || y != y0 ) {
+                	index = 0;
+                	ambig = 0;
+                }
                 output = matrix.get(Util.pair(x, y));
                 if( output !=  null ) { 
-                    Map<Integer,Integer> symbols = new HashMap<Integer,Integer>();
-                    for( int kk : output ) {
-                        int k = Util.Y(kk);
-                        Integer val = symbols.get(k);
-                        if( val == null )
-                            symbols.put(k,1);
-                        else    
-                            symbols.put(k,val+1);
-                    }                    
-                    StringBuffer sb = new StringBuffer("<html><font color=red>["+x+","+y+")</font><br>");   //$NON-NLS-2$ //$NON-NLS-3$
-                    for( int k : symbols.keySet() ) {
-                        if( k == -1 )
-                            sb.append("<font color=red>-1</font>"); 
-                        else {
-                            String symbol = cyk.allSymbols[k];
-                            if( symbol.indexOf('[') < 0 && symbol.indexOf('+') < 0 && symbol.indexOf('.')<0 )
-                                symbol = "<b>"+symbol+"</b>";  
-                            sb.append("  "+symbol+(symbols.get(k)<5?"":(" <font color=pink size=\""+(symbols.get(k)-7)+"\">"+symbols.get(k)+"</font>"))); // (authorized)  //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                        }
-                    }
-                    sb.append("<font color=green><br><br>"); 
-                    for( int i = x; i < y; i++ ) {
-                        sb.append(" "+src.get(i).content); 
-                    }
-                    t.setText(sb.toString());
-                    //print(matrix, x, y);
                     x0 = x;
                     y0 = y;
+                    updatePane(t);
                     //repaint(0, x, mid, mid-x, y-mid);
                     repaint();
                 } else if( x0 != -1 ) {
@@ -153,14 +137,94 @@ public class Visual {
                     //repaint(0, x0, mid, mid-x0, y0-mid);
                     x0 = -1;
                     y0 = -1;
-                    output = null;
-                    index = 0;
                 }
+ 				String tooltip = "<html><font color=rgb(150,100,100) size=+1>"+"["+x+","+y+")</font>";
+				if( visited!=null ) {
+					int completeTime = Util.lY(visited[x][y]);
+					int otherTime = Util.lX(visited[x][y]);
+					tooltip += " time = <font color=rgb(100,150,100) size=+1> "+(completeTime+otherTime);
+					tooltip += "</font> = <font color=rgb(150,100,100)> "+completeTime;
+					tooltip += "</font> (completetion) + <font color=rgb(100,100,150)> "+otherTime;
+				}
+                if( skipped != null && 0 < skipped[x][y] )
+                	tooltip += "  <font color=rgb(100,100,150) size=+1>"+par.allSymbols[skipped[x][y]];
+                setToolTipText(tooltip);
             }
+			private void updatePane( final JEditorPane t ) {
+				StringBuffer sb = new StringBuffer("<html><font color=red>["+x0+","+y0+")</font><br>");  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				if( par instanceof CYK )
+					updatePane4CYK(sb);
+				else if( par instanceof Earley )
+					updatePane4Earley(sb);
+				sb.append("<font color=green><br><br>"); //$NON-NLS-1$
+				for( int i = x0; i < y0; i++ ) {
+				    sb.append(" "+src.get(i).content); // (authorized) //$NON-NLS-1$
+				}
+				t.setText(sb.toString());
+			}
+			private void updatePane4CYK( StringBuffer sb ) {
+			    for( int i = 0; i < output.size(); i++ ) {
+			        int k = output.getSymbol(i);
+                    
+                    if( k == -1 )
+                        sb.append("<font color=red>-1</font>"); // (authorized) //$NON-NLS-1$
+                    else {
+                        int derivedSymbol = output.getSymbol(index);
+                        String symbol = par.allSymbols[k];
+                        if( k == derivedSymbol && x0+1 < y0 ) {
+                            int mid = matrix.getCykBackptrs(x0, y0, derivedSymbol).get(ambig); 
+                            
+                            Cell prefixes = matrix.get(Util.pair(x0, mid));
+                            if( prefixes == null ) {
+                                System.out.println("prefixes==null: x0="+x0+",mid="+mid);
+                                return;
+                            }
+                            
+                            Cell suffixes = matrix.get(Util.pair(mid, y0));
+                            String ruleBody = "?";
+                            outer: for( int I : prefixes.getContent() )  {  // Not indexed Nested Loops
+                                for( int J : suffixes.getContent() ) {
+                                    int[] A = ((CYK)par).doubleRhsRules.get(Util.pair(I, J));
+                                    if( A==null )
+                                        continue;
+                                    for( int a : A ) {
+                                        if( a == k ) {
+                                            ruleBody = 
+                                                "<font size=+1 bgcolor=rgb(150,200,150))>"+par.allSymbols[I]+"</font>"+
+                                                "<font size=+1 color=green>+</font>"+
+                                                "<font size=+1 bgcolor=rgb(150,225,200))>"+par.allSymbols[J]+"</font>";
+                                            break outer;
+                                        }
+                                    }
+                                }
+                            }  
+                            symbol = "<font size=+1 bgcolor=rgb(150,175,150))>"+symbol+"</font>" +
+                                     "<font size=+1 color=green>=</font>"+
+                                     ruleBody; //$NON-NLS-1$ //$NON-NLS-2$
+                        } else if( symbol.indexOf('[') < 0 && symbol.indexOf('+') < 0 && symbol.indexOf('.')<0 )
+                            symbol = "<b>"+symbol+"</b>"; //$NON-NLS-1$ //$NON-NLS-2$
+                        sb.append("  "+symbol/*+(symbols.get(k)<5?"":(" <font color=pink size=\""+(symbols.get(k)-7)+"\">"+symbols.get(k)+"</font>"))*/); // (authorized) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+                    }
+                }
+			    
+			}
+		    public void updatePane4Earley( StringBuffer sb ) {
+	        	for( int j = 0; j < output.size(); j++ ) {
+	        		int pos = output.getPosition(j);
+	        		int ruleNo = output.getRule(j);
+	        		//int mid = output.getBackpointer(j);
+                    int mid = -1;
+                    if( j == index )
+                        mid = matrix.getEarleyBackptrs(x0, y0, output, j).get(ambig); 
+	        		sb.append("<br>");
+				    ((Earley)par).toHtml(ruleNo, pos, j==index, x0,mid,y0, matrix, sb);
+				}
+			}
             int x0 = -1;
             int y0 = -1;
-            int[] output = null;
+            Cell output = null;
             int index = 0;
+            int ambig = 0;
             public Dimension getPreferredScrollableViewportSize() {
                 // TODO Auto-generated method stub
                 return null;
@@ -181,38 +245,123 @@ public class Visual {
                 // TODO Auto-generated method stub
                 return 0;
             }
-            public void paint(Graphics g) {
+            public void paint( Graphics g ) {
                 super.paint(g);
-                if( x0 != -1 ) {
+                if( x0 != -1 && (
+                		par instanceof CYK && x0+1 < y0 
+                	||	par instanceof Earley && x0 <= y0 && index < output.size() 
+                    ) ) {
                     g.setColor(Color.red);
-                    if( index >= output.length )
-                        index = 0;
-                    int mid = Util.X(output[index]);
-                    g.drawLine(x0*zoom+offset, mid*zoom+offset, x0*zoom+offset, y0*zoom+offset);
-                    g.drawLine(x0*zoom+offset, y0*zoom+offset, mid*zoom+offset, y0*zoom+offset);
+                    int mid = -1;
+                    if( par instanceof CYK )
+                        mid = matrix.getCykBackptrs(x0, y0, output.getSymbol(index)).get(ambig); 
+                    else if( par instanceof Earley )
+                        mid = matrix.getEarleyBackptrs(x0, y0, output, index).get(ambig); 
+                    if( y0 < mid ) {
+                      	g.drawLine(x0*zoom+offset, (y0-1)*zoom+offset, x0*zoom+offset, y0*zoom+offset); // vertical
+                      	return;
+                    }
+                    if( x0 <= mid )
+                    	g.drawLine(x0*zoom+offset, mid*zoom+offset, x0*zoom+offset, y0*zoom+offset); // vertical
+                    g.drawLine(x0*zoom+offset, y0*zoom+offset, mid*zoom+offset, y0*zoom+offset); // horiz
                 }
             }
             
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                index++;
+            public void mouseWheelMoved( MouseWheelEvent e ) {
+                if( output == null )
+                    return;
+                int ambiguityFactor = -1;//matrix.getCykBackptrs(x0, y0, output.getSymbol(index)).size();
+                if( par instanceof CYK )
+                    ambiguityFactor = matrix.getCykBackptrs(x0, y0, output.getSymbol(index)).size(); 
+                else if( par instanceof Earley )
+                    ambiguityFactor = matrix.getEarleyBackptrs(x0, y0, output, index).size(); 
+                
+                if( 0 <= ambig + e.getWheelRotation() && ambig + e.getWheelRotation() < ambiguityFactor ) {
+                    ambig += e.getWheelRotation();
+                } else {
+                    ambig = 0;
+                
+                    index += e.getWheelRotation()>0 ? 1 : -1 ;
+                    if( index < 0 )
+                        index = output.size()+index;
+                    if( index >= output.size() )
+                        index = index-output.size();
+                }
                 repaint();
+                updatePane(t);
             }
         }
-        JScrollPane canvasScrollPane = new JScrollPane(new ScrollablePicture());
+        
+        JPanel radioPanel = new JPanel();
+        radioPanel.setLayout(new BoxLayout(radioPanel,BoxLayout.X_AXIS));
+        ButtonGroup optimGroup = new ButtonGroup();        
+        optimGroup.add(yes);
+        optimGroup.add(no);
+        radioPanel.add(new JLabel("Optimization: "));
+        radioPanel.add(yes);
+        radioPanel.add(no);
+        //yes.setSelected(??);
+        yes.addActionListener(this);
+        no.addActionListener(this);
+        
+        
+        JPanel matrixPanel = new JPanel(new BorderLayout());
+        matrixImage = new ScrollablePicture();
+        matrixPanel.add(matrixImage, BorderLayout.CENTER);
+		matrixPanel.add(radioPanel, BorderLayout.SOUTH);
+        
+        JScrollPane canvasScrollPane = new JScrollPane(matrixPanel);
         canvasScrollPane.setVerticalScrollBarPolicy(
                                                     JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         canvasScrollPane.setHorizontalScrollBarPolicy(
                                                       JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        canvasScrollPane.setPreferredSize(new Dimension(900, 900));
-        canvasScrollPane.setMinimumSize(new Dimension(50, 50));
+        canvasScrollPane.setPreferredSize(new Dimension(700, 700));
+        canvasScrollPane.setMinimumSize(new Dimension(100, 100));
 
-
-        frame.getContentPane().add(canvasScrollPane, BorderLayout.CENTER);
-        frame.getContentPane().add(editorScrollPane, BorderLayout.SOUTH);
+        JSplitPane sp = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        sp.add(canvasScrollPane);
+        sp.add(editorScrollPane);
+        
+        frame.getContentPane().add(sp);
         frame.pack();
         //frame.setSize(X, Y+350);
         frame.setVisible(true);
 
+    }
+	private BufferedImage drawMatrix( final Matrix matrix ) {
+        this.matrix = matrix;
+        boolean isCYK = par instanceof CYK;
+        byte[] pixels = new byte[X * Y+1]; 
+        for( int j = 0; j < Y; ++j)
+            for( int i = 0; i <= X; ++i) {
+                int z = (j * X + i);
+                Cell tmp = matrix.get(Util.pair(i/zoom, j/zoom));
+                if( tmp!=null ) {
+                    pixels[z] = 0;
+                } else {
+					if( 
+                         isCYK && j == i 
+                      || j < i
+                      || skipped != null && 0 < skipped[i/zoom][j/zoom] 
+                      || visited != null && visited[i/zoom][j/zoom] == 0
+                    ) {
+                        pixels[z] = 1;
+                    } else {
+                        pixels[z] = 4;
+                    }
+                }
+            }
+//      Create a data buffer using the byte buffer of pixel data.
+        // The pixel data is not copied; the data buffer uses the byte buffer array.
+        DataBuffer dbuf = new DataBufferByte(pixels, X*Y, 0);
+        int numBanks = dbuf.getNumBanks(); // 1
+        int bitMasks[] = new int[]{(byte)0xf};
+        SampleModel sampleModel = new SinglePixelPackedSampleModel(
+                                                                   DataBuffer.TYPE_BYTE, X, Y, bitMasks);
+        WritableRaster raster = Raster.createWritableRaster(sampleModel, dbuf, null);
+        ColorModel colorModel = generateColorModel();
+        final BufferedImage img = new BufferedImage(colorModel, raster, false, null);//new java.util.Hashtable());		
+        return img;
     }
 
     private void drawSrcText( Graphics g ) {
@@ -251,6 +400,37 @@ public class Visual {
         r[15] = (byte)255; g[15] = (byte)255; b[15] = (byte)255;
 
         return new IndexColorModel(4, 16, r, g, b);
-    }	
+    }
 
+    private JRadioButton yes = new JRadioButton("Yes");
+    private JRadioButton no = new JRadioButton("No");
+	public void actionPerformed( ActionEvent e ) {
+		recalculate(e.getSource() == yes);		
+	}	
+
+    public void recalculate( boolean optim ) {
+        causes = new HashMap<Integer,Integer>();
+        if( visited != null ) {
+            visited = new long[src.size()+1][src.size()+1];
+                        
+            ((Earley)par).skipRanges = optim;
+            ((Earley)par).allXs = null;
+            matrix = new Matrix(par);
+            ((Earley)par).parse(src, matrix); 
+        }
+        if( skipped != null ) {
+            skipped = new int[src.size()+1][src.size()+1];
+        
+            matrix = ((CYK)par).initArray(src);
+            int size = matrix.size();
+            TreeMap<Integer,Integer> skipRanges = null; 
+            if( optim )
+                skipRanges = new TreeMap<Integer,Integer>();
+            else
+                skipRanges = null;
+            ((CYK)par).closure(matrix, 0, size+1, skipRanges, -1);
+        }
+        img = drawMatrix(matrix);
+        matrixImage.repaint();
+    }
 }
