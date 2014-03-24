@@ -51,10 +51,10 @@ public class Program {
     static int disjoint;
     static int almostDisj;
     static int big;
-    static int complement;
+    public static int complement;
     static int CPclosure;
     static int EQclosure;
-    static int inverse;
+    public static int inverse;
     static int composition;
     static int restrict;
     static int project;

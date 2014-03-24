@@ -6,6 +6,7 @@ implication^ = assertion
 
 variables:
 [identifier) identifier
+& ! ?identifier='R00'
 ; 
 
 operations:
