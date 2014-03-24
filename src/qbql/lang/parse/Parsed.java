@@ -69,9 +69,12 @@ public class Parsed {
 	public String getInput() {
         return input;
     }
+	boolean isPercentLineComment = false;
+    boolean isQuotedString = true;	
     public List<LexerToken> getSrc() {
-        if( src == null )
-            src =  new Lex(false,true,false,new HashMap()).parse(input);
+        if( src == null ) {
+            src =  new Lex(isPercentLineComment,isQuotedString,false,new HashMap()).parse(input);
+        }
         return src;
     }
     public ParseNode getRoot() {
@@ -83,7 +86,7 @@ public class Parsed {
                 visual = new Visual(src, earley);
             Matrix matrix = new Matrix(earley);
             earley.parse(src, matrix); 
-            if( debug )
+            if( visual != null )
                 visual.draw(matrix);
             //Cell top = matrix.get(0, src.size());
             //if( top == null ) // if input is syntactically recognized 

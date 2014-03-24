@@ -31,7 +31,7 @@ public class Lex {
     public LinkedList<LexerToken> tokenize( String sourceExpr ) {
 
         LinkedList<LexerToken> ret = new LinkedList<LexerToken>();
-        final String operation = "(){}[]^-~&|!*+.\\/><='`\",;:#@";
+        final String operation = "(){}[]^-~&|!?*+.\\/><='`\",;:#@";
         final String ws = " \n\r\t";
         StringTokenizer st = new StringTokenizer(sourceExpr,
                                                  operation + ws
