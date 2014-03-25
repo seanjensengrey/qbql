@@ -75,7 +75,7 @@ public class Translate {
             this.free = free;
         }
         Expr() {
-            this("false",new ArrayList<String>());
+            this("$F",new ArrayList<String>());
         }
         Expr( String name, int i, int len ) {
             free = parameters(i, len);
