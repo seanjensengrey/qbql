@@ -379,16 +379,4 @@ R1 = R ^ "x1=y1";
 ->
 (R v (x^z)) ^ (R v (y^z)) = R v (x^(y^z)).????*/
 
-x=[p1,p3,p5,p7]
-    0  0  1  0
-;
-y=[p2,p3,p6,p7]
-;
-z=[p4,p5,p6,p7]
-0 0 0 0
-0 1 0 0
-;
-((R00 ^ (x ^ y)) v z) ^ ((R00 ^ (x ^ z)) v y);
-(y ^ z) v (R00 ^ (x ^ (y v z))) = ((R00 ^ (x ^ y)) v z) ^ ((R00 ^ (x ^ z)) v y).
-
-
+(<NOT>x^<INV>y)v(<INV>x^<NOT>y)=(<NOT>x v <NOT>y)^(<INV>x v <INV>y).
