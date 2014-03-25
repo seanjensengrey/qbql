@@ -156,7 +156,7 @@ public class Translate {
                     return translate(child,src,variables);
                 if( node.contains(qbql.lattice.Program.complement) ) {
                     Expr ret = translate(arg1,src,variables);
-                    ret.amend("-"+ret.expr);
+                    ret.amend("-("+ret.expr+")");
                     return ret;
                 };
                 if( node.contains(qbql.lattice.Program.inverse) ) {
