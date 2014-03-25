@@ -178,15 +178,15 @@ public class Translate {
                         int i = variables.get(name);
                         List<String> params = parameters(i, variables.size());
                         List<String> used = new ArrayList();
-                        indicator.append("&"); 
                         for( String o : others )
                             if( params.contains(o) )
                                 used.add(o);
-                        if( 0 < used.size() ) {
-                            for( String p : params )
-                                if( !used.contains(p) )
-                                    indicator.append(" exists "+p);
-                        }
+                        if( 0 == used.size() )
+                            continue;
+                        indicator.append("&("); 
+                        for( String p : params )
+                            if( !used.contains(p) )
+                                indicator.append(" exists "+p);
                         indicator.append(" ");
                         indicator.append(name);
                         indicator.append("(");
@@ -196,7 +196,7 @@ public class Translate {
                                 indicator.append(',');
                             indicator.append(par);
                         }
-                        indicator.append(")");
+                        indicator.append(")|$T)");
 
                     }
                     return new Expr(indicator.toString(),others);
