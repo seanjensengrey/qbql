@@ -26,8 +26,8 @@ public class ExprGen {
 
     static String[] zilliaryOps;
     final static String[] unaryOps = new String[] {
-        "<NOT>",
-        "<INV>",
+        //"<NOT>",
+        //"<INV>",
         //"<EQ_CLOSE>",
         //"<CP_CLOSE>",
     };
@@ -38,7 +38,7 @@ public class ExprGen {
         System.out.println("goal: "+Util.removeComments(goal));
 
         final String[] constants = new String[] {
-                "R00",
+                //"R00",
                 //"R11",             
                 //"Id", 
                 //"R",
@@ -49,8 +49,8 @@ public class ExprGen {
 
         final String[] binaryOps = new String[] {
                 "^",
-                "v", 
-                //"<Gn>",
+                //"v", 
+                "<Gn>",
                 //"<and>",
                 //"<\"and\">",
                 //"<OR>",

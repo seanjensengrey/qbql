@@ -89,5 +89,5 @@ x <mult> (y v z) = (x <mult> y) v (x <mult> z).
 
 (r v x) ^ (r v y) < r  <-> F(x,y,r).*/
 
-
+x v y = expr.
 
