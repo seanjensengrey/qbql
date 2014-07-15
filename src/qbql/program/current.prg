@@ -331,52 +331,17 @@ x <and> y;
 */
 
 /*
-Dept = [dept secr]
-         10    1
-         20    3
-         30    5
-;
+R11 /^ x = <INV>x.
+R00 /= x = <NOT>x.
+x /= x = R01.
+--x /^ x = R0?.
+--(x /= x) ^ y = R00.
+x /< y = <NOT>((<NOT>(y) /^ x)).
+x /= y = <NOT>(((<NOT>(y) /^ x) v (<NOT>(x) ^ y))).
+x /^ y = ((R00 ^ (y /= x)) v (y ^ x)).
+
+x ^ (y /= y) = x.
+x v (y /= y) = y /= y.
 */
---Emps v [dept] < Dept v [dept]. 
-Emps = [empno mgr dept]
-          2    2   20
-          1    3   30
-          3    4   10
-          4    4   10
-          5    4   10
-;
---(Emps v[empno dept])/^"empno=mgr" > Emps v[mgr dept].
--- connected components
---(Emps v[empno dept])^"empno=mgr" > (Emps v[mgr dept])^"empno=mgr".
 
---((Emps ^ "mgr=mgr1") v [dept mgr1]) ^ (Emps v [dept mgr]);
---Emps#[mgr] < Emps#[dept].
-
---(Emps v [mgr]) ^"empno=mgr" < (Emps v [empno])^"empno=mgr".
-
-Emps1 = Emps ^"mgr=mgr1";
-
---(Emps1 v [dept mgr]) ^ (Emps1 v [dept mgr1]) < Emps1.
-(Emps1 v [dept mgr]) ^ (Emps1 v [dept mgr1]) < (Emps1 v [mgr mgr1]).
-
---(Emps1 v [dept mgr]) ^ (Emps1 v [dept mgr1]) = (Emps1 v [dept mgr]) ^ (Emps1 v [mgr mgr1]).
-
-
-/*R = [x1 x2] 
-     0   0
-     0   1
-     1   0
-     1   1
-;
-
-R1 = R ^ "x1=y1";
-
-
-(R1 v [x1 x2]) ^ (R1 v [x1 x2 y1]) > R1. */
-
-/*???? x^[]=x & y^[]=y & z^[]=z &
-(R v x) ^ (R v y) = R v (x^y)
-->
-(R v (x^z)) ^ (R v (y^z)) = R v (x^(y^z)).????*/
-
-(<NOT>x^<INV>y)v(<INV>x^<NOT>y)=(<NOT>x v <NOT>y)^(<INV>x v <INV>y).
+x ^ ((<INV>y) v (<INV>z)) = (x ^ (<INV>y)) v (x ^ (<INV>z)).
