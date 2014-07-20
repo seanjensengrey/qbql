@@ -9,16 +9,18 @@ package qbql.bool;
 public class Model {
     
     public static void main( String[] args ) {
-        for( int dim = 2; dim < 5; dim++ ) {
+        for( int dim = 2; dim < 10; dim++ ) {
             long t1 = System.currentTimeMillis();
             long size = 1L << dim;
-            System.out.print("size = "+size);
             UnaryOperator oper = new UnaryOperator(dim);
+            int count = 0;
             do {
                 //System.out.println(oper.toString());
+                count++;
                 oper = oper.next();
             } while( oper != null );
-            System.out.println(" ("+(System.currentTimeMillis()-t1)+" ms)");
+            System.out.print("models("+size+")="+count);
+            System.out.println("      ("+(System.currentTimeMillis()-t1)+" ms)");
         }
     }
     
