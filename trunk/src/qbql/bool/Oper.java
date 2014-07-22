@@ -51,6 +51,19 @@ public class Oper {
         }
         return ret;
     }
+    
+    static String toString( long x, int dim ) {
+        StringBuilder ret = new StringBuilder();
+        for( int j = 0; j < dim; j++ ) {
+            long bit = 1L << j;
+            if( bit == (bit & x) )
+                ret.append('1');
+            else
+                ret.append('0');
+        }
+        return ret.toString();
+    }
+
 
     public static void main( String[] args ) {
         for( int i = 0; i < 1024; i++ ) {

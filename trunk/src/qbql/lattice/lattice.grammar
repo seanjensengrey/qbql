@@ -24,7 +24,7 @@ conjunction:
              conjunction '&' conjunction
           |  proposition 
           |  '(' conjunction ')'
-          |   '-' '(' conjunction ')'
+          |   '-' proposition
 ;
 
 complement:  identifier 'qtSymbol'
