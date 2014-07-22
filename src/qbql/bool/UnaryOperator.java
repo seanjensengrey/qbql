@@ -1,7 +1,8 @@
 package qbql.bool;
 
-// up to 64 bit only
-public class UnaryOperator {
+
+// up to 32 bit only
+public class UnaryOperator  {
     int[] map;
     int dimension;
     
