@@ -62,7 +62,7 @@ public class Visual implements ActionListener {
         src = s;
         visited = new long[src.size()+1][src.size()+1];
         par = c;
-        zoom = 1+550/src.size();
+        zoom = 1+720/src.size();
         offset = zoom/2;
         if( zoom == 1 )
             offset = 0;
@@ -81,7 +81,7 @@ public class Visual implements ActionListener {
         JScrollPane editorScrollPane = new JScrollPane(t);
         editorScrollPane.setVerticalScrollBarPolicy(
                                                     JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        editorScrollPane.setPreferredSize(new Dimension(10, 400));
+        editorScrollPane.setPreferredSize(new Dimension(10, 550));
         editorScrollPane.setMinimumSize(new Dimension(10, 50));
 
         class ScrollablePicture extends JLabel // Canvas
@@ -297,7 +297,7 @@ public class Visual implements ActionListener {
                                                     JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         canvasScrollPane.setHorizontalScrollBarPolicy(
                                                       JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        canvasScrollPane.setPreferredSize(new Dimension(700, 700));
+        canvasScrollPane.setPreferredSize(new Dimension(800, 800));
         canvasScrollPane.setMinimumSize(new Dimension(100, 100));
 
         JSplitPane sp = new JSplitPane(JSplitPane.VERTICAL_SPLIT);

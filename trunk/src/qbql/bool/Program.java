@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import qbql.parser.Earley;
 import qbql.parser.Grammar;
@@ -127,9 +128,10 @@ public class Program {
 
     public UnaryOperator algebra;
     private long mask;
-    public Program( UnaryOperator algebra ) {
+    public Program( UnaryOperator algebra, String[] variables ) {
         this.algebra = algebra;
         mask = (1 << algebra.dimension) - 1;
+        this.variables = variables;
     }
 
     private boolean bool( ParseNode root, List<LexerToken> src ) {
@@ -311,8 +313,8 @@ public class Program {
     }*/
 
 
-    static Set<String> variables( ParseNode root, List<LexerToken> src ) {
-        Set<String> variables = new HashSet<String>();
+    static String[] variables( ParseNode root, List<LexerToken> src ) {
+        Set<String> variables = new TreeSet<String>();
         for( ParseNode descendant : root.descendants() ) {
 			if( descendant.from+1 == descendant.to 
                     && (descendant.contains(expr) || descendant.contains(identifier))
@@ -324,7 +326,7 @@ public class Program {
 	                variables.add(id);
 			}
         }
-        return variables;
+        return variables.toArray(new String[0]);
     }
 
     /*private ParseNode query( ParseNode root, List<LexerToken> src )  {
@@ -349,7 +351,7 @@ public class Program {
     }*/
 
 
-    static Set<String> variables = null; //variables(root,src);
+    private String[] variables = null; //variables(root,src);
     Map<String,Long> assignments = new TreeMap<String,Long>();
     /**
      * @param root
@@ -357,8 +359,9 @@ public class Program {
      * @return counterexample variable assignments
      * @
      */
-    public int[] program( ParseNode root, List<LexerToken> src ) {
-        int[] indexes = new int[variables.size()];
+    public int[] eval( ParseNode root, List<LexerToken> src ) {
+        
+        int[] indexes = new int[variables.length];
         for( int i = 0; i < indexes.length; i++ )
             indexes[i] = 0;
         do {
@@ -366,7 +369,7 @@ public class Program {
             for( String variable : variables ) 
                 assignments.put(variable, (long)indexes[var++]);
             
-            if( verify(root, src) )
+            if( !verify(root, src) )
                 return indexes;
             
         } while( Util.next(indexes, algebra.map.length) );
@@ -497,7 +500,7 @@ public class Program {
     public static ParseNode parse( String prg, List<LexerToken> src ) {
         Matrix matrix = new Matrix(earley);
         earley.parse(src, matrix); 
-        SyntaxError err = SyntaxError.checkSyntax(prg, new String[]{"program"}, src, earley, matrix);      
+        SyntaxError err = SyntaxError.checkSyntax(prg, new String[]{"theorem"}, src, earley, matrix);      
         if( err != null ) {
             System.out.println(err.toString());
             throw new AssertionError(PARSE_ERROR_IN_ASSERTIONS_FILE);

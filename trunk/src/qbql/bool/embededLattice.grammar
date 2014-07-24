@@ -100,8 +100,11 @@ proposition:
           |  expr '!' '=' expr
 ;
 
-program:     stmt  
-          |  program stmt 
+stmts:     stmt  
+          |  stmts stmt 
+;
+
+theorem: stmts '|' '-' stmt
 ;
 
 query:       expr ';'

@@ -51,6 +51,8 @@ public class UnaryOperator  {
     public String toString() {
         StringBuilder ret = new StringBuilder();
         for( int i = 0; i < map.length; i++) {
+            if( i == map[i] )
+                continue;
             for( int j = dimension-1; 0 <= j; j-- ) {
                 long bit = 1L << j;
                 if( bit == (bit & i) )

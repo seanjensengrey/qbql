@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeSet;
 
+import qbql.bool.Oper;
 import qbql.lattice.Program;
 import qbql.program.Run;
 import qbql.util.Array;
@@ -25,8 +26,8 @@ public class Earley extends Parser {
     protected int[] allXs = null;
 
     public static void main( String[] args ) throws Exception {
-        String input = "(Emps v [dept mgr]) /^ ((Emps /^\"mgr=mgr1\") v [dept mgr1]) < \"mgr=mgr1\".";
-        //String input = Util.readFile(Run.class,"RA.prg");
+        //String input = "(Emps v [dept mgr]) /^ ((Emps /^\"mgr=mgr1\") v [dept mgr1]) < \"mgr=mgr1\".";
+        String input = Util.readFile(qbql.bool.Program.class,"lattice.embeding");
         List<LexerToken> src =  (new Lex()).parse(input);
 
         Set<RuleTuple> wiki = new TreeSet<RuleTuple>();
@@ -47,10 +48,10 @@ public class Earley extends Parser {
         wiki.add(new RuleTuple("B",new String[]{"identifier"}));
         wiki.add(new RuleTuple("C",new String[]{"string_literal","string_literal","string_literal"}));*/ 
 
-        Set<RuleTuple> rules = Program.latticeRules();
+        Set<RuleTuple> rules = qbql.bool.Program.latticeRules();
         //rules = wiki;
 
-        final String symbol = "include";
+        /*final String symbol = "include";
         for( RuleTuple rule : rules ) 
             if( rule.head.contains(symbol) ) 
                 System.out.println(rule.toString());
@@ -58,7 +59,7 @@ public class Earley extends Parser {
                 if( rule.rhs[i].contains(symbol) ) {
                     System.out.println(rule.toString());
                     break;
-                }
+                }*/
 
 
         Earley earley = new Earley(rules);

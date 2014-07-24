@@ -54,7 +54,7 @@ public class Oper {
     
     static String toString( long x, int dim ) {
         StringBuilder ret = new StringBuilder();
-        for( int j = 0; j < dim; j++ ) {
+        for( int j = dim-1; 0 <= j; j-- ) {
             long bit = 1L << j;
             if( bit == (bit & x) )
                 ret.append('1');
