@@ -26,7 +26,26 @@ public class Model {
                 
         List<LexerToken> src =  new Lex().parse(input);
         ParseNode root = Program.parse(input, src);
-        Program.variables = Program.variables(root, src);
+        
+        ParseNode left = null;
+        boolean sawEq = false;
+        boolean sawGt = false;
+        ParseNode right = null;
+        for( ParseNode child : root.children() ) {
+            if( left == null ) {
+                left = child;
+            } else if( !sawEq ) {
+                sawEq = true;
+            } else if( !sawGt ) {
+                sawGt = true;
+            } else if( right == null ) {
+                right = child;
+            } else 
+                throw new AssertionError("Unexpected");            
+        }
+
+        String[] leftVars = Program.variables(left, src);
+        String[] rightVars = Program.variables(left, src);
         
         for( int dim = 1; dim < 10; dim++ ) {
             long t1 = System.currentTimeMillis();
@@ -34,8 +53,15 @@ public class Model {
             UnaryOperator oper = new UnaryOperator(dim);
             int count = 0;
             do {
-                Program prg = new Program(oper);
-                int[] model = prg.program(root, src);
+                Program prg = new Program(oper,leftVars);
+                int[] model = prg.eval(left, src);
+                if( model != null ) {
+                    oper = oper.next();
+                    count++;
+                    continue;
+                }
+                prg = new Program(oper,rightVars);
+                model = prg.eval(right, src);
                 if( model != null ) {
                     System.out.println(oper.toString());
                     for( String var : prg.assignments.keySet() ) {
