@@ -5,6 +5,7 @@ import java.util.List;
 import qbql.parser.Lex;
 import qbql.parser.LexerToken;
 import qbql.parser.ParseNode;
+import qbql.parser.Token;
 import qbql.util.Util;
 
 /**
@@ -43,9 +44,26 @@ public class Model {
             } else 
                 throw new AssertionError("Unexpected");            
         }
+        
+        StringBuilder preprocessed = new StringBuilder();
+        preprocessed.append("!");
+        for( LexerToken t : src ) {
+            if( t.begin < src.get(right.from).begin )
+                continue;
+            //preprocessed.append(" ");
+            if( t.type == Token.IDENTIFIER && t.content.charAt(0)!='"' )
+                preprocessed.append('"'+t.content+'"');
+            else
+                preprocessed.append(t.content);
+        }
+        System.out.println(preprocessed.toString());
 
-        String[] leftVars = Program.variables(left, src);
-        String[] rightVars = Program.variables(left, src);
+        input = input.substring(0, src.get(left.to).begin)+preprocessed.toString();
+        src =  new Lex().parse(input);
+        root = Program.parse(input, src);
+        
+        String[] variables = Program.variables(root, src);
+        String[] constants = Program.constants(root, src);
         
         for( int dim = 1; dim < 10; dim++ ) {
             long t1 = System.currentTimeMillis();
@@ -53,15 +71,8 @@ public class Model {
             UnaryOperator oper = new UnaryOperator(dim);
             int count = 0;
             do {
-                Program prg = new Program(oper,leftVars);
-                int[] model = prg.eval(left, src);
-                if( model != null ) {
-                    oper = oper.next();
-                    count++;
-                    continue;
-                }
-                prg = new Program(oper,rightVars);
-                model = prg.eval(right, src);
+                Program prg = new Program(oper,variables,constants);
+                int[] model = prg.eval(root, src);
                 if( model != null ) {
                     System.out.println(oper.toString());
                     for( String var : prg.assignments.keySet() ) {

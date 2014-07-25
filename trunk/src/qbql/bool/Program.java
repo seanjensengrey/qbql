@@ -128,10 +128,11 @@ public class Program {
 
     public UnaryOperator algebra;
     private long mask;
-    public Program( UnaryOperator algebra, String[] variables ) {
+    public Program( UnaryOperator algebra, String[] variables, String[] constants ) {
         this.algebra = algebra;
         mask = (1 << algebra.dimension) - 1;
         this.variables = variables;
+        this.constants = constants;
     }
 
     private boolean bool( ParseNode root, List<LexerToken> src ) {
@@ -265,53 +266,6 @@ public class Program {
     }
         
 
-    /*private boolean isDeclaration( ParseNode root, List<LexerToken> src ) throws AssertionError {
-        if( root.contains(proposition) ) {
-            String lft = null;
-            String operation = null;
-            String rgt = null;
-            boolean sawEQ = false;
-            for( ParseNode child : root.children() ) {
-                if( !child.contains(userDefined) && operation == null )
-                    break;
-                if( operation == null ) {
-                    for( ParseNode grandChild : child.children() ) {
-                        if( lft == null && grandChild.contains(userOper) ) {
-                            lft = "R00";
-                            operation = grandChild.content(src);
-                            try { 
-                                database.getOperation(operation);
-                                return false;
-                            } catch( AssertionError e ) {} 
-                        } else if( lft == null ) 
-                            lft = grandChild.content(src);
-                        else if( operation == null ) {
-                            operation = grandChild.content(src);
-                            try { 
-                                database.getOperation(operation);
-                                return false;
-                            } catch( AssertionError e ) {} 
-                        } else if( rgt == null ) 
-                            rgt = grandChild.content(src);
-                        else if( grandChild.contains(closeParen) ) 
-                            ;
-                        else
-                            throw new AssertionError("Unexpected user defined expression");
-                    }
-                } else if( !sawEQ ) {
-                    if( !child.contains(equality) ) 
-                        throw new AssertionError("Unexpected user defined expression");
-                    else 
-                        sawEQ = true;
-                } else {
-                    database.addOperation(operation, Expr.convert(lft, rgt, child, src));
-                    return true;
-                }
-            }
-        }
-        return false;
-    }*/
-
 
     static String[] variables( ParseNode root, List<LexerToken> src ) {
         Set<String> variables = new TreeSet<String>();
@@ -328,30 +282,25 @@ public class Program {
         }
         return variables.toArray(new String[0]);
     }
-
-    /*private ParseNode query( ParseNode root, List<LexerToken> src )  {
-        for( ParseNode child : root.children() ) {
-            if( child.contains(partition) ) {
-                System.out.println(child.content(src)+"="+partition(child, src).toString()+";");
-                return null;
-            } else if( child.contains(expr) ) {
-                Predicate expr2 = expr(child, src);
-
-                try {
-                    Predicate p = expr2.reEvaluateByUnnesting();
-                    if( p instanceof Relation )
-                        expr2 = p;
-                } catch( AssertionError e ) {}
-
-                System.out.println(child.content(src)+"="+expr2.toString(child.content(src).length()+1)+";");
-                return null;
-            } 
+    static String[] constants( ParseNode root, List<LexerToken> src ) {
+        Set<String> constants = new TreeSet<String>();
+        for( ParseNode descendant : root.descendants() ) {
+            if( descendant.from+1 == descendant.to 
+                    && (descendant.contains(expr) || descendant.contains(identifier))
+                     ) {
+                String id = descendant.content(src);
+                ParseNode parent = root.parent(descendant.from, descendant.to);
+                if( !parent.contains(userOper)
+                        && id.startsWith("\"") ) 
+                    constants.add(id);
+            }
         }
-        throw new AssertionError("No expr/partition in statement?");
-    }*/
+        return constants.toArray(new String[0]);
+    }
 
 
     private String[] variables = null; //variables(root,src);
+    private String[] constants = null; //variables(root,src);
     Map<String,Long> assignments = new TreeMap<String,Long>();
     /**
      * @param root
@@ -361,16 +310,29 @@ public class Program {
      */
     public int[] eval( ParseNode root, List<LexerToken> src ) {
         
-        int[] indexes = new int[variables.length];
+        int[] indexes = new int[constants.length+variables.length];
         for( int i = 0; i < indexes.length; i++ )
             indexes[i] = 0;
         do {
             int var = 0;
             for( String variable : variables ) 
                 assignments.put(variable, (long)indexes[var++]);
+            for( String variable : constants ) 
+                assignments.put(variable, (long)indexes[var++]);
             
-            if( !verify(root, src) )
-                return indexes;
+            if( !verify(root, src) ) {
+                for( int i = 0; i < variables.length; i++ )
+                    indexes[i] = algebra.map.length-1; // 00000... is next
+            } else {
+                boolean exaustedAllVars = true;
+                for( int i = 0; i < variables.length; i++ )
+                    if( indexes[i] != algebra.map.length-1 ) {
+                        exaustedAllVars = false;
+                        break;
+                    }
+                if( exaustedAllVars )
+                    return indexes;
+            }
             
         } while( Util.next(indexes, algebra.map.length) );
         
@@ -422,37 +384,6 @@ public class Program {
         throw new AssertionError("Unknown case");
     }
 
-
-    /*private Predicate userDefined( ParseNode root, List<LexerToken> src )   {
-        Predicate left = null;
-        Predicate right = null;
-        String oper = null;
-        for( ParseNode child : root.children() ) {
-            if( left == null && child.contains(userOper) ) { // e.g. ( <NOT> x )
-                left = Database.R00; 
-                oper = child.content(src);
-            } else if( left == null && child.contains(expr) )
-                left = expr(child, src);
-            else if( oper != null ) {                           
-                right = expr(child, src);
-                break;  // in order not to step on closing parenthesis
-            } else //if( oper == null )
-                oper = child.content(src);
-        }
-        Predicate lft = database.getPredicate("?lft");
-        Predicate rgt = database.getPredicate("?rgt");
-        database.addPredicate("?lft",left);
-        database.addPredicate("?rgt",right);
-        Expr e = database.getOperation(oper);
-        Predicate ret = e.eval(database);
-        database.removePredicate("?lft");
-        database.removePredicate("?rgt");
-        if( lft != null )
-            database.addPredicate("?lft",lft);
-        if( rgt != null )
-            database.addPredicate("?rgt",rgt);
-        return ret;
-    }*/
 
     private long binaryOper( ParseNode root, List<LexerToken> src, int oper )   {
         long left = -1;
