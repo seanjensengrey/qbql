@@ -9,6 +9,7 @@ public class Integers {
     	return new String[] {
         		//"for(int i = -infinity;; i++)",
         		"int i",
+        		"i in {...,-1,0,1,...}",
     	};
     }
     public static Relation i( Object i ) {

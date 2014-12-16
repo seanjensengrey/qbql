@@ -12,6 +12,7 @@ public class IntegerInterval {
         		"for(int i = from; i<to; i++)",
         		"from <= int i < to",
         		"i in [from,...,to)",
+        		//"i in {from,...,to-1}", rather cumbersome notation e.g. all squares from 1 to 8: "i in {1,...,9-1}" ^ "i * i = i2";
     	};
     }
     public static Relation from_to_i( int from, int to ) {
