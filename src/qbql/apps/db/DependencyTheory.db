@@ -1,0 +1,70 @@
+AliceP129=[p  q  r]
+   0  c  1
+   1  c  2
+   1  c  0
+;
+
+
+/*"p->q t"=[p  q  r  t]
+   0  a  0  "<0,a,0>"
+   0  a  1  "<0,a,1>"
+   1  c  0  "<1,c,0>"
+   1  c  1  "<1,c,1>"
+   2  a  0  "<2,a,0>"
+;
+T0 = [t] "<0,a,0>";
+TT = [t];
+*/
+
+--S1jT1 = S1 ^ T1;
+
+
+/* Alice p.171 remapped: 
+SDT = [q  s   p   r]
+       c  s   0   0
+       c  s   0   1
+       c  s   0   2
+       c  l   1   2
+       b  s   2   0
+       b  s   2   2
+       a  l   3   2
+;
+SDP = SDT v [q s p];
+DT  = SDT v [s r];
+ST  = SDT v [q r];
+SDPjDT = SDP ^ DT;
+SDPjST = SDP ^ ST;
+DTjST = DT ^ ST; 
+
+PQS = SDT v [p r s];
+*/
+
+MaierP137=[p  q  r] 
+           0  a  0 
+           0  b  1 
+           1  c  2 
+           2  c  3 
+           3  d  4 
+           4  e  4 
+;
+M_PQ=[p  q] v MaierP137;
+M_PR=[p  r] v MaierP137;
+M_PQjM_PR = M_PQ ^ M_PR;
+M_RQ=[r  q] v MaierP137;
+M_PQjM_RQ = M_PQ ^ M_RQ;
+M_PRjM_RQ = M_PR ^ M_RQ;
+
+/*
+CE=[s]
+   a
+;
+DE=[s]
+   a
+   b
+;
+DDE=[s]
+   a
+   b
+   c
+;
+*/

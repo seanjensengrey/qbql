@@ -94,6 +94,7 @@ expr:        almostDisj
 filename:
            identifier
          | identifier '.' identifier
+         | filename '/' filename
          --| string_literal
 ;
 

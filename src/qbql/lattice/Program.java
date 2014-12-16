@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import com.sun.org.apache.xml.internal.utils.QName;
 import com.sun.org.apache.xpath.internal.FoundIndex;
 
+import qbql.apps.Run;
 import qbql.index.IndexedPredicate;
 import qbql.parser.Earley;
 import qbql.parser.Grammar;
@@ -22,7 +23,6 @@ import qbql.parser.RuleTuple;
 import qbql.parser.SyntaxError;
 import qbql.parser.Token;
 import qbql.parser.Visual;
-import qbql.program.Run;
 import qbql.util.Util;
 
 public class Program {
