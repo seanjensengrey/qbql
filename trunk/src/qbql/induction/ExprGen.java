@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import qbql.apps.Run;
 import qbql.lattice.Database;
 import qbql.lattice.Program;
 import qbql.parser.Earley;
@@ -16,7 +17,6 @@ import qbql.parser.LexerToken;
 import qbql.parser.Matrix;
 import qbql.parser.ParseNode;
 import qbql.parser.SyntaxError;
-import qbql.program.Run;
 import qbql.util.Array;
 import qbql.util.Util;
 

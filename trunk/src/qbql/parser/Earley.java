@@ -8,9 +8,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeSet;
 
+import qbql.apps.Run;
 import qbql.bool.Oper;
 import qbql.lattice.Program;
-import qbql.program.Run;
 import qbql.util.Array;
 import qbql.util.Util;
 

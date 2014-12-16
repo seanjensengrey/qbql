@@ -185,20 +185,29 @@ public class IndexedPredicate extends Predicate {
             if( o instanceof NamedTuple ) {
                 Object[] retTuple = new Object[header.size()];
                 NamedTuple nt = (NamedTuple)o;
+            retTuple_EQ_null:    
                 for( String attr : ret.colNames ) {
-                    Integer colRet = ret.header.get(attr);
-                    
+                    Integer colRet = ret.header.get(attr);                    
                     Integer colX = x.header.get(attr);
+                    String oldYattr = (String)Util.keyForAValue(y.renamed, attr);
                     if( colX != null ) {
+                    	for( String yAttr : y.colNames )
+                    		if( yAttr.equals(attr) ) {
+                    			Object x1= tupleX.data[colX];
+                    			Object x2= ((NamedTuple) o).get(oldYattr);
+                    			if( x2!=null && !x1.equals(x2) ) {
+                    				retTuple = null;
+                    				break retTuple_EQ_null;
+                    			}
+                    		}
                     	retTuple[colRet] = tupleX.data[colX];
                     	continue;
                     }
                     
-                    String oldYattr = (String)Util.keyForAValue(y.renamed, attr);
                     Object co = nt.get(oldYattr);
                     retTuple[colRet] = co;                    
                 }
-                //if( retTuple != null )
+                if( retTuple != null )
                     ret.addTuple(retTuple);
             } else if( o instanceof Relation ) {
                 Relation r = (Relation)o;
